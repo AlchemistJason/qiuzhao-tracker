@@ -1,0 +1,44 @@
+name: CI
+
+# 每次 push / PR 自动运行：语法检查 + 数据校验 + 回归测试
+on:
+  push:
+    branches: [main]
+    paths:
+      - "data.js"
+      - "app.js"
+      - "style.css"
+      - "index.html"
+      - "tests/**"
+      - ".github/workflows/ci.yml"
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 安装 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"
+
+      - name: 语法检查 (JS)
+        run: |
+          node --check data.js
+          node --check app.js
+          node --check tests/run-tests.js
+
+      - name: 回归测试
+        run: node tests/run-tests.js
+
+      - name: 页面完整性检查
+        run: |
+          grep -q 'href="style.css"' index.html && echo "style.css 引用 OK"
+          grep -q 'src="app.js"' index.html && echo "app.js 引用 OK"
+          grep -q 'src="data.js"' index.html && echo "data.js 引用 OK"
+          grep -q 'DTEhaVEpHaUJzTGRh' index.html && echo "腾讯文档链接 OK"
