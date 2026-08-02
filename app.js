@@ -53,6 +53,7 @@ function validateCompanies() {
 
 let currentFilter = "all";
 let currentSearch = "";
+let currentLocation = "all";  // v4.5: 地点筛选
 let currentSort = { field: null, asc: true };
 let currentView = (window.innerWidth <= 768) ? "card" : "table";
 let userState = null;
@@ -253,16 +254,22 @@ function renderDashboard() {
   });
   const inProgress = stats.applied + stats.test + stats.interview;
 
-  document.getElementById("dashboard").innerHTML = `
-    <div class="dash-card"><div class="dash-icon">🏢</div><div class="dash-num">${stats.total}</div><div class="dash-label">企业总数</div></div>
-    <div class="dash-card applied"><div class="dash-icon">📝</div><div class="dash-num">${stats.applied}</div><div class="dash-label">已投递</div></div>
-    <div class="dash-card test"><div class="dash-icon">✏️</div><div class="dash-num">${stats.test}</div><div class="dash-label">笔试中</div></div>
-    <div class="dash-card interview"><div class="dash-icon">🎤</div><div class="dash-num">${stats.interview}</div><div class="dash-label">面试中</div></div>
-    <div class="dash-card offer"><div class="dash-icon">🎉</div><div class="dash-num">${stats.offer}</div><div class="dash-label">Offer</div></div>
-    <div class="dash-card"><div class="dash-icon">⭐</div><div class="dash-num">${stats.starred}</div><div class="dash-label">已收藏</div></div>
-    <div class="dash-card"><div class="dash-icon">⏳</div><div class="dash-num">${stats.pending}</div><div class="dash-label">未投递</div></div>
-    <div class="dash-card"><div class="dash-icon">🔄</div><div class="dash-num">${inProgress}</div><div class="dash-label">进行中</div></div>
-  `;
+  // v4.5: 仪表盘卡片可点击筛选（data-filter 对应 currentFilter，点击高亮联动）
+  const dashCards = [
+    { filter: "all", icon: "🏢", num: stats.total, label: "企业总数", cls: "" },
+    { filter: "已投递", icon: "📝", num: stats.applied, label: "已投递", cls: "applied" },
+    { filter: "笔试中", icon: "✏️", num: stats.test, label: "笔试中", cls: "test" },
+    { filter: "面试中", icon: "🎤", num: stats.interview, label: "面试中", cls: "interview" },
+    { filter: "Offer", icon: "🎉", num: stats.offer, label: "Offer", cls: "offer" },
+    { filter: "starred", icon: "⭐", num: stats.starred, label: "已收藏", cls: "" },
+    { filter: "未投递", icon: "⏳", num: stats.pending, label: "未投递", cls: "" },
+    { filter: "active", icon: "🔄", num: inProgress, label: "进行中", cls: "" }
+  ];
+  document.getElementById("dashboard").innerHTML = dashCards.map(d =>
+    `<div class="dash-card ${d.cls} ${currentFilter === d.filter ? "active" : ""}" data-filter="${d.filter}" role="button" tabindex="0" onclick="setFilter('${d.filter}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();setFilter('${d.filter}')}" title="点击筛选 ${d.label}">
+      <div class="dash-icon">${d.icon}</div><div class="dash-num">${d.num}</div><div class="dash-label">${d.label}</div>
+    </div>`
+  ).join("");
 
   // 筛选器计数
   document.getElementById("cAll").textContent = COMPANIES.length;
@@ -403,7 +410,16 @@ function applyFilters() {
   else if (currentFilter === "pending") filtered = filtered.filter(c => getState(c.id).status === "未投递");
   else if (currentFilter === "active") filtered = filtered.filter(c => ACTIVE_STATUSES.includes(getState(c.id).status));
   else if (currentFilter === "done") filtered = filtered.filter(c => DONE_STATUSES.includes(getState(c.id).status));
+  else if (currentFilter === "未投递" || currentFilter === "已投递" || currentFilter === "笔试中" || currentFilter === "面试中" || currentFilter === "Offer" || currentFilter === "已拒绝")
+    filtered = filtered.filter(c => getState(c.id).status === currentFilter);  // v4.5: 仪表盘点击的状态筛选
   else if (currentFilter !== "all") filtered = filtered.filter(c => c.category.includes(currentFilter));
+
+  // v4.5: 地点筛选（组合字符串按 "/" 拆分精确匹配城市）
+  if (currentLocation !== "all") {
+    filtered = filtered.filter(c =>
+      (c.location || "").split("/").some(l => l.trim() === currentLocation)
+    );
+  }
 
   if (currentSearch) {
     filtered = filtered.filter(c => {
@@ -552,20 +568,35 @@ function renderTodo() {
 // ============================================================
 const WEEK_MS = 7 * 24 * 3600 * 1000;
 
-// 纯函数：统计最近 7 天动作（可测试）
+// 纯函数：统计最近 7 天动作，并收集每类动作的公司名（可测试）
 function getWeeklyStats(state) {
-  const stats = { touched: 0, newApplied: 0, newTest: 0, newInterview: 0, newOffer: 0 };
+  const stats = { touched: 0, newApplied: 0, newTest: 0, newInterview: 0, newOffer: 0, byStatus: {} };
   const cutoff = Date.now() - WEEK_MS;
+  const idToName = {};
+  COMPANIES.forEach(c => { idToName[c.id] = c.name; });
   Object.keys(state.companies).forEach(id => {
     const st = state.companies[id] || {};
     if (!st.lastUpdate || st.lastUpdate < cutoff) return;
     stats.touched++;
-    if (st.status === "已投递") stats.newApplied++;
-    else if (st.status === "笔试中") stats.newTest++;
-    else if (st.status === "面试中") stats.newInterview++;
-    else if (st.status === "Offer") stats.newOffer++;
+    const name = idToName[id] || id;
+    if (st.status === "已投递") { stats.newApplied++; pushName(stats.byStatus, "已投递", name); }
+    else if (st.status === "笔试中") { stats.newTest++; pushName(stats.byStatus, "笔试中", name); }
+    else if (st.status === "面试中") { stats.newInterview++; pushName(stats.byStatus, "面试中", name); }
+    else if (st.status === "Offer") { stats.newOffer++; pushName(stats.byStatus, "Offer", name); }
   });
   return stats;
+}
+
+function pushName(map, key, name) {
+  if (!map[key]) map[key] = [];
+  map[key].push(name);
+}
+
+// 公司名列表格式化：最多显示 3 家，超出显示"等 N 家"
+function fmtNames(names, max = 3) {
+  if (!names || names.length === 0) return "";
+  if (names.length <= max) return names.join("、");
+  return names.slice(0, max).join("、") + ` 等${names.length}家`;
 }
 
 function renderWeekly() {
@@ -573,7 +604,13 @@ function renderWeekly() {
   const stats = getWeeklyStats(userState);
   if (stats.touched === 0) { bar.classList.add("hidden"); bar.innerHTML = ""; return; }
   bar.classList.remove("hidden");
-  bar.innerHTML = `📊 <strong>本周动态</strong>：更新 ${stats.touched} 家 · 新投递 ${stats.newApplied} · 进笔试 ${stats.newTest} · 进面试 ${stats.newInterview} · 拿 Offer ${stats.newOffer}`;
+  // v4.5: 带上公司名，避免"只有数字不知道是哪几家"的无效信息
+  const parts = [];
+  if (stats.newApplied) parts.push(`新投递 ${fmtNames(stats.byStatus["已投递"])}`);
+  if (stats.newTest) parts.push(`进笔试 ${fmtNames(stats.byStatus["笔试中"])}`);
+  if (stats.newInterview) parts.push(`进面试 ${fmtNames(stats.byStatus["面试中"])}`);
+  if (stats.newOffer) parts.push(`Offer ${fmtNames(stats.byStatus["Offer"])}`);
+  bar.innerHTML = `📊 <strong>本周动态</strong>（${stats.touched} 家）：${parts.join(" · ")}`;
 }
 
 // ============================================================
@@ -652,6 +689,43 @@ function copyCompany(el, id) {
 }
 
 // ============================================================
+// 统一筛选入口（仪表盘卡片 / 筛选按钮共用，v4.5）
+// ============================================================
+function setFilter(value) {
+  currentFilter = value;
+  // 同步筛选按钮 active
+  document.querySelectorAll("#filterGroup .filter-btn").forEach(b => b.classList.toggle("active", b.dataset.filter === value));
+  // 同步仪表盘卡片高亮
+  document.querySelectorAll(".dash-card[data-filter]").forEach(c => c.classList.toggle("active", c.dataset.filter === value));
+  applyFilters();
+}
+
+// 地点筛选：城市从数据提取（按出现频次排序），生成下拉选项（纯函数可测）
+function extractCities(companies) {
+  const freq = {};
+  companies.forEach(c => (c.location || "").split("/").forEach(l => {
+    l = l.trim();
+    if (l && l !== "全国多地" && l !== "线上") freq[l] = (freq[l] || 0) + 1;
+  }));
+  return Object.keys(freq).sort((a, b) => (freq[b] || 0) - (freq[a] || 0) || a.localeCompare(b, "zh-CN"));
+}
+
+function initLocationFilter() {
+  const sel = document.getElementById("locFilter");
+  if (!sel) return;
+  extractCities(COMPANIES).forEach(city => {
+    const opt = document.createElement("option");
+    opt.value = city;
+    opt.textContent = "📍 " + city;
+    sel.appendChild(opt);
+  });
+  sel.addEventListener("change", function() {
+    currentLocation = this.value;
+    applyFilters();
+  });
+}
+
+// ============================================================
 // 动态行业分类筛选按钮（从数据自动生成）
 // ============================================================
 function initCategoryFilters() {
@@ -664,10 +738,7 @@ function initCategoryFilters() {
   // 绑定点击（复用 filter-btn 事件：通过事件委托绑定在 filterGroup 上）
   container.querySelectorAll(".filter-btn").forEach(btn => {
     btn.addEventListener("click", function() {
-      document.querySelectorAll("#filterGroup .filter-btn").forEach(b => b.classList.remove("active"));
-      this.classList.add("active");
-      currentFilter = this.dataset.filter;
-      applyFilters();
+      setFilter(this.dataset.filter);
     });
   });
 }
@@ -682,10 +753,7 @@ document.getElementById("searchInput").addEventListener("input", debounce(functi
 
 document.querySelectorAll(".filter-btn").forEach(btn => {
   btn.addEventListener("click", function() {
-    document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
-    this.classList.add("active");
-    currentFilter = this.dataset.filter;
-    applyFilters();
+    setFilter(this.dataset.filter);
   });
 });
 
@@ -1077,6 +1145,7 @@ userState = loadState();
 renderDashboard();
 validateCompanies();   // 数据完整性校验（A3）
 initCategoryFilters(); // 动态行业分类筛选按钮
+initLocationFilter();  // 地点筛选下拉
 renderTodo();          // 今日待办聚合
 renderWeekly();        // 本周动态统计
 switchView(currentView); // 同步初始视图（修复移动端首屏显示空表格的问题）
