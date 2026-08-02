@@ -39,6 +39,8 @@
   </div>
 
   <div class="dashboard" id="dashboard"></div>
+  <div class="todo-bar hidden" id="todoBar"></div>
+  <div class="weekly-bar hidden" id="weeklyBar"></div>
 
   <div class="toolbar">
     <div class="search-box">
@@ -52,13 +54,12 @@
       <button class="filter-btn" data-filter="active">🔄 进行中<span class="count-badge" id="cActive"></span></button>
       <button class="filter-btn" data-filter="done">✅ 已结束<span class="count-badge" id="cDone"></span></button>
       <span style="width:1px;background:var(--border);margin:0 4px;"></span>
-      <button class="filter-btn" data-filter="游戏">🎮 游戏<span class="count-badge" id="cGame"></span></button>
-      <button class="filter-btn" data-filter="AI">🤖 AI<span class="count-badge" id="cAI"></span></button>
-      <button class="filter-btn" data-filter="智能驾驶">🚗 智驾<span class="count-badge" id="cAuto"></span></button>
+      <div id="catFilters" style="display:flex;gap:6px;flex-wrap:wrap"></div>
     </div>
     <div class="view-toggle">
       <button id="tableViewBtn" class="active" onclick="switchView('table')">📊 表格</button>
       <button id="cardViewBtn" onclick="switchView('card')">🗂️ 卡片</button>
+      <button id="kanbanViewBtn" onclick="switchView('kanban')">📌 看板</button>
     </div>
   </div>
 
@@ -84,6 +85,9 @@
   </div>
 
   <div class="card-grid hidden" id="cardView"></div>
+
+  <!-- 看板视图 -->
+  <div class="kanban hidden" id="kanbanView"></div>
 
   <footer>
     <p>📋 全量秋招个人内推文档（含笔试题库、就业资料包）：
