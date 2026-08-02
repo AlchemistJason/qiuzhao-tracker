@@ -662,3 +662,34 @@
   line-height: 1;
   padding: 0 8px;
 }
+
+/* ====== v4.5 交互升级：仪表盘可点击 / 地点下拉 ====== */
+
+/* 仪表盘卡片可点击（悬停提示 + 点击高亮） */
+.dash-card {
+  cursor: pointer;
+  user-select: none;
+}
+.dash-card:hover { transform: translateY(-3px); border-color: var(--accent); }
+.dash-card.active {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-glow), var(--shadow);
+}
+.dash-card.active::before { opacity: 1; }
+.dash-card.active .dash-label { color: var(--accent); font-weight: 700; }
+
+/* 地点下拉选择器 */
+.loc-select {
+  padding: 8px 12px;
+  border: 1.5px solid var(--border);
+  border-radius: 999px;
+  background: var(--card);
+  color: var(--text);
+  font-size: 12px;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.2s;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+.loc-select:hover, .loc-select:focus { border-color: var(--accent); }
+.loc-select option { background: var(--card); color: var(--text); }
