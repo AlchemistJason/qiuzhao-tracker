@@ -783,13 +783,12 @@ function clearFilters() {
   applyFilters();
 }
 
-// 刷新所有筛选 UI 的选中态 + 已选条件条
+// 刷新所有筛选 UI 的选中态 + 筛选按钮角标 + 已选条件条
 function refreshFilterUI() {
-  // chips 选中态（地点/行业/岗位，状态已由仪表盘承担）
-  document.querySelectorAll(".chip[data-dim]").forEach(ch => {
-    const dim = ch.dataset.dim;
-    const active = filters[dim] && filters[dim].has(ch.dataset.value);
-    ch.classList.toggle("active", active);
+  // 筛选面板 checkbox 选中态（地点/行业/岗位；状态由顶部仪表盘承担）
+  document.querySelectorAll(".fp-opt input[data-dim]").forEach(cb => {
+    const dim = cb.dataset.dim;
+    cb.checked = !!filters[dim] && filters[dim].has(cb.dataset.value);
   });
   // 仪表盘卡片高亮（概览查看语义）
   document.querySelectorAll(".dash-card[data-filter]").forEach(c => {
@@ -800,6 +799,13 @@ function refreshFilterUI() {
     else active = filters.status.has(f);
     c.classList.toggle("active", active);
   });
+  // 筛选按钮角标（已选条件数）
+  const badge = document.getElementById("filterBadge");
+  if (badge) {
+    const n = filters.locations.size + filters.industries.size + filters.jobs.size;
+    badge.textContent = n;
+    badge.classList.toggle("hidden", n === 0);
+  }
   renderFilterSummary();
 }
 
@@ -850,27 +856,46 @@ function renderFilterSummary() {
   bar.innerHTML = `已选：${groupHTML} <span class="fs-count">共 ${count} 家 / ${COMPANIES.length}</span> <button class="fs-clear" onclick="clearFilters()">清除全部</button>`;
 }
 
-// chips 折叠渲染：前 max 个 + 更多按钮（默认收起，点击展开）
-function chipsHTML(values, dim, max = 0) {
-  const all = values.map(v =>
-    `<button class="chip" data-dim="${dim}" data-value="${escapeHtml(v)}" onclick="toggleFilter('${dim}','${escapeHtml(v)}')">${escapeHtml(v)}</button>`
+// v5.4: 筛选下拉面板（checkbox 多选，纵向分维度，不再平铺挤一行）
+function renderFilterPanel() {
+  const optsHTML = (values, dim) => values.map(v =>
+    `<label class="fp-opt"><input type="checkbox" data-dim="${dim}" data-value="${escapeHtml(v)}" onchange="toggleFilter('${dim}','${escapeHtml(v)}')"> <span>${escapeHtml(v)}</span></label>`
+  ).join("");
+  document.getElementById("fpLoc").innerHTML = optsHTML(extractCities(COMPANIES), "locations");
+  document.getElementById("fpInd").innerHTML = optsHTML(
+    [...new Set(COMPANIES.flatMap(c => c.category))].filter(c => c !== "活动"), "industries"
   );
-  if (max > 0 && all.length > max) {
-    const visible = all.slice(0, max).join("");
-    const hidden = all.slice(max).join("");
-    return `${visible}<span class="chip-more-wrap">${hidden}<button class="chip chip-more" onclick="this.parentNode.classList.toggle('open');this.textContent=this.parentNode.classList.contains('open')?'收起 ▴':'更多 ▾'">更多 ▾</button></span>`;
-  }
-  return all.join("");
+  document.getElementById("fpJob").innerHTML = optsHTML(extractJobKeywords(COMPANIES, 2), "jobs");
 }
 
-// 渲染三组筛选 chips（地点/行业/岗位；状态由顶部仪表盘承担）
-function renderFilterChips() {
-  document.getElementById("locChips").innerHTML = chipsHTML(extractCities(COMPANIES), "locations", 6);
-  document.getElementById("indChips").innerHTML = chipsHTML(
-    [...new Set(COMPANIES.flatMap(c => c.category))].filter(c => c !== "活动"), "industries", 6
-  );
-  document.getElementById("jobChips").innerHTML = chipsHTML(extractJobKeywords(COMPANIES, 2), "jobs", 6);
+// 开关筛选面板 + 点击外部 / Esc 关闭
+function toggleFilterPanel() {
+  const panel = document.getElementById("filterPanel");
+  const btn = document.getElementById("filterToggleBtn");
+  const isOpen = !panel.classList.contains("hidden");
+  panel.classList.toggle("hidden", isOpen);
+  btn.setAttribute("aria-expanded", String(!isOpen));
 }
+
+document.addEventListener("click", function(e) {
+  const wrap = document.getElementById("filterPanel");
+  const btn = document.getElementById("filterToggleBtn");
+  if (!wrap || wrap.classList.contains("hidden")) return;
+  if (!wrap.contains(e.target) && !btn.contains(e.target)) {
+    wrap.classList.add("hidden");
+    btn.setAttribute("aria-expanded", "false");
+  }
+});
+
+document.addEventListener("keydown", function(e) {
+  if (e.key === "Escape") {
+    const panel = document.getElementById("filterPanel");
+    if (panel && !panel.classList.contains("hidden")) {
+      panel.classList.add("hidden");
+      document.getElementById("filterToggleBtn").setAttribute("aria-expanded", "false");
+    }
+  }
+});
 
 // ============================================================
 // 事件绑定
@@ -1290,7 +1315,7 @@ function resetData() {
 userState = loadState();
 renderDashboard();
 validateCompanies();   // 数据完整性校验（A3）
-renderFilterChips();   // v5: 四组筛选 chips（状态/地点/行业/岗位）
+renderFilterPanel();   // v5.4: 筛选下拉面板（地点/行业/岗位 checkbox）
 refreshFilterUI();     // v5: 同步所有筛选选中态 + 已选条件条
 renderTodo();          // 今日待办聚合
 renderWeekly();        // 本周动态统计
