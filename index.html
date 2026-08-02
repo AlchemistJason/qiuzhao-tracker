@@ -17,8 +17,8 @@
   } catch(e) {}
 })();
 </script>
-<script src="https://cdn.staticfile.org/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script src="https://cdn.staticfile.org/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
+<script src="https://cdn.staticfile.org/qrcodejs/1.0.0/qrcode.min.js" defer></script>
+<script src="https://cdn.staticfile.org/html5-qrcode/2.3.8/html5-qrcode.min.js" defer></script>
 <style>
   /* ====== 主题变量 ====== */
   :root {
@@ -506,10 +506,10 @@
       <p class="subtitle">点击内推码复制 | 状态自动保存 | 数据版本 v<span id="dataVer"></span></p>
     </div>
     <div class="top-actions">
-      <button class="icon-btn" onclick="openSyncModal('export')" title="跨设备同步(二维码)">📱</button>
-      <button class="icon-btn" onclick="toggleTheme()" id="themeBtn" title="切换主题">🌙</button>
-      <button class="icon-btn" onclick="exportJSON()" title="导出备份">💾</button>
-      <button class="icon-btn" onclick="document.getElementById('importInput').click()" title="导入备份">📥</button>
+      <button class="icon-btn" onclick="openSyncModal('export')" title="跨设备同步(二维码)" aria-label="跨设备同步">📱</button>
+      <button class="icon-btn" onclick="toggleTheme()" id="themeBtn" title="切换主题" aria-label="切换明暗主题">🌙</button>
+      <button class="icon-btn" onclick="exportJSON()" title="导出备份" aria-label="导出备份">💾</button>
+      <button class="icon-btn" onclick="document.getElementById('importInput').click()" title="导入备份" aria-label="导入备份">📥</button>
       <input type="file" id="importInput" accept=".json" onchange="importJSON(event)">
     </div>
   </div>
@@ -518,8 +518,8 @@
 
   <div class="toolbar">
     <div class="search-box">
-      <span class="search-icon">🔍</span>
-      <input type="text" id="searchInput" placeholder="搜索公司、岗位、地点、内推码...">
+      <span class="search-icon" aria-hidden="true">🔍</span>
+      <input type="text" id="searchInput" placeholder="搜索公司、岗位、地点、内推码..." aria-label="搜索公司、岗位、地点、内推码">
     </div>
     <div class="filter-group" id="filterGroup">
       <button class="filter-btn active" data-filter="all">全部<span class="count-badge" id="cAll"></span></button>
@@ -539,7 +539,7 @@
   </div>
 
   <div class="table-wrapper" id="tableView">
-    <table>
+    <table aria-label="2027届秋招企业信息与投递状态表">
       <thead>
         <tr>
           <th style="width:32px"></th>
@@ -578,9 +578,9 @@
 </div>
 
 <!-- 同步弹窗 -->
-<div id="syncModal" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeSyncModal()">
+<div id="syncModal" class="modal-overlay" style="display:none" role="dialog" aria-modal="true" aria-label="跨设备状态同步" onclick="if(event.target===this)closeSyncModal()">
   <div class="modal">
-    <button class="modal-close" onclick="closeSyncModal()">✕</button>
+    <button class="modal-close" onclick="closeSyncModal()" aria-label="关闭弹窗">✕</button>
     <h3 id="syncTitle">📱 跨设备同步</h3>
     <div id="syncBody"></div>
   </div>
@@ -604,6 +604,9 @@ const STATUS_OPTIONS = ["未投递", "已投递", "笔试中", "面试中", "Off
 const ACTIVE_STATUSES = ["已投递", "笔试中", "面试中"];
 const DONE_STATUSES = ["Offer", "已拒绝"];
 const TYPE_ORDER = { "技术提前批": 0, "提前批": 1, "秋招": 2, "活动": 3 };
+
+// 公司 ID 索引（O(1) 查找，避免 importJSON/mergeSync 里的 O(n×m) 全表扫描）
+const COMPANY_IDS = new Set(COMPANIES.map(c => c.id));
 
 let currentFilter = "all";
 let currentSearch = "";
@@ -636,6 +639,25 @@ function debounce(fn, ms) {
     clearTimeout(timer);
     timer = setTimeout(fn, ms);
   };
+}
+
+// 链接协议白名单：只允许 http/https，防止 javascript: 等伪协议注入
+function safeLink(url) {
+  return /^https?:\/\//i.test(url || "") ? url : "#";
+}
+
+// CSV 公式注入防护：以 = + - @ 开头的字段加前缀，防止 Excel 执行公式
+function csvSafe(f) {
+  let s = String(f == null ? "" : f);
+  if (/^[=+\-@]/.test(s)) s = "'" + s;
+  return `"${s.replace(/"/g, '""')}"`;
+}
+
+// 本地时区解析日期（避免 new Date("YYYY-MM-DD") 按 UTC 解析导致差一天）
+function parseLocalDate(str) {
+  const parts = String(str).split("-").map(Number);
+  if (parts.length < 3 || parts.some(isNaN)) return null;
+  return new Date(parts[0], parts[1] - 1, parts[2]);
 }
 
 // ============================================================
@@ -806,7 +828,8 @@ function getDaysLeft(deadline) {
   if (!deadline) return null;
   const now = new Date();
   now.setHours(0, 0, 0, 0);
-  const dl = new Date(deadline);
+  const dl = parseLocalDate(deadline);
+  if (!dl) return null;
   dl.setHours(0, 0, 0, 0);
   return Math.round((dl - now) / (1000 * 60 * 60 * 24));
 }
@@ -823,6 +846,22 @@ function deadlineHTML(deadline) {
 }
 
 // ============================================================
+// 渲染 —— 公共片段（表格/卡片复用，消除重复）
+// ============================================================
+function buildCommonHTML(c) {
+  const s = getState(c.id);
+  const statusOptions = STATUS_OPTIONS.map(opt =>
+    `<option value="${opt}" ${s.status === opt ? "selected" : ""}>${opt}</option>`
+  ).join("");
+  const jobTags = c.jobs.map(j => `<span class="job-tag">${escapeHtml(j)}</span>`).join("");
+  const programTag = c.program ? `<span class="program-tag">${escapeHtml(c.program)}</span>` : "";
+  const refHTML = c.refCode
+    ? `<span class="ref-code" onclick="copyCode(this,'${c.id}')" title="点击复制">${escapeHtml(c.refCode)}</span>`
+    : `<span class="ref-none">链接即内推</span>`;
+  return { s, statusOptions, jobTags, programTag, refHTML };
+}
+
+// ============================================================
 // 渲染 —— 表格视图
 // ============================================================
 function renderTable(data) {
@@ -836,30 +875,22 @@ function renderTable(data) {
   noResults.style.display = "none";
 
   tbody.innerHTML = data.map(c => {
-    const s = getState(c.id);
-    const jobTags = c.jobs.map(j => `<span class="job-tag">${escapeHtml(j)}</span>`).join("");
+    const { s, statusOptions, jobTags, programTag, refHTML } = buildCommonHTML(c);
     const starredClass = s.starred ? "favorited" : "";
     const starIcon = s.starred ? "⭐" : "☆";
-    const statusOptions = STATUS_OPTIONS.map(opt =>
-      `<option value="${opt}" ${s.status === opt ? "selected" : ""}>${opt}</option>`
-    ).join("");
-    const programTag = c.program ? `<div><span class="program-tag">${escapeHtml(c.program)}</span></div>` : "";
-    const refHTML = c.refCode
-      ? `<span class="ref-code" onclick="copyCode(this,'${c.id}')" title="点击复制">${escapeHtml(c.refCode)}</span>`
-      : `<span class="ref-none">链接即内推</span>`;
 
     return `
     <tr class="${starredClass}">
-      <td><button class="star-btn ${s.starred ? "active" : ""}" onclick="toggleStar('${c.id}')">${starIcon}</button></td>
+      <td><button class="star-btn ${s.starred ? "active" : ""}" onclick="toggleStar('${c.id}')" aria-pressed="${s.starred}" aria-label="收藏 ${escapeHtml(c.name)}">${starIcon}</button></td>
       <td><strong>${escapeHtml(c.name)}</strong></td>
       <td><span class="type-tag ${escapeHtml(c.type)}">${escapeHtml(c.type)}</span>${programTag}</td>
       <td><div class="job-tags">${jobTags}</div></td>
       <td class="location">${escapeHtml(c.location) || "—"}</td>
       <td>${deadlineHTML(c.deadline)}</td>
       <td>${refHTML}</td>
-      <td>${c.link ? `<a href="${escapeHtml(c.link)}" target="_blank" rel="noopener" class="link-btn">投递</a>` : "—"}</td>
-      <td><select class="status-select" data-status="${escapeHtml(s.status)}" onchange="setStatus('${c.id}', this.value, this)">${statusOptions}</select></td>
-      <td><input type="text" class="note-input" placeholder="点击添加..." value="${escapeHtml(s.note)}" onblur="setNote('${c.id}', this.value)"></td>
+      <td>${c.link ? `<a href="${safeLink(c.link)}" target="_blank" rel="noopener" class="link-btn">投递</a>` : "—"}</td>
+      <td><select class="status-select" data-status="${escapeHtml(s.status)}" aria-label="投递状态" onchange="setStatus('${c.id}', this.value, this)">${statusOptions}</select></td>
+      <td><input type="text" class="note-input" placeholder="点击添加..." aria-label="个人备注" value="${escapeHtml(s.note)}" onblur="setNote('${c.id}', this.value)"></td>
     </tr>`;
   }).join("");
 }
@@ -878,23 +909,15 @@ function renderCards(data) {
   noResults.style.display = "none";
 
   container.innerHTML = data.map(c => {
-    const s = getState(c.id);
-    const jobTags = c.jobs.map(j => `<span class="job-tag">${escapeHtml(j)}</span>`).join("");
+    const { s, statusOptions, jobTags, programTag, refHTML } = buildCommonHTML(c);
     const starredClass = s.starred ? "favorited" : "";
     const starIcon = s.starred ? "⭐" : "☆";
-    const statusOptions = STATUS_OPTIONS.map(opt =>
-      `<option value="${opt}" ${s.status === opt ? "selected" : ""}>${opt}</option>`
-    ).join("");
-    const programTag = c.program ? `<span class="program-tag">${escapeHtml(c.program)}</span>` : "";
-    const refHTML = c.refCode
-      ? `<span class="ref-code" onclick="copyCode(this,'${c.id}')" title="点击复制">${escapeHtml(c.refCode)}</span>`
-      : `<span class="ref-none">链接即内推</span>`;
 
     return `
     <div class="job-card ${starredClass}">
       <div class="card-header">
         <h3>${escapeHtml(c.name)}</h3>
-        <button class="star-btn ${s.starred ? "active" : ""}" onclick="toggleStar('${c.id}')">${starIcon}</button>
+        <button class="star-btn ${s.starred ? "active" : ""}" onclick="toggleStar('${c.id}')" aria-pressed="${s.starred}" aria-label="收藏 ${escapeHtml(c.name)}">${starIcon}</button>
       </div>
       <div class="card-body">
         <span class="type-tag ${escapeHtml(c.type)}">${escapeHtml(c.type)}</span>${programTag}
@@ -905,10 +928,10 @@ function renderCards(data) {
       <div class="card-info">${escapeHtml(c.note)}</div>
       <div class="card-footer">
         ${refHTML}
-        ${c.link ? `<a href="${escapeHtml(c.link)}" target="_blank" rel="noopener" class="link-btn">投递</a>` : ""}
-        <select class="status-select" data-status="${escapeHtml(s.status)}" onchange="setStatus('${c.id}', this.value, this)">${statusOptions}</select>
+        ${c.link ? `<a href="${safeLink(c.link)}" target="_blank" rel="noopener" class="link-btn">投递</a>` : ""}
+        <select class="status-select" data-status="${escapeHtml(s.status)}" aria-label="投递状态" onchange="setStatus('${c.id}', this.value, this)">${statusOptions}</select>
       </div>
-      <input type="text" class="note-input" style="margin-top:8px" placeholder="个人备注..." value="${escapeHtml(s.note)}" onblur="setNote('${c.id}', this.value)">
+      <input type="text" class="note-input" style="margin-top:8px" placeholder="个人备注..." aria-label="个人备注" value="${escapeHtml(s.note)}" onblur="setNote('${c.id}', this.value)">
     </div>`;
   }).join("");
 }
@@ -1031,9 +1054,9 @@ function copyCode(el, id) {
   const c = COMPANIES.find(x => x.id === id);
   if (!c || !c.refCode) return;
   const code = c.refCode;
+  const orig = el.textContent; // 提前捕获，避免异步回调期间被二次点击覆盖
   navigator.clipboard.writeText(code).then(() => {
     el.classList.add("copied");
-    const orig = el.textContent;
     el.textContent = "✓ 已复制";
     setTimeout(() => { el.classList.remove("copied"); el.textContent = orig; }, 1200);
   }).catch(() => {
@@ -1071,7 +1094,7 @@ function exportCSV() {
     const s = getState(c.id);
     rows.push([i + 1, c.name, c.type, c.program || "", c.jobs.join("、"), c.location, c.deadline || "", c.refCode || "链接即内推", s.status, s.note]);
   });
-  const csv = rows.map(r => r.map(f => `"${String(f).replace(/"/g, '""')}"`).join(",")).join("\n");
+  const csv = rows.map(r => r.map(csvSafe).join(",")).join("\n");
   const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
@@ -1103,6 +1126,24 @@ function exportJSON() {
   showToast("备份已导出");
 }
 
+// 合并外部状态（导入/同步共用）：只覆盖已知公司，未知 id 忽略
+function mergeIncoming(incoming) {
+  if (!incoming || typeof incoming !== "object") return 0;
+  let merged = 0;
+  Object.keys(incoming).forEach(id => {
+    if (!COMPANY_IDS.has(id)) return;
+    const st = incoming[id] || {};
+    userState.companies[id] = { status: st.status || "未投递", starred: !!st.starred, note: st.note || "" };
+    merged++;
+  });
+  if (merged > 0) {
+    saveState();
+    renderDashboard();
+    applyFilters();
+  }
+  return merged;
+}
+
 function importJSON(event) {
   const file = event.target.files[0];
   if (!file) return;
@@ -1110,33 +1151,14 @@ function importJSON(event) {
   reader.onload = function(e) {
     try {
       const data = JSON.parse(e.target.result);
-      if (data && data.userState && data.userState.companies) {
-        // 合并导入：只覆盖已有公司的状态，保留当前标记
-        const incoming = data.userState.companies;
-        Object.keys(incoming).forEach(id => {
-          if (COMPANIES.some(c => c.id === id)) {
-            const st = incoming[id];
-            userState.companies[id] = { status: st.status || "未投递", starred: !!st.starred, note: st.note || "" };
-          }
-        });
-        saveState();
-        renderDashboard();
-        applyFilters();
-        showToast("✅ 状态导入成功");
-      } else if (data && data.version === 2 && data.companies) {
-        const incoming = data.companies;
-        Object.keys(incoming).forEach(id => {
-          if (COMPANIES.some(c => c.id === id)) {
-            const st = incoming[id];
-            userState.companies[id] = { status: st.status || "未投递", starred: !!st.starred, note: st.note || "" };
-          }
-        });
-        saveState();
-        renderDashboard();
-        applyFilters();
+      // 兼容两种备份格式：{userState:{companies}} 或 {version:2,companies}
+      const incoming = (data && data.userState && data.userState.companies)
+        ? data.userState.companies
+        : (data && data.version === 2 && data.companies) ? data.companies : null;
+      if (incoming && mergeIncoming(incoming) > 0) {
         showToast("✅ 状态导入成功");
       } else {
-        showToast("文件格式不正确");
+        showToast("文件格式不正确或没有可导入的数据");
       }
     } catch(err) {
       showToast("导入失败: " + err.message);
@@ -1223,28 +1245,24 @@ function importSyncFromText() {
 }
 
 function mergeSync(incoming) {
-  Object.keys(incoming).forEach(id => {
-    if (COMPANIES.some(c => c.id === id)) {
-      const st = incoming[id];
-      userState.companies[id] = { status: st.status || "未投递", starred: !!st.starred, note: st.note || "" };
-    }
-  });
-  saveState();
-  renderDashboard();
-  applyFilters();
+  mergeIncoming(incoming);
 }
 
 // 摄像头扫码（html5-qrcode）
 let qrScanner = null;
-function startQrScanner() {
+
+async function startQrScanner() {
+  // 确保上一个实例彻底释放，避免重复 start 报错
+  await stopQrScanner();
   if (typeof Html5Qrcode === "undefined") {
     const hint = document.querySelector(".modal-hint");
     if (hint) hint.textContent += "（摄像头组件加载失败，可用文本码同步）";
     return;
   }
   try {
-    qrScanner = new Html5Qrcode("qrReader");
-    qrScanner.start(
+    const scanner = new Html5Qrcode("qrReader");
+    qrScanner = scanner;
+    await scanner.start(
       { facingMode: "environment" },
       { fps: 10, qrbox: { width: 220, height: 220 } },
       function(decodedText) {
@@ -1262,20 +1280,23 @@ function startQrScanner() {
         }
       },
       function() {}
-    ).catch(function() {
-      showToast("无法开启摄像头，请用文本码");
-    });
+    );
   } catch(e) {
+    qrScanner = null;
     showToast("无法开启摄像头，请用文本码");
   }
 }
 
-function stopQrScanner() {
-  if (qrScanner) {
-    try {
-      qrScanner.stop().then(() => { qrScanner = null; });
-    } catch(e) { qrScanner = null; }
-  }
+async function stopQrScanner() {
+  const scanner = qrScanner;
+  qrScanner = null;
+  if (!scanner) return;
+  try {
+    await scanner.stop();
+  } catch(e) {}
+  try {
+    scanner.clear();
+  } catch(e) {}
 }
 
 // ============================================================
