@@ -477,3 +477,147 @@
     opacity: 0; transition: opacity 0.25s;
   }
   #themeBtn:hover::after { opacity: 1; }
+
+/* ====== v4.3 新增组件：看板 / 今日待办 / 周报 / 一键复制 ====== */
+
+/* 看板 */
+.kanban {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  align-items: flex-start;
+}
+.kanban-col {
+  flex: 0 0 200px;
+  min-width: 200px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+.kanban-col-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  border-bottom: 1px solid var(--border);
+  background: var(--card);
+}
+.kanban-col-head[data-status="未投递"] { border-top: 3px solid var(--accent); }
+.kanban-col-head[data-status="已投递"] { border-top: 3px solid var(--cyan); }
+.kanban-col-head[data-status="笔试中"] { border-top: 3px solid var(--orange); }
+.kanban-col-head[data-status="面试中"] { border-top: 3px solid var(--purple); }
+.kanban-col-head[data-status="Offer"] { border-top: 3px solid var(--green); }
+.kanban-col-head[data-status="已拒绝"] { border-top: 3px solid var(--red); }
+.kanban-count {
+  background: var(--accent-glow);
+  color: var(--accent);
+  border-radius: 999px;
+  padding: 1px 8px;
+  font-size: 11px;
+  font-family: var(--font-num);
+}
+.kanban-col-body {
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 60px;
+}
+.kanban-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px;
+  transition: all 0.2s;
+}
+.kanban-card:hover { border-color: var(--border-light); transform: translateY(-1px); }
+.kanban-card.favorited { border-color: rgba(252, 211, 77, 0.5); }
+.kanban-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+.kanban-card-head strong { font-size: 13px; }
+.kanban-card-meta {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+.kanban-card-actions {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.kanban-card .status-select { width: 100%; }
+.kanban-empty {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 11px;
+  padding: 14px 0;
+  border: 1px dashed var(--border);
+  border-radius: 10px;
+}
+
+/* 今日待办 / 周报 */
+.todo-bar, .weekly-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 10px 14px;
+  border-radius: 12px;
+  margin-bottom: 12px;
+  font-size: 12px;
+  border: 1px solid var(--border);
+}
+.todo-bar {
+  background: rgba(251, 191, 36, 0.06);
+  border-color: rgba(251, 191, 36, 0.35);
+}
+.weekly-bar {
+  background: var(--accent-glow);
+  border-color: var(--border);
+}
+.todo-item { color: var(--text-secondary); }
+.todo-item.urgent { color: var(--red); font-weight: 600; }
+.todo-urgent-tag {
+  background: var(--red);
+  color: #fff;
+  border-radius: 999px;
+  padding: 1px 8px;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+/* 一键复制小按钮 */
+.copy-mini {
+  border: 1px solid var(--border);
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.copy-mini:hover { border-color: var(--accent); color: var(--accent); }
+.copy-mini.copied { border-color: var(--green); color: var(--green); }
+
+/* 移动端看板适配 */
+@media (max-width: 768px) {
+  .kanban { padding-bottom: 12px; }
+  .kanban-col { flex: 0 0 170px; min-width: 170px; }
+}
