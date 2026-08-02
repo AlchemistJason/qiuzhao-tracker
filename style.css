@@ -786,3 +786,50 @@ mark.hl {
   .filter-sec-label { padding-top: 4px; }
   .chips { overflow-x: auto; flex-wrap: nowrap; padding-bottom: 4px; -webkit-overflow-scrolling: touch; }
 }
+
+/* ====== v5.2 响应式与交互修复（像素匠审查轮） ====== */
+
+/* P0: 移动端触控目标 ≥44px（WCAG 2.5.5）——视觉不变，点击区扩大 */
+@media (max-width: 768px) {
+  .star-btn, .copy-mini, .link-btn, .chip, .icon-btn,
+  .view-toggle button, .modal-close, .fs-clear, .filter-sec-label,
+  .ref-code, .job-tag {
+    min-width: 44px;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  /* 表格内联小元素保留紧凑（避免 44px 撑爆表格） */
+  .job-tag { min-width: auto; padding: 6px 10px; }
+}
+
+/* P1-1: 平板断点（769-1100px 横向保留，不被移动端规则误伤） */
+@media (min-width: 769px) and (max-width: 1100px) {
+  .toolbar { flex-direction: row; align-items: center; }
+  .filter-group { justify-content: flex-start; }
+}
+
+/* P1-2: 超窄屏（≤400px）仪表盘保护 */
+@media (max-width: 400px) {
+  .dashboard { grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); }
+  .dash-num { font-size: 20px; }
+  .dash-label { font-size: 10px; }
+}
+
+/* P1-3: iOS 安全区（刘海屏/手势条底部不遮挡 footer） */
+.container { padding-bottom: calc(40px + env(safe-area-inset-bottom)); }
+
+/* P2-1: 表格表头吸顶（10 列滚动时列含义始终可见） */
+.table-wrapper thead th { position: sticky; top: 0; z-index: 2; }
+
+/* P2-2: chips 横滑边缘 fade 提示（移动端 mask 渐变暗示可滑动） */
+@media (max-width: 768px) {
+  .chips {
+    -webkit-mask-image: linear-gradient(to right, transparent 0, #000 14px, #000 calc(100% - 14px), transparent 100%);
+    mask-image: linear-gradient(to right, transparent 0, #000 14px, #000 calc(100% - 14px), transparent 100%);
+  }
+}
+
+/* P2-4: 标题自适应字号（小屏不换行挤压） */
+.title-area h1 { font-size: clamp(22px, 6vw, 30px); }
