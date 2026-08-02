@@ -833,3 +833,35 @@ mark.hl {
 
 /* P2-4: 标题自适应字号（小屏不换行挤压） */
 .title-area h1 { font-size: clamp(22px, 6vw, 30px); }
+
+/* ====== v5.3 检索筛选重构：chips 折叠 / 条件条语义 ====== */
+
+/* chips 折叠：隐藏部分 + 更多按钮 */
+.chip-more-wrap .chip:not(.chip-more) { display: none; }
+.chip-more-wrap.open .chip:not(.chip-more) { display: inline-flex; }
+.chip-more {
+  border-style: dashed;
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+/* 条件条：同维"或" / 跨维"+" / 计数 / 单条件 ✕ */
+.fs-or { color: var(--text-muted); margin: 0 3px; font-size: 11px; }
+.fs-plus { color: var(--text-secondary); margin: 0 5px; font-weight: 700; }
+.fs-count { color: var(--text-secondary); font-size: 12px; margin-left: 6px; }
+.fs-x {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 10px;
+  margin-left: 4px;
+  cursor: pointer;
+  padding: 0 2px;
+  vertical-align: middle;
+}
+.fs-x:hover { color: var(--red); }
+.fs-item { display: inline-flex; align-items: center; }
+
+/* 搜索框并入筛选区后，顶部对齐 */
+.filter-group .search-box { width: 100%; margin-bottom: 6px; }
+.filter-group .search-box input { width: 100%; }
