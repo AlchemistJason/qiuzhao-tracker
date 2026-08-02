@@ -973,3 +973,51 @@ mark.hl {
 @media (max-width: 768px) {
   .filter-panel { left: 0; right: 0; width: auto; }
 }
+
+/* ====== v5.5 分级目录筛选：树形折叠 ====== */
+
+.fp-group { margin-bottom: 2px; }
+.fp-group-head {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 700;
+  padding: 6px 8px;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background 0.15s;
+  text-align: left;
+}
+.fp-group-head:hover { background: var(--accent-glow); }
+.fp-caret {
+  display: inline-block;
+  font-size: 10px;
+  color: var(--text-muted);
+  transition: transform 0.15s;
+  width: 12px;
+  text-align: center;
+}
+.fp-group.collapsed .fp-caret { transform: rotate(-90deg); }
+.fp-group-count {
+  margin-left: auto;
+  color: var(--text-muted);
+  font-size: 11px;
+  background: var(--bg-secondary);
+  border-radius: 999px;
+  padding: 0 8px;
+}
+.fp-group-body {
+  padding: 2px 4px 6px 18px;
+  border-left: 1px solid var(--border);
+  margin-left: 14px;
+}
+.fp-group.collapsed .fp-group-body { display: none; }
+
+/* 树内叶子选项更紧凑 */
+.fp-group-body .fp-opts { display: flex; flex-direction: column; gap: 1px; }
+.fp-group-body .fp-opt { padding: 3px 6px; }
