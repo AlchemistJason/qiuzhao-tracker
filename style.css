@@ -1021,3 +1021,22 @@ mark.hl {
 /* 树内叶子选项更紧凑 */
 .fp-group-body .fp-opts { display: flex; flex-direction: column; gap: 1px; }
 .fp-group-body .fp-opt { padding: 3px 6px; }
+
+/* ====== v5.6 面板纵向分级修复（消除 3 列 grid 横向排列） ====== */
+
+/* 面板内所有选项区改为纵向单列（含行业分区），层级清晰 */
+.fp-opts {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.fp-opt { width: 100%; }
+
+/* 树形子项：完整纵向 + 左侧缩进线强化层级感 */
+.fp-group-body {
+  padding: 2px 4px 6px 16px;
+  border-left: 1px solid var(--border);
+  margin-left: 14px;
+}
+.fp-group-body .fp-opts { gap: 1px; }
+.fp-group-body .fp-opt { padding: 4px 6px; }
