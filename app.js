@@ -51,9 +51,16 @@ function validateCompanies() {
   return errors.length === 0;
 }
 
-let currentFilter = "all";
-let currentSearch = "";
-let currentLocation = "all";  // v4.5: 地点筛选
+// v5: 多条件筛选状态（同维 OR / 跨维 AND）
+const filters = {
+  status: new Set(),      // 状态多选：未投递/已投递/笔试中/面试中/Offer/已拒绝
+  starred: false,          // 收藏开关
+  locations: new Set(),    // 城市多选
+  industries: new Set(),   // 行业多选
+  jobs: new Set(),         // 岗位多选
+  keyword: ""              // 搜索词（空格分词 AND）
+};
+
 let currentSort = { field: null, asc: true };
 let currentView = (window.innerWidth <= 768) ? "card" : "table";
 let userState = null;
@@ -83,6 +90,53 @@ function debounce(fn, ms) {
     clearTimeout(timer);
     timer = setTimeout(fn, ms);
   };
+}
+
+// ============================================================
+// v5 筛选纯函数（可测试）
+// ============================================================
+
+// 关键词分词：空格分隔，过滤空词（v5 搜索 AND 匹配基础）
+function splitKeywords(kw) {
+  return String(kw || "").toLowerCase().split(/\s+/).filter(Boolean);
+}
+
+// 岗位词提取：取出现 ≥ min 次的岗位名（去重、按频次排序）
+function extractJobKeywords(companies, min = 2) {
+  const freq = {};
+  companies.forEach(c => (c.jobs || []).forEach(j => { freq[j] = (freq[j] || 0) + 1; }));
+  return Object.keys(freq)
+    .filter(j => freq[j] >= min)
+    .sort((a, b) => (freq[b] || 0) - (freq[a] || 0) || a.localeCompare(b, "zh-CN"));
+}
+
+// 多条件匹配：同维 OR（Set 任意命中）、跨维 AND（每维都满足）
+function matchFilters(c, f, getSt) {
+  const s = getSt(c.id);
+  if (f.starred && !s.starred) return false;
+  if (f.status.size && !f.status.has(s.status)) return false;
+  if (f.locations.size && !(c.location || "").split("/").some(l => f.locations.has(l.trim()))) return false;
+  if (f.industries.size && !c.category.some(cat => f.industries.has(cat))) return false;
+  if (f.jobs.size && !c.jobs.some(j => [...f.jobs].some(k => j.includes(k)))) return false;
+  if (f.keyword) {
+    const words = splitKeywords(f.keyword);
+    const haystack = `${c.name} ${c.jobs.join(" ")} ${c.location} ${c.category.join(" ")} ${c.note} ${c.refCode || ""} ${c.program || ""}`.toLowerCase();
+    if (!words.every(w => haystack.includes(w))) return false;  // 空格分词 AND
+  }
+  return true;
+}
+
+// 搜索命中高亮（先转义再包 <mark>，防 XSS）
+function highlightText(text, keyword) {
+  if (text == null) return "";
+  let out = escapeHtml(text);
+  if (!keyword) return out;
+  splitKeywords(keyword).forEach(w => {
+    if (!w) return;
+    const re = new RegExp("(" + w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + ")", "gi");
+    out = out.replace(re, "<mark class=\"hl\">$1</mark>");
+  });
+  return out;
 }
 
 // 链接协议白名单：只允许 http/https，防止 javascript: 等伪协议注入
@@ -254,29 +308,23 @@ function renderDashboard() {
   });
   const inProgress = stats.applied + stats.test + stats.interview;
 
-  // v4.5: 仪表盘卡片可点击筛选（data-filter 对应 currentFilter，点击高亮联动）
+  // v5: 仪表盘卡片可点击筛选（点击切换对应状态/收藏，active 由 filters 驱动）
   const dashCards = [
     { filter: "all", icon: "🏢", num: stats.total, label: "企业总数", cls: "" },
+    { filter: "未投递", icon: "⏳", num: stats.pending, label: "未投递", cls: "" },
     { filter: "已投递", icon: "📝", num: stats.applied, label: "已投递", cls: "applied" },
     { filter: "笔试中", icon: "✏️", num: stats.test, label: "笔试中", cls: "test" },
     { filter: "面试中", icon: "🎤", num: stats.interview, label: "面试中", cls: "interview" },
     { filter: "Offer", icon: "🎉", num: stats.offer, label: "Offer", cls: "offer" },
-    { filter: "starred", icon: "⭐", num: stats.starred, label: "已收藏", cls: "" },
-    { filter: "未投递", icon: "⏳", num: stats.pending, label: "未投递", cls: "" },
-    { filter: "active", icon: "🔄", num: inProgress, label: "进行中", cls: "" }
+    { filter: "已拒绝", icon: "🚫", num: stats.rejected, label: "已拒绝", cls: "" },
+    { filter: "starred", icon: "⭐", num: stats.starred, label: "已收藏", cls: "" }
   ];
   document.getElementById("dashboard").innerHTML = dashCards.map(d =>
-    `<div class="dash-card ${d.cls} ${currentFilter === d.filter ? "active" : ""}" data-filter="${d.filter}" role="button" tabindex="0" onclick="setFilter('${d.filter}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();setFilter('${d.filter}')}" title="点击筛选 ${d.label}">
+    `<div class="dash-card ${d.cls}" data-filter="${d.filter}" role="button" tabindex="0" onclick="toggleFilter(${d.filter === "starred" ? "'starred','1'" : `'status','${d.filter}'`})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleFilter(${d.filter === "starred" ? "'starred','1'" : `'status','${d.filter}'`})}" title="点击筛选 ${d.label}">
       <div class="dash-icon">${d.icon}</div><div class="dash-num">${d.num}</div><div class="dash-label">${d.label}</div>
     </div>`
   ).join("");
-
-  // 筛选器计数
-  document.getElementById("cAll").textContent = COMPANIES.length;
-  document.getElementById("cStar").textContent = stats.starred;
-  document.getElementById("cPending").textContent = stats.pending;
-  document.getElementById("cActive").textContent = inProgress;
-  document.getElementById("cDone").textContent = stats.offer + stats.rejected;
+  // 高亮由 refreshFilterUI 统一管理
 }
 
 // ============================================================
@@ -311,7 +359,7 @@ function buildCommonHTML(c) {
   const statusOptions = STATUS_OPTIONS.map(opt =>
     `<option value="${opt}" ${s.status === opt ? "selected" : ""}>${opt}</option>`
   ).join("");
-  const jobTags = c.jobs.map(j => `<span class="job-tag">${escapeHtml(j)}</span>`).join("");
+  const jobTags = c.jobs.map(j => `<span class="job-tag">${highlightText(j, filters.keyword)}</span>`).join("");
   const programTag = c.program ? `<span class="program-tag">${escapeHtml(c.program)}</span>` : "";
   const refHTML = c.refCode
     ? `<span class="ref-code" onclick="copyCode(this,'${c.id}')" title="点击复制">${escapeHtml(c.refCode)}</span>`
@@ -340,10 +388,10 @@ function renderTable(data) {
     return `
     <tr class="${starredClass}">
       <td><button class="star-btn ${s.starred ? "active" : ""}" onclick="toggleStar('${c.id}')" data-star-id="${c.id}" aria-pressed="${s.starred}" aria-label="收藏 ${escapeHtml(c.name)}">${starIcon}</button></td>
-      <td><strong>${escapeHtml(c.name)}</strong></td>
+      <td><strong>${highlightText(c.name, filters.keyword)}</strong></td>
       <td><span class="type-tag ${escapeHtml(c.type)}">${escapeHtml(c.type)}</span>${programTag}</td>
       <td><div class="job-tags">${jobTags}</div></td>
-      <td class="location">${escapeHtml(c.location) || "—"}</td>
+      <td class="location">${highlightText(c.location, filters.keyword) || "—"}</td>
       <td>${deadlineHTML(c.deadline)}</td>
       <td>${refHTML}</td>
       <td>
@@ -379,12 +427,12 @@ function renderCards(data) {
     return `
     <div class="job-card ${starredClass}">
       <div class="card-header">
-        <h3>${escapeHtml(c.name)}</h3>
+        <h3>${highlightText(c.name, filters.keyword)}</h3>
         <button class="star-btn ${s.starred ? "active" : ""}" onclick="toggleStar('${c.id}')" data-star-id="${c.id}" aria-pressed="${s.starred}" aria-label="收藏 ${escapeHtml(c.name)}">${starIcon}</button>
       </div>
       <div class="card-body">
         <span class="type-tag ${escapeHtml(c.type)}">${escapeHtml(c.type)}</span>${programTag}
-        ${c.location ? `<span style="margin-left:6px;font-size:12px;color:var(--text-secondary)">📍 ${escapeHtml(c.location)}</span>` : ""}
+        ${c.location ? `<span style="margin-left:6px;font-size:12px;color:var(--text-secondary)">📍 ${highlightText(c.location, filters.keyword)}</span>` : ""}
         <span style="margin-left:6px">${deadlineHTML(c.deadline)}</span>
       </div>
       <div class="card-jobs">${jobTags}</div>
@@ -404,31 +452,10 @@ function renderCards(data) {
 // 筛选 + 搜索 + 排序
 // ============================================================
 function applyFilters() {
-  let filtered = [...COMPANIES];
+  // v5: 多条件筛选（同维 OR / 跨维 AND），纯函数 matchFilters 驱动
+  let filtered = COMPANIES.filter(c => matchFilters(c, filters, getState));
 
-  if (currentFilter === "starred") filtered = filtered.filter(c => getState(c.id).starred);
-  else if (currentFilter === "pending") filtered = filtered.filter(c => getState(c.id).status === "未投递");
-  else if (currentFilter === "active") filtered = filtered.filter(c => ACTIVE_STATUSES.includes(getState(c.id).status));
-  else if (currentFilter === "done") filtered = filtered.filter(c => DONE_STATUSES.includes(getState(c.id).status));
-  else if (currentFilter === "未投递" || currentFilter === "已投递" || currentFilter === "笔试中" || currentFilter === "面试中" || currentFilter === "Offer" || currentFilter === "已拒绝")
-    filtered = filtered.filter(c => getState(c.id).status === currentFilter);  // v4.5: 仪表盘点击的状态筛选
-  else if (currentFilter !== "all") filtered = filtered.filter(c => c.category.includes(currentFilter));
-
-  // v4.5: 地点筛选（组合字符串按 "/" 拆分精确匹配城市）
-  if (currentLocation !== "all") {
-    filtered = filtered.filter(c =>
-      (c.location || "").split("/").some(l => l.trim() === currentLocation)
-    );
-  }
-
-  if (currentSearch) {
-    filtered = filtered.filter(c => {
-      const searchStr = `${c.name} ${c.jobs.join(" ")} ${c.location} ${c.category.join(" ")} ${c.note} ${c.refCode || ""} ${c.program || ""}`.toLowerCase();
-      return searchStr.includes(currentSearch);
-    });
-  }
-
-  // 排序：字段为主（纯净排序，收藏不参与排序——避免点收藏后行跳变）
+  // 排序：字段为主（纯净）；默认收藏优先 → 批次类型（收藏局部更新，无跳行问题）
   if (currentSort.field) {
     filtered.sort((a, b) => {
       let valA, valB;
@@ -446,8 +473,12 @@ function applyFilters() {
       return currentSort.asc ? cmp : -cmp;
     });
   } else {
-    // 默认排序：按批次类型（稳定，不随收藏状态变化，点收藏不跳行）
-    filtered.sort((a, b) => (TYPE_ORDER[a.type] ?? 9) - (TYPE_ORDER[b.type] ?? 9));
+    filtered.sort((a, b) => {
+      const sa = getState(a.id).starred ? 1 : 0;
+      const sb = getState(b.id).starred ? 1 : 0;
+      if (sb !== sa) return sb - sa;
+      return (TYPE_ORDER[a.type] ?? 9) - (TYPE_ORDER[b.type] ?? 9);
+    });
   }
 
   if (currentView === "table") renderTable(filtered);
@@ -689,18 +720,10 @@ function copyCompany(el, id) {
 }
 
 // ============================================================
-// 统一筛选入口（仪表盘卡片 / 筛选按钮共用，v4.5）
+// v5: 多条件筛选入口 + chips 渲染 + 已选条件条
 // ============================================================
-function setFilter(value) {
-  currentFilter = value;
-  // 同步筛选按钮 active
-  document.querySelectorAll("#filterGroup .filter-btn").forEach(b => b.classList.toggle("active", b.dataset.filter === value));
-  // 同步仪表盘卡片高亮
-  document.querySelectorAll(".dash-card[data-filter]").forEach(c => c.classList.toggle("active", c.dataset.filter === value));
-  applyFilters();
-}
 
-// 地点筛选：城市从数据提取（按出现频次排序），生成下拉选项（纯函数可测）
+// 城市提取：按出现频次排序（纯函数可测）
 function extractCities(companies) {
   const freq = {};
   companies.forEach(c => (c.location || "").split("/").forEach(l => {
@@ -710,52 +733,100 @@ function extractCities(companies) {
   return Object.keys(freq).sort((a, b) => (freq[b] || 0) - (freq[a] || 0) || a.localeCompare(b, "zh-CN"));
 }
 
-function initLocationFilter() {
-  const sel = document.getElementById("locFilter");
-  if (!sel) return;
-  extractCities(COMPANIES).forEach(city => {
-    const opt = document.createElement("option");
-    opt.value = city;
-    opt.textContent = "📍 " + city;
-    sel.appendChild(opt);
-  });
-  sel.addEventListener("change", function() {
-    currentLocation = this.value;
-    applyFilters();
-  });
+// 通用筛选切换：dim = status | starred | locations | industries | jobs
+function toggleFilter(dim, value) {
+  if (dim === "starred") filters.starred = !filters.starred;
+  else {
+    const set = filters[dim];
+    if (!set) return;
+    if (set.has(value)) set.delete(value); else set.add(value);
+  }
+  refreshFilterUI();
+  applyFilters();
 }
 
-// ============================================================
-// 动态行业分类筛选按钮（从数据自动生成）
-// ============================================================
-function initCategoryFilters() {
-  const container = document.getElementById("catFilters");
-  const cats = [...new Set(COMPANIES.flatMap(c => c.category))].filter(c => c !== "活动");
-  container.innerHTML = cats.map(cat => {
-    const count = COMPANIES.filter(c => c.category.includes(cat)).length;
-    return `<button class="filter-btn" data-filter="${escapeHtml(cat)}">${escapeHtml(cat)}<span class="count-badge">${count}</span></button>`;
-  }).join("");
-  // 绑定点击（复用 filter-btn 事件：通过事件委托绑定在 filterGroup 上）
-  container.querySelectorAll(".filter-btn").forEach(btn => {
-    btn.addEventListener("click", function() {
-      setFilter(this.dataset.filter);
-    });
+function clearFilters() {
+  filters.status.clear();
+  filters.starred = false;
+  filters.locations.clear();
+  filters.industries.clear();
+  filters.jobs.clear();
+  filters.keyword = "";
+  const input = document.getElementById("searchInput");
+  if (input) input.value = "";
+  refreshFilterUI();
+  applyFilters();
+}
+
+// 刷新所有筛选 UI 的选中态 + 已选条件条
+function refreshFilterUI() {
+  // chips 选中态
+  document.querySelectorAll(".chip[data-dim]").forEach(ch => {
+    const dim = ch.dataset.dim;
+    const val = ch.dataset.value;
+    const active = dim === "starred" ? filters.starred : filters[dim].has(val);
+    ch.classList.toggle("active", active);
   });
+  // 仪表盘卡片高亮（状态维度 + 收藏 + 全部）
+  document.querySelectorAll(".dash-card[data-filter]").forEach(c => {
+    const f = c.dataset.filter;
+    let active = false;
+    if (f === "all") active = filters.status.size === 0 && !filters.starred && filters.locations.size === 0 && filters.industries.size === 0 && filters.jobs.size === 0 && !filters.keyword;
+    else if (f === "starred") active = filters.starred;
+    else active = filters.status.has(f);
+    c.classList.toggle("active", active);
+  });
+  renderFilterSummary();
+}
+
+// 已选条件条：汇总所有激活条件 + 一键清除
+function renderFilterSummary() {
+  const bar = document.getElementById("filterSummary");
+  const parts = [];
+  if (filters.starred) parts.push("收藏");
+  filters.status.forEach(v => parts.push(v));
+  filters.locations.forEach(v => parts.push(v));
+  filters.industries.forEach(v => parts.push(v));
+  filters.jobs.forEach(v => parts.push(v));
+  if (filters.keyword) parts.push(`搜索“${filters.keyword}”`);
+  if (parts.length === 0) { bar.classList.add("hidden"); bar.innerHTML = ""; return; }
+  bar.classList.remove("hidden");
+  bar.innerHTML = `已选：${parts.map(p => `<span class="fs-item">${escapeHtml(p)}</span>`).join("<span class='fs-x'>×</span>")} <button class="fs-clear" onclick="clearFilters()">清除全部</button>`;
+}
+
+// 渲染四组筛选 chips（状态/地点/行业/岗位）
+function renderFilterChips() {
+  // 状态组
+  document.getElementById("statusChips").innerHTML = STATUS_OPTIONS.map(s =>
+    `<button class="chip" data-dim="status" data-value="${escapeHtml(s)}" onclick="toggleFilter('status','${escapeHtml(s)}')">${escapeHtml(s)}</button>`
+  ).join("") +
+  `<button class="chip ${filters.starred ? "active" : ""}" data-dim="starred" data-value="1" onclick="toggleFilter('starred','1')">⭐ 收藏</button>`;
+
+  // 地点组
+  document.getElementById("locChips").innerHTML = extractCities(COMPANIES).map(city =>
+    `<button class="chip" data-dim="locations" data-value="${escapeHtml(city)}" onclick="toggleFilter('locations','${escapeHtml(city)}')">${escapeHtml(city)}</button>`
+  ).join("");
+
+  // 行业组（活动隐藏）
+  document.getElementById("indChips").innerHTML = [...new Set(COMPANIES.flatMap(c => c.category))].filter(c => c !== "活动").map(cat =>
+    `<button class="chip" data-dim="industries" data-value="${escapeHtml(cat)}" onclick="toggleFilter('industries','${escapeHtml(cat)}')">${escapeHtml(cat)}</button>`
+  ).join("");
+
+  // 岗位组（高频词）
+  const jobs = extractJobKeywords(COMPANIES, 2);
+  document.getElementById("jobChips").innerHTML = jobs.map(j =>
+    `<button class="chip" data-dim="jobs" data-value="${escapeHtml(j)}" onclick="toggleFilter('jobs','${escapeHtml(j)}')">${escapeHtml(j)}</button>`
+  ).join("");
 }
 
 // ============================================================
 // 事件绑定
 // ============================================================
 document.getElementById("searchInput").addEventListener("input", debounce(function(e) {
-  currentSearch = e.target.value.toLowerCase();
+  filters.keyword = e.target.value.trim();
+  refreshFilterUI();
   applyFilters();
 }, 200));
-
-document.querySelectorAll(".filter-btn").forEach(btn => {
-  btn.addEventListener("click", function() {
-    setFilter(this.dataset.filter);
-  });
-});
 
 document.querySelectorAll("thead th[data-sort]").forEach(th => {
   th.addEventListener("click", function() {
@@ -773,10 +844,10 @@ function switchView(view) {
   currentView = view;
   document.getElementById("tableView").classList.toggle("hidden", view !== "table");
   document.getElementById("cardView").classList.toggle("hidden", view !== "card");
-  document.getElementById("kanbanView").classList.toggle("hidden", view !== "kanban");
+  const kb = document.getElementById("kanbanView");
+  if (kb) kb.classList.toggle("hidden", view !== "kanban");  // 看板入口已移除（v4.5），代码预留
   document.getElementById("tableViewBtn").classList.toggle("active", view === "table");
   document.getElementById("cardViewBtn").classList.toggle("active", view === "card");
-  document.getElementById("kanbanViewBtn").classList.toggle("active", view === "kanban");
   applyFilters();
 }
 
@@ -798,7 +869,7 @@ function toggleStar(id) {
     btn.setAttribute("aria-pressed", String(st.starred));
   });
   // 特例：在"收藏"筛选下取消收藏 → 该行应消失，需全量刷新
-  if (currentFilter === "starred" && !st.starred) {
+  if (filters.starred && !st.starred) {
     applyFilters();
   }
 }
@@ -1144,8 +1215,8 @@ function resetData() {
 userState = loadState();
 renderDashboard();
 validateCompanies();   // 数据完整性校验（A3）
-initCategoryFilters(); // 动态行业分类筛选按钮
-initLocationFilter();  // 地点筛选下拉
+renderFilterChips();   // v5: 四组筛选 chips（状态/地点/行业/岗位）
+refreshFilterUI();     // v5: 同步所有筛选选中态 + 已选条件条
 renderTodo();          // 今日待办聚合
 renderWeekly();        // 本周动态统计
 switchView(currentView); // 同步初始视图（修复移动端首屏显示空表格的问题）
