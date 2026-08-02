@@ -104,13 +104,14 @@ function parseLocalDate(str) {
 }
 
 // ============================================================
-// 用户状态层 v2 —— 防破坏核心
-// 结构: { version: 2, companies: { <id>: {status, starred, note} } }
+// 用户状态层 v2.1 —— 防破坏核心
+// 结构: { version: 2, companies: { <id>: {status, starred, note, lastUpdate} } }
+// v2.1 新增: lastUpdate 时间戳（状态变更时间，供周报/统计用；老数据为 null，向后兼容）
 // ============================================================
 function defaultState() {
   const companies = {};
   COMPANIES.forEach(c => {
-    companies[c.id] = { status: "未投递", starred: false, note: "" };
+    companies[c.id] = { status: "未投递", starred: false, note: "", lastUpdate: null };
   });
   return { version: 2, companies };
 }
@@ -222,9 +223,16 @@ function saveState() {
 
 function getState(id) {
   if (!userState.companies[id]) {
-    userState.companies[id] = { status: "未投递", starred: false, note: "" };
+    userState.companies[id] = { status: "未投递", starred: false, note: "", lastUpdate: null };
   }
+  // 兼容老数据：缺 lastUpdate 字段补 null
+  if (userState.companies[id].lastUpdate === undefined) userState.companies[id].lastUpdate = null;
   return userState.companies[id];
+}
+
+// 记录状态变更时间戳（v2.1）
+function touchState(id) {
+  getState(id).lastUpdate = Date.now();
 }
 
 // ============================================================
@@ -262,9 +270,6 @@ function renderDashboard() {
   document.getElementById("cPending").textContent = stats.pending;
   document.getElementById("cActive").textContent = inProgress;
   document.getElementById("cDone").textContent = stats.offer + stats.rejected;
-  document.getElementById("cGame").textContent = COMPANIES.filter(c => c.category.includes("游戏")).length;
-  document.getElementById("cAI").textContent = COMPANIES.filter(c => c.category.includes("AI")).length;
-  document.getElementById("cAuto").textContent = COMPANIES.filter(c => c.category.includes("智能驾驶")).length;
 }
 
 // ============================================================
@@ -334,7 +339,12 @@ function renderTable(data) {
       <td class="location">${escapeHtml(c.location) || "—"}</td>
       <td>${deadlineHTML(c.deadline)}</td>
       <td>${refHTML}</td>
-      <td>${c.link ? `<a href="${safeLink(c.link)}" target="_blank" rel="noopener" class="link-btn">投递</a>` : "—"}</td>
+      <td>
+        <div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap">
+          ${c.link ? `<a href="${safeLink(c.link)}" target="_blank" rel="noopener" class="link-btn">投递</a>` : ""}
+          <button class="copy-mini" onclick="copyCompany(this,'${c.id}')" title="复制整条投递信息" aria-label="复制整条信息">📋</button>
+        </div>
+      </td>
       <td><select class="status-select" data-status="${escapeHtml(s.status)}" aria-label="投递状态" onchange="setStatus('${c.id}', this.value, this)">${statusOptions}</select></td>
       <td><input type="text" class="note-input" placeholder="点击添加..." aria-label="个人备注" value="${escapeHtml(s.note)}" onblur="setNote('${c.id}', this.value)"></td>
     </tr>`;
@@ -375,6 +385,7 @@ function renderCards(data) {
       <div class="card-footer">
         ${refHTML}
         ${c.link ? `<a href="${safeLink(c.link)}" target="_blank" rel="noopener" class="link-btn">投递</a>` : ""}
+        <button class="copy-mini" onclick="copyCompany(this,'${c.id}')" title="复制整条投递信息" aria-label="复制整条信息">📋</button>
         <select class="status-select" data-status="${escapeHtml(s.status)}" aria-label="投递状态" onchange="setStatus('${c.id}', this.value, this)">${statusOptions}</select>
       </div>
       <input type="text" class="note-input" style="margin-top:8px" placeholder="个人备注..." aria-label="个人备注" value="${escapeHtml(s.note)}" onblur="setNote('${c.id}', this.value)">
@@ -424,7 +435,241 @@ function applyFilters() {
   }
 
   if (currentView === "table") renderTable(filtered);
+  else if (currentView === "kanban") renderKanban(filtered);
   else renderCards(filtered);
+}
+
+// ============================================================
+// 看板视图（按状态分组，三视图之一）
+// ============================================================
+const KANBAN_COLS = [
+  { status: "未投递", label: "待投递" },
+  { status: "已投递", label: "已投递" },
+  { status: "笔试中", label: "笔试中" },
+  { status: "面试中", label: "面试中" },
+  { status: "Offer", label: "Offer" },
+  { status: "已拒绝", label: "已拒绝" }
+];
+
+// 纯函数：按状态分组（可测试）
+function groupByStatus(data) {
+  const groups = {};
+  KANBAN_COLS.forEach(col => { groups[col.status] = []; });
+  data.forEach(c => {
+    const st = getState(c.id).status;
+    if (!groups[st]) groups[st] = [];
+    groups[st].push(c);
+  });
+  return groups;
+}
+
+function renderKanban(data) {
+  const container = document.getElementById("kanbanView");
+  const noResults = document.getElementById("noResults");
+  if (data.length === 0) {
+    container.innerHTML = "";
+    noResults.style.display = "block";
+    return;
+  }
+  noResults.style.display = "none";
+
+  const groups = groupByStatus(data);
+  container.innerHTML = KANBAN_COLS.map(col => {
+    const items = groups[col.status] || [];
+    const cards = items.map(c => {
+      const s = getState(c.id);
+      const statusOptions = STATUS_OPTIONS.map(opt =>
+        `<option value="${opt}" ${s.status === opt ? "selected" : ""}>${opt}</option>`
+      ).join("");
+      return `
+      <div class="kanban-card ${s.starred ? "favorited" : ""}">
+        <div class="kanban-card-head">
+          <strong>${escapeHtml(c.name)}</strong>
+          <button class="star-btn ${s.starred ? "active" : ""}" onclick="toggleStar('${c.id}')" aria-pressed="${s.starred}" aria-label="收藏 ${escapeHtml(c.name)}">${s.starred ? "⭐" : "☆"}</button>
+        </div>
+        <div class="kanban-card-meta">
+          ${deadlineHTML(c.deadline)}
+          ${c.location ? `<span>📍 ${escapeHtml(c.location)}</span>` : ""}
+        </div>
+        <div class="kanban-card-actions">
+          ${c.refCode ? `<span class="ref-code" onclick="copyCode(this,'${c.id}')">${escapeHtml(c.refCode)}</span>` : ""}
+          ${c.link ? `<a href="${safeLink(c.link)}" target="_blank" rel="noopener" class="link-btn">投递</a>` : ""}
+        </div>
+        <select class="status-select" data-status="${escapeHtml(s.status)}" aria-label="投递状态" onchange="setStatus('${c.id}', this.value, this)">${statusOptions}</select>
+      </div>`;
+    }).join("");
+    return `
+    <div class="kanban-col">
+      <div class="kanban-col-head" data-status="${col.status}">
+        <span>${col.label}</span>
+        <span class="kanban-count">${items.length}</span>
+      </div>
+      <div class="kanban-col-body">${cards || `<div class="kanban-empty">空</div>`}</div>
+    </div>`;
+  }).join("");
+}
+
+// ============================================================
+// 今日待办（聚合截止日期紧迫 + 进行中事项）
+// ============================================================
+function getTodoItems() {
+  const now = new Date(); now.setHours(0, 0, 0, 0);
+  const todo = [];
+  COMPANIES.forEach(c => {
+    const s = getState(c.id);
+    if (DONE_STATUSES.includes(s.status)) return; // 已结束的不提醒
+    if (c.deadline) {
+      const dl = parseLocalDate(c.deadline);
+      if (dl) {
+        dl.setHours(0, 0, 0, 0);
+        const days = Math.round((dl - now) / 86400000);
+        if (days >= 0 && days <= 3) {
+          todo.push({ c, type: "deadline", days, label: days === 0 ? "今天截止" : days + "天后截止" });
+        }
+      }
+    }
+    if (s.status === "笔试中" || s.status === "面试中") {
+      todo.push({ c, type: "active", days: null, label: s.status === "笔试中" ? "笔试进行中" : "面试进行中" });
+    }
+  });
+  return todo;
+}
+
+function renderTodo() {
+  const bar = document.getElementById("todoBar");
+  const todo = getTodoItems();
+  if (todo.length === 0) { bar.classList.add("hidden"); bar.innerHTML = ""; return; }
+  bar.classList.remove("hidden");
+  const urgent = todo.filter(t => t.type === "deadline" && t.days <= 1);
+  const items = todo.slice(0, 6).map(t =>
+    `<span class="todo-item ${t.type === "deadline" && t.days <= 1 ? "urgent" : ""}">${escapeHtml(t.c.name)} · ${t.label}</span>`
+  ).join("");
+  bar.innerHTML = `⏰ <strong>今日待办 ${todo.length} 项</strong>${urgent.length ? ` <span class="todo-urgent-tag">${urgent.length} 项紧急</span>` : ""}：${items}`;
+}
+
+// ============================================================
+// 本周动态（基于 lastUpdate 时间戳，v2.1）
+// ============================================================
+const WEEK_MS = 7 * 24 * 3600 * 1000;
+
+// 纯函数：统计最近 7 天动作（可测试）
+function getWeeklyStats(state) {
+  const stats = { touched: 0, newApplied: 0, newTest: 0, newInterview: 0, newOffer: 0 };
+  const cutoff = Date.now() - WEEK_MS;
+  Object.keys(state.companies).forEach(id => {
+    const st = state.companies[id] || {};
+    if (!st.lastUpdate || st.lastUpdate < cutoff) return;
+    stats.touched++;
+    if (st.status === "已投递") stats.newApplied++;
+    else if (st.status === "笔试中") stats.newTest++;
+    else if (st.status === "面试中") stats.newInterview++;
+    else if (st.status === "Offer") stats.newOffer++;
+  });
+  return stats;
+}
+
+function renderWeekly() {
+  const bar = document.getElementById("weeklyBar");
+  const stats = getWeeklyStats(userState);
+  if (stats.touched === 0) { bar.classList.add("hidden"); bar.innerHTML = ""; return; }
+  bar.classList.remove("hidden");
+  bar.innerHTML = `📊 <strong>本周动态</strong>：更新 ${stats.touched} 家 · 新投递 ${stats.newApplied} · 进笔试 ${stats.newTest} · 进面试 ${stats.newInterview} · 拿 Offer ${stats.newOffer}`;
+}
+
+// ============================================================
+// 到期提醒（页面打开时，每天一次防打扰）
+// ============================================================
+const ALERT_KEY = "qiuzhao2027.lastAlert";
+
+// 纯函数：是否应提醒（同一天只提醒一次，可测试）
+function shouldAlertToday(lastAlertDate, todayStr) {
+  return lastAlertDate !== todayStr;
+}
+
+function checkDeadlineAlert() {
+  try {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const todayStr = today.toISOString().slice(0, 10);
+    const last = localStorage.getItem(ALERT_KEY);
+    if (!shouldAlertToday(last, todayStr)) return;
+
+    const soon = [];
+    COMPANIES.forEach(c => {
+      const s = getState(c.id);
+      if (DONE_STATUSES.includes(s.status) || !c.deadline) return;
+      const dl = parseLocalDate(c.deadline);
+      if (!dl) return;
+      dl.setHours(0, 0, 0, 0);
+      const days = Math.round((dl - today) / 86400000);
+      if (days >= 0 && days <= 3) soon.push({ c, days });
+    });
+
+    if (soon.length > 0) {
+      const list = soon.map(x => `${x.c.name}(${x.days === 0 ? "今天" : x.days + "天"})`).join("、");
+      showToast(`⚠️ ${soon.length} 家公司即将截止：${list}`, 5000);
+    }
+    localStorage.setItem(ALERT_KEY, todayStr);
+  } catch(e) { /* 隐私模式等场景静默 */ }
+}
+
+// ============================================================
+// 一键复制整条投递信息
+// ============================================================
+function buildCompanyInfoText(id) {
+  const c = COMPANIES.find(x => x.id === id);
+  if (!c) return "";
+  const s = getState(c.id);
+  const lines = [
+    `【${c.name}】`,
+    `批次：${c.type}${c.program ? " · " + c.program : ""}`,
+    `岗位：${c.jobs.join("、")}`,
+    c.location ? `地点：${c.location}` : null,
+    c.refCode ? `内推码：${c.refCode}` : null,
+    c.link ? `链接：${c.link}` : null,
+    s.status !== "未投递" ? `我的状态：${s.status}` : null
+  ].filter(Boolean);
+  return lines.join("\n");
+}
+
+function copyCompany(el, id) {
+  const text = buildCompanyInfoText(id);
+  if (!text) return;
+  navigator.clipboard.writeText(text).then(() => {
+    el.classList.add("copied");
+    const orig = el.textContent;
+    el.textContent = "✓ 已复制";
+    setTimeout(() => { el.classList.remove("copied"); el.textContent = orig; }, 1500);
+  }).catch(() => {
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand("copy");
+    document.body.removeChild(ta);
+    showToast("✅ 整条信息已复制");
+  });
+}
+
+// ============================================================
+// 动态行业分类筛选按钮（从数据自动生成）
+// ============================================================
+function initCategoryFilters() {
+  const container = document.getElementById("catFilters");
+  const cats = [...new Set(COMPANIES.flatMap(c => c.category))].filter(c => c !== "活动");
+  container.innerHTML = cats.map(cat => {
+    const count = COMPANIES.filter(c => c.category.includes(cat)).length;
+    return `<button class="filter-btn" data-filter="${escapeHtml(cat)}">${escapeHtml(cat)}<span class="count-badge">${count}</span></button>`;
+  }).join("");
+  // 绑定点击（复用 filter-btn 事件：通过事件委托绑定在 filterGroup 上）
+  container.querySelectorAll(".filter-btn").forEach(btn => {
+    btn.addEventListener("click", function() {
+      document.querySelectorAll("#filterGroup .filter-btn").forEach(b => b.classList.remove("active"));
+      this.classList.add("active");
+      currentFilter = this.dataset.filter;
+      applyFilters();
+    });
+  });
 }
 
 // ============================================================
@@ -460,8 +705,10 @@ function switchView(view) {
   currentView = view;
   document.getElementById("tableView").classList.toggle("hidden", view !== "table");
   document.getElementById("cardView").classList.toggle("hidden", view !== "card");
+  document.getElementById("kanbanView").classList.toggle("hidden", view !== "kanban");
   document.getElementById("tableViewBtn").classList.toggle("active", view === "table");
   document.getElementById("cardViewBtn").classList.toggle("active", view === "card");
+  document.getElementById("kanbanViewBtn").classList.toggle("active", view === "kanban");
   applyFilters();
 }
 
@@ -470,6 +717,7 @@ function switchView(view) {
 // ============================================================
 function toggleStar(id) {
   getState(id).starred = !getState(id).starred;
+  touchState(id);
   saveState();
   renderDashboard();
   applyFilters();
@@ -477,6 +725,7 @@ function toggleStar(id) {
 
 function setStatus(id, status, el) {
   getState(id).status = status;
+  touchState(id);
   el.setAttribute("data-status", status);
   saveState();
   renderDashboard();
@@ -484,6 +733,7 @@ function setStatus(id, status, el) {
 
 function setNote(id, note) {
   getState(id).note = note;
+  touchState(id);
   saveState();
 }
 
@@ -754,4 +1004,8 @@ function resetData() {
 userState = loadState();
 renderDashboard();
 validateCompanies();   // 数据完整性校验（A3）
+initCategoryFilters(); // 动态行业分类筛选按钮
+renderTodo();          // 今日待办聚合
+renderWeekly();        // 本周动态统计
 switchView(currentView); // 同步初始视图（修复移动端首屏显示空表格的问题）
+checkDeadlineAlert();  // 页面打开时的截止提醒（每天一次）
