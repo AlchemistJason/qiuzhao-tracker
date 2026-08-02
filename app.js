@@ -401,11 +401,9 @@ function applyFilters() {
     });
   }
 
-  // 排序：字段为主，收藏作为同值 tie-breaker（收藏优先）
+  // 排序：字段为主（纯净排序，收藏不参与排序——避免点收藏后行跳变）
   if (currentSort.field) {
     filtered.sort((a, b) => {
-      const sa = getState(a.id).starred ? 1 : 0;
-      const sb = getState(b.id).starred ? 1 : 0;
       let valA, valB;
       switch (currentSort.field) {
         case "company": valA = a.name; valB = b.name; break;
@@ -418,18 +416,11 @@ function applyFilters() {
       let cmp;
       if (typeof valA === "string") cmp = valA.localeCompare(valB, "zh-CN");
       else cmp = valA - valB;
-      if (cmp !== 0) return currentSort.asc ? cmp : -cmp;
-      // 同值 → 收藏优先
-      return sb - sa;
+      return currentSort.asc ? cmp : -cmp;
     });
   } else {
-    // 默认排序：收藏优先 + 批次类型
-    filtered.sort((a, b) => {
-      const sa = getState(a.id).starred ? 1 : 0;
-      const sb = getState(b.id).starred ? 1 : 0;
-      if (sb !== sa) return sb - sa;
-      return (TYPE_ORDER[a.type] ?? 9) - (TYPE_ORDER[b.type] ?? 9);
-    });
+    // 默认排序：按批次类型（稳定，不随收藏状态变化，点收藏不跳行）
+    filtered.sort((a, b) => (TYPE_ORDER[a.type] ?? 9) - (TYPE_ORDER[b.type] ?? 9));
   }
 
   if (currentView === "table") renderTable(filtered);
