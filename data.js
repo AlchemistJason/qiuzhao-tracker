@@ -10,7 +10,7 @@
  *   deadline : 截止日期 "YYYY-MM-DD"（可选，用于倒计时）
  * ============================================================ */
 
-window.DATA_VERSION = 3;
+window.DATA_VERSION = 4;
 
 window.COMPANIES = [
   {
@@ -31,7 +31,7 @@ window.COMPANIES = [
   },
   {
     id: "cmbnt", name: "招银网络科技", type: "秋招",
-    category: ["金融科技"],
+    category: ["互联网科技"],
     jobs: ["后端开发工程师", "前端开发工程师", "算法工程师", "测试技术开发工程师", "运维研发工程师"],
     location: "深圳/杭州/成都", refCode: "COALPY",
     link: "https://cmbnt.cmbchina.com/pages/bindInvited.html?qrCode=D52CE83B64444EB7AB40B84854BCCA39&rand=1784281202267&blNtCode=COALPY",
@@ -47,7 +47,7 @@ window.COMPANIES = [
   },
   {
     id: "itek", name: "埃科光电", type: "秋招",
-    category: ["硬件制造"],
+    category: ["互联网科技"],
     jobs: ["技术岗"],
     location: "合肥", refCode: "XDYXF047",
     link: "http://career.i-tek.cn/",
@@ -79,7 +79,7 @@ window.COMPANIES = [
   },
   {
     id: "oppo", name: "OPPO", type: "秋招",
-    category: ["消费电子"],
+    category: ["互联网科技"],
     jobs: ["算法", "软件", "硬件", "营销", "产品等八大类100+岗位"],
     location: "深圳/东莞", refCode: "X1757111",
     link: "https://careers.oppo.com/university/oppo/campus/post?shareId=16923",
@@ -119,7 +119,7 @@ window.COMPANIES = [
   },
   {
     id: "xunlei", name: "迅雷", type: "秋招", program: "产品星计划",
-    category: ["互联网"],
+    category: ["互联网科技"],
     jobs: ["X-PEP产品星计划", "服务器开发工程师"],
     location: "深圳", refCode: "DSZAne8X",
     link: "https://app.mokahr.com/m/campus_apply/xunlei/26600?recommendCode=DSZAne8X#/jobs",
@@ -127,7 +127,7 @@ window.COMPANIES = [
   },
   {
     id: "weride", name: "文远知行", type: "秋招",
-    category: ["智能驾驶", "AI"],
+    category: ["智能驾驶"],
     jobs: ["算法类", "开发类", "硬件类", "测试开发类"],
     location: "广州/北京/上海/深圳", refCode: "DSGpxSZV",
     link: "https://app.mokahr.com/m/campus_apply/jingchi/2137?recommendCode=DSGpxSZV#/jobs",
@@ -159,7 +159,7 @@ window.COMPANIES = [
   },
   {
     id: "inovance", name: "汇川技术", type: "秋招",
-    category: ["工业自动化"],
+    category: ["互联网科技"],
     jobs: ["技术类", "技能类", "营销类", "供应链管理类", "质量类", "其他职能类"],
     location: "深圳/苏州", refCode: "ADE3CAE",
     link: "https://recruit.inovance.com/#/jobs?ref=ADE3CAE",
@@ -167,7 +167,7 @@ window.COMPANIES = [
   },
   {
     id: "pdd", name: "拼多多", type: "提前批",
-    category: ["互联网"],
+    category: ["互联网科技"],
     jobs: ["技术类", "运营类", "职能类", "市场营销类", "设计类", "视觉类"],
     location: "上海", refCode: "CXX5XFMHAH",
     link: "https://careers.pddglobalhr.com/campus/grad?t=CXX5XFMHAH",
@@ -271,7 +271,7 @@ window.COMPANIES = [
   },
   {
     id: "keyence", name: "基恩士", type: "秋招",
-    category: ["工业自动化"],
+    category: ["互联网科技"],
     jobs: ["销售工程师", "销售"],
     location: "全国多地", refCode: "EVKJ10",
     link: "https://keyence.zhiye.com/campus/jobs?shareId=f4c8fe60-3f51-4443-8bd2-081d84b83e89&shareSource=2",
@@ -279,7 +279,7 @@ window.COMPANIES = [
   },
   {
     id: "insta360", name: "影石Insta360", type: "秋招",
-    category: ["消费电子"],
+    category: ["互联网科技"],
     jobs: ["技术", "美术与设计", "产品", "综合", "业务", "销售", "供应链"],
     location: "深圳", refCode: "HMMUJJQ",
     link: "https://arashivision.jobs.feishu.cn/campus/m",
@@ -287,7 +287,7 @@ window.COMPANIES = [
   },
   {
     id: "awinic", name: "艾为电子", type: "秋招",
-    category: ["半导体"],
+    category: ["互联网科技"],
     jobs: ["大量技术岗(数模混合)"],
     location: "上海", refCode: null,
     link: "https://neitui.italent.cn/awinic/sharejobs?shareId=fb661a70-3c2d-473e-9a2d-69f622bd7857&language=zh_CN",
@@ -311,7 +311,7 @@ window.COMPANIES = [
   },
   {
     id: "envision", name: "远景能源", type: "秋招",
-    category: ["新能源"],
+    category: ["互联网科技"],
     jobs: ["电气", "机械", "自动化", "材料", "能动", "土木等11大类"],
     location: "上海/无锡", refCode: "DSqDB4Mx",
     link: "https://app.mokahr.com/m/campus_apply/envisiongroup/43123?recommendCode=DSqDB4Mx#/jobs",
