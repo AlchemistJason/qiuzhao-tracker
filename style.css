@@ -649,3 +649,16 @@
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
+
+/* ====== v4.4.1 表格投递列布局修复 ====== */
+/* 投递按钮防折行（之前列宽 55px 导致"投递"两字竖排） */
+.link-btn { white-space: nowrap; }
+/* 复制按钮与投递按钮等高对齐（表格操作列统一视觉） */
+.copy-mini {
+  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  padding: 0 8px;
+}
