@@ -875,11 +875,19 @@ function toggleStar(id) {
 }
 
 function setStatus(id, status, el) {
+  const prev = getState(id).status;
   getState(id).status = status;
   touchState(id);
   el.setAttribute("data-status", status);
   saveState();
   renderDashboard();
+  renderTodo();
+  renderWeekly();
+  // P2-3: 状态变更视觉反馈
+  if (prev !== status) {
+    const c = COMPANIES.find(x => x.id === id);
+    showToast(`${c ? c.name : id}：${prev} → ${status}`);
+  }
 }
 
 function setNote(id, note) {
