@@ -881,9 +881,10 @@ document.getElementById("searchInput").addEventListener("input", debounce(functi
   applyFilters();
 }, 200));
 
-// 回车 = 确认搜索（阻止默认行为 + 立即执行 + 明确反馈，避免"没反应"）
+// 回车 = 确认搜索（阻止默认行为 + 立即执行 + 明确反馈）
 document.getElementById("searchInput").addEventListener("keydown", function(e) {
-  if (e.key !== "Enter") return;
+  // 中文输入法（IME）组合期间的回车是"确认候选词"，不是用户要搜索——必须跳过
+  if (e.key !== "Enter" || e.isComposing) return;
   e.preventDefault();
   filters.keyword = this.value.trim();
   refreshFilterUI();
@@ -891,7 +892,7 @@ document.getElementById("searchInput").addEventListener("keydown", function(e) {
   const n = countFiltered(filters);
   showToast(filters.keyword
     ? (n > 0 ? `找到 ${n} 家与"${filters.keyword}"匹配` : `没有找到与"${filters.keyword}"匹配的企业`)
-    : "搜索已清空");
+    : "搜索已清空", 4000);  // 4 秒，避免一闪而过没看到
 });
 
 document.querySelectorAll("thead th[data-sort]").forEach(th => {
