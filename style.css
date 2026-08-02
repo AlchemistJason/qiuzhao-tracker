@@ -693,3 +693,96 @@
 }
 .loc-select:hover, .loc-select:focus { border-color: var(--accent); }
 .loc-select option { background: var(--card); color: var(--text); }
+
+/* ====== v5 多条件筛选：chips / 分组 / 已选条件条 / 高亮 ====== */
+
+.filter-sec {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 4px 0;
+  flex-wrap: wrap;
+}
+.filter-sec-label {
+  flex: 0 0 auto;
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 700;
+  padding-top: 6px;
+  min-width: 28px;
+}
+.chips {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  flex: 1;
+}
+.chip {
+  padding: 5px 12px;
+  border: 1.5px solid var(--border);
+  border-radius: 999px;
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.chip:hover { border-color: var(--accent); color: var(--text); }
+.chip.active {
+  background: var(--accent-grad);
+  color: #fff;
+  border-color: transparent;
+  box-shadow: 0 2px 8px var(--accent-glow);
+  font-weight: 600;
+}
+
+/* 已选条件条 */
+.filter-summary {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  padding: 8px 12px;
+  margin: 8px 0 0;
+  border-radius: 10px;
+  background: var(--accent-glow);
+  border: 1px solid var(--border);
+  font-size: 12px;
+}
+.fs-item {
+  background: var(--card);
+  border: 1px solid var(--border-light);
+  border-radius: 6px;
+  padding: 1px 8px;
+  color: var(--accent);
+  font-weight: 600;
+}
+.fs-x { color: var(--text-muted); margin: 0 2px; }
+.fs-clear {
+  margin-left: auto;
+  background: transparent;
+  border: 1px solid var(--red);
+  color: var(--red);
+  border-radius: 999px;
+  padding: 2px 10px;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.fs-clear:hover { background: var(--red); color: #fff; }
+
+/* 搜索命中高亮 */
+mark.hl {
+  background: rgba(252, 211, 77, 0.35);
+  color: inherit;
+  border-radius: 2px;
+  padding: 0 1px;
+}
+
+/* 移动端 chips 横滑 */
+@media (max-width: 768px) {
+  .filter-sec { flex-direction: column; gap: 4px; }
+  .filter-sec-label { padding-top: 4px; }
+  .chips { overflow-x: auto; flex-wrap: nowrap; padding-bottom: 4px; -webkit-overflow-scrolling: touch; }
+}
