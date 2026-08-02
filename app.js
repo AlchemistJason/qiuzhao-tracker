@@ -856,16 +856,78 @@ function renderFilterSummary() {
   bar.innerHTML = `已选：${groupHTML} <span class="fs-count">共 ${count} 家 / ${COMPANIES.length}</span> <button class="fs-clear" onclick="clearFilters()">清除全部</button>`;
 }
 
-// v5.4: 筛选下拉面板（checkbox 多选，纵向分维度，不再平铺挤一行）
+// ============================================================
+// v5.5: 分级目录筛选（地区→城市 / 方向→岗位 树形折叠）
+// ============================================================
+
+// 城市 → 地区 映射（公开常识）
+const CITY_REGION = {
+  "北京": "华北", "上海": "华东", "杭州": "华东", "合肥": "华东", "苏州": "华东", "无锡": "华东", "南京": "华东",
+  "深圳": "华南", "广州": "华南", "东莞": "华南",
+  "郑州": "华中", "武汉": "华中", "长沙": "华中",
+  "成都": "西南", "重庆": "西南", "西安": "西北",
+  "全国多地": "全国"
+};
+
+// 岗位 → 方向 关键词映射（纯函数可测）
+const JOB_DIRS = [
+  { dir: "技术类", keys: ["算法", "研发", "开发", "后端", "前端", "客户端", "测试", "数据", "机器学习", "自然语言", "计算机视觉", "大模型", "强化学习", "挖掘", "架构", "运维", "安全", "嵌入式", "硬件", "工程"] },
+  { dir: "产品/运营", keys: ["产品", "运营", "项目"] },
+  { dir: "市场/职能", keys: ["市场", "销售", "职能", "管培", "设计", "美术", "策划", "内容"] }
+];
+
+// 城市按地区分组（纯函数可测）
+function groupCitiesByRegion(cities) {
+  const map = {};
+  cities.forEach(city => {
+    const region = CITY_REGION[city] || "其他";
+    if (!map[region]) map[region] = [];
+    map[region].push(city);
+  });
+  const order = ["华东", "华南", "华北", "华中", "西南", "西北", "全国", "其他"];
+  return order.filter(r => map[r]).map(r => ({ region: r, cities: map[r] }));
+}
+
+// 岗位按方向分组（纯函数可测）
+function groupJobsByDirection(jobs) {
+  const groups = JOB_DIRS.map(g => ({ dir: g.dir, jobs: [] }));
+  const other = { dir: "其他", jobs: [] };
+  jobs.forEach(j => {
+    const hit = JOB_DIRS.find(g => g.keys.some(k => j.includes(k)));
+    if (hit) groups.find(g => g.dir === hit.dir).jobs.push(j);
+    else other.jobs.push(j);
+  });
+  const out = groups.filter(g => g.jobs.length > 0);
+  if (other.jobs.length) out.push(other);
+  return out;
+}
+
+// 树形分组渲染（分级目录：组头可折叠，叶子 checkbox 多选）
+function treeHTML(groups, dim, keyField) {
+  return groups.map(g =>
+    `<div class="fp-group">
+      <button type="button" class="fp-group-head" onclick="this.parentNode.classList.toggle('collapsed')">
+        <span class="fp-caret">▾</span>${escapeHtml(g[keyField])}<span class="fp-group-count">${(g.cities || g.jobs).length}</span>
+      </button>
+      <div class="fp-group-body">
+        ${(g.cities || g.jobs).map(v =>
+          `<label class="fp-opt"><input type="checkbox" data-dim="${dim}" data-value="${escapeHtml(v)}" onchange="toggleFilter('${dim}','${escapeHtml(v)}')"> <span>${escapeHtml(v)}</span></label>`
+        ).join("")}
+      </div>
+    </div>`
+  ).join("");
+}
+
+// v5.5: 筛选下拉面板（分级目录：地点按地区、岗位按方向，行业平铺）
 function renderFilterPanel() {
   const optsHTML = (values, dim) => values.map(v =>
     `<label class="fp-opt"><input type="checkbox" data-dim="${dim}" data-value="${escapeHtml(v)}" onchange="toggleFilter('${dim}','${escapeHtml(v)}')"> <span>${escapeHtml(v)}</span></label>`
   ).join("");
-  document.getElementById("fpLoc").innerHTML = optsHTML(extractCities(COMPANIES), "locations");
+  document.getElementById("fpLoc").innerHTML = treeHTML(groupCitiesByRegion(extractCities(COMPANIES)), "locations", "region");
   document.getElementById("fpInd").innerHTML = optsHTML(
     [...new Set(COMPANIES.flatMap(c => c.category))].filter(c => c !== "活动"), "industries"
   );
-  document.getElementById("fpJob").innerHTML = optsHTML(extractJobKeywords(COMPANIES, 2), "jobs");
+  document.getElementById("fpJob").innerHTML = treeHTML(groupJobsByDirection(extractJobKeywords(COMPANIES, 2)), "jobs", "dir");
 }
 
 // 开关筛选面板 + 点击外部 / Esc 关闭
