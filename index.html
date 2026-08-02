@@ -24,7 +24,7 @@
 </script>
 <script src="https://cdn.staticfile.org/qrcodejs/1.0.0/qrcode.min.js" defer></script>
 <!-- html5-qrcode 改为按需动态加载（见 app.js startQrScanner），避免 ~300KB 全量下载 -->
-<link rel="stylesheet" href="style.css?v=5.6">
+<link rel="stylesheet" href="style.css?v=5.6.1">
 </head>
 <body>
 
@@ -58,16 +58,28 @@
       </button>
       <div id="filterPanel" class="filter-panel hidden">
         <div class="fp-sec">
-          <span class="fp-label">📍 地点</span>
-          <div class="fp-opts" id="fpLoc"></div>
+          <button type="button" class="fp-sec-head" onclick="this.parentNode.classList.toggle('collapsed')">
+            <span class="fp-caret">▾</span>📍 地点
+          </button>
+          <div class="fp-sec-body">
+            <div class="fp-opts" id="fpLoc"></div>
+          </div>
         </div>
         <div class="fp-sec">
-          <span class="fp-label">🏭 行业</span>
-          <div class="fp-opts" id="fpInd"></div>
+          <button type="button" class="fp-sec-head" onclick="this.parentNode.classList.toggle('collapsed')">
+            <span class="fp-caret">▾</span>🏭 行业
+          </button>
+          <div class="fp-sec-body">
+            <div class="fp-opts" id="fpInd"></div>
+          </div>
         </div>
         <div class="fp-sec">
-          <span class="fp-label">💼 岗位</span>
-          <div class="fp-opts" id="fpJob"></div>
+          <button type="button" class="fp-sec-head" onclick="this.parentNode.classList.toggle('collapsed')">
+            <span class="fp-caret">▾</span>💼 岗位
+          </button>
+          <div class="fp-sec-body">
+            <div class="fp-opts" id="fpJob"></div>
+          </div>
         </div>
         <div class="fp-foot">
           <button class="fp-clear" onclick="clearFilters()">重置全部</button>
@@ -132,8 +144,8 @@
   </div>
 </div>
 
-<script src="data.js?v=5.6"></script>
-<script src="app.js?v=5.6"></script>
+<script src="data.js?v=5.6.1"></script>
+<script src="app.js?v=5.6.1"></script>
 
 </body>
 </html>
