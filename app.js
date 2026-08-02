@@ -501,6 +501,14 @@ function applyFilters() {
   if (currentView === "table") renderTable(filtered);
   else if (currentView === "kanban") renderKanban(filtered);
   else renderCards(filtered);
+
+  // 无结果提示带搜索词（避免用户困惑"怎么没反应"）
+  const noRes = document.getElementById("noResults");
+  if (noRes) {
+    noRes.querySelector("p").textContent = filtered.length === 0 && filters.keyword
+      ? `没有找到与"${filters.keyword}"匹配的企业 😕`
+      : "没有找到匹配的企业 😕";
+  }
 }
 
 // ============================================================
@@ -872,6 +880,19 @@ document.getElementById("searchInput").addEventListener("input", debounce(functi
   refreshFilterUI();
   applyFilters();
 }, 200));
+
+// 回车 = 确认搜索（阻止默认行为 + 立即执行 + 明确反馈，避免"没反应"）
+document.getElementById("searchInput").addEventListener("keydown", function(e) {
+  if (e.key !== "Enter") return;
+  e.preventDefault();
+  filters.keyword = this.value.trim();
+  refreshFilterUI();
+  applyFilters();
+  const n = countFiltered(filters);
+  showToast(filters.keyword
+    ? (n > 0 ? `找到 ${n} 家与"${filters.keyword}"匹配` : `没有找到与"${filters.keyword}"匹配的企业`)
+    : "搜索已清空");
+});
 
 document.querySelectorAll("thead th[data-sort]").forEach(th => {
   th.addEventListener("click", function() {
