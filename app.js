@@ -308,23 +308,44 @@ function renderDashboard() {
   });
   const inProgress = stats.applied + stats.test + stats.interview;
 
-  // v5: 仪表盘卡片可点击筛选（点击切换对应状态/收藏，active 由 filters 驱动）
+  // v5.3: 仪表盘 = 概览视图（点击查看对应状态/收藏，状态单选切换，不做多选组合）
   const dashCards = [
-    { filter: "all", icon: "🏢", num: stats.total, label: "企业总数", cls: "" },
-    { filter: "未投递", icon: "⏳", num: stats.pending, label: "未投递", cls: "" },
-    { filter: "已投递", icon: "📝", num: stats.applied, label: "已投递", cls: "applied" },
-    { filter: "笔试中", icon: "✏️", num: stats.test, label: "笔试中", cls: "test" },
-    { filter: "面试中", icon: "🎤", num: stats.interview, label: "面试中", cls: "interview" },
-    { filter: "Offer", icon: "🎉", num: stats.offer, label: "Offer", cls: "offer" },
-    { filter: "已拒绝", icon: "🚫", num: stats.rejected, label: "已拒绝", cls: "" },
-    { filter: "starred", icon: "⭐", num: stats.starred, label: "已收藏", cls: "" }
+    { filter: "all", icon: "🏢", num: stats.total, label: "企业总数", cls: "", fn: "viewAll()" },
+    { filter: "未投递", icon: "⏳", num: stats.pending, label: "未投递", cls: "", fn: "viewByStatus('未投递')" },
+    { filter: "已投递", icon: "📝", num: stats.applied, label: "已投递", cls: "applied", fn: "viewByStatus('已投递')" },
+    { filter: "笔试中", icon: "✏️", num: stats.test, label: "笔试中", cls: "test", fn: "viewByStatus('笔试中')" },
+    { filter: "面试中", icon: "🎤", num: stats.interview, label: "面试中", cls: "interview", fn: "viewByStatus('面试中')" },
+    { filter: "Offer", icon: "🎉", num: stats.offer, label: "Offer", cls: "offer", fn: "viewByStatus('Offer')" },
+    { filter: "已拒绝", icon: "🚫", num: stats.rejected, label: "已拒绝", cls: "", fn: "viewByStatus('已拒绝')" },
+    { filter: "starred", icon: "⭐", num: stats.starred, label: "已收藏", cls: "", fn: "viewStarred()" }
   ];
   document.getElementById("dashboard").innerHTML = dashCards.map(d =>
-    `<div class="dash-card ${d.cls}" data-filter="${d.filter}" role="button" tabindex="0" onclick="toggleFilter(${d.filter === "starred" ? "'starred','1'" : `'status','${d.filter}'`})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleFilter(${d.filter === "starred" ? "'starred','1'" : `'status','${d.filter}'`})}" title="点击筛选 ${d.label}">
+    `<div class="dash-card ${d.cls}" data-filter="${d.filter}" role="button" tabindex="0" onclick="${d.fn}" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();${d.fn}}" title="查看 ${d.label}">
       <div class="dash-icon">${d.icon}</div><div class="dash-num">${d.num}</div><div class="dash-label">${d.label}</div>
     </div>`
   ).join("");
   // 高亮由 refreshFilterUI 统一管理
+}
+
+// v5.3: 概览查看——状态单选切换（再点同状态 = 取消回全部）
+function viewByStatus(status) {
+  if (filters.status.has(status)) filters.status.delete(status);
+  else { filters.status.clear(); filters.status.add(status); }
+  refreshFilterUI();
+  applyFilters();
+}
+
+function viewStarred() {
+  filters.starred = !filters.starred;
+  refreshFilterUI();
+  applyFilters();
+}
+
+function viewAll() {
+  filters.status.clear();
+  filters.starred = false;
+  refreshFilterUI();
+  applyFilters();
 }
 
 // ============================================================
@@ -473,12 +494,8 @@ function applyFilters() {
       return currentSort.asc ? cmp : -cmp;
     });
   } else {
-    filtered.sort((a, b) => {
-      const sa = getState(a.id).starred ? 1 : 0;
-      const sb = getState(b.id).starred ? 1 : 0;
-      if (sb !== sa) return sb - sa;
-      return (TYPE_ORDER[a.type] ?? 9) - (TYPE_ORDER[b.type] ?? 9);
-    });
+    // v5.3: 默认排序按批次类型（稳定可预期；收藏只做标记不参与排序，避免与局部更新矛盾）
+    filtered.sort((a, b) => (TYPE_ORDER[a.type] ?? 9) - (TYPE_ORDER[b.type] ?? 9));
   }
 
   if (currentView === "table") renderTable(filtered);
@@ -760,18 +777,17 @@ function clearFilters() {
 
 // 刷新所有筛选 UI 的选中态 + 已选条件条
 function refreshFilterUI() {
-  // chips 选中态
+  // chips 选中态（地点/行业/岗位，状态已由仪表盘承担）
   document.querySelectorAll(".chip[data-dim]").forEach(ch => {
     const dim = ch.dataset.dim;
-    const val = ch.dataset.value;
-    const active = dim === "starred" ? filters.starred : filters[dim].has(val);
+    const active = filters[dim] && filters[dim].has(ch.dataset.value);
     ch.classList.toggle("active", active);
   });
-  // 仪表盘卡片高亮（状态维度 + 收藏 + 全部）
+  // 仪表盘卡片高亮（概览查看语义）
   document.querySelectorAll(".dash-card[data-filter]").forEach(c => {
     const f = c.dataset.filter;
     let active = false;
-    if (f === "all") active = filters.status.size === 0 && !filters.starred && filters.locations.size === 0 && filters.industries.size === 0 && filters.jobs.size === 0 && !filters.keyword;
+    if (f === "all") active = filters.status.size === 0 && !filters.starred;
     else if (f === "starred") active = filters.starred;
     else active = filters.status.has(f);
     c.classList.toggle("active", active);
@@ -779,44 +795,73 @@ function refreshFilterUI() {
   renderFilterSummary();
 }
 
-// 已选条件条：汇总所有激活条件 + 一键清除
-function renderFilterSummary() {
-  const bar = document.getElementById("filterSummary");
-  const parts = [];
-  if (filters.starred) parts.push("收藏");
-  filters.status.forEach(v => parts.push(v));
-  filters.locations.forEach(v => parts.push(v));
-  filters.industries.forEach(v => parts.push(v));
-  filters.jobs.forEach(v => parts.push(v));
-  if (filters.keyword) parts.push(`搜索“${filters.keyword}”`);
-  if (parts.length === 0) { bar.classList.add("hidden"); bar.innerHTML = ""; return; }
-  bar.classList.remove("hidden");
-  bar.innerHTML = `已选：${parts.map(p => `<span class="fs-item">${escapeHtml(p)}</span>`).join("<span class='fs-x'>×</span>")} <button class="fs-clear" onclick="clearFilters()">清除全部</button>`;
+// v5.3: 条件条分组格式化（同维合并用"或"，跨维用"+"）——纯函数可测
+function formatFilterParts(f) {
+  const groups = [];
+  if (f.starred) groups.push({ dim: "starred", items: [{ text: "⭐收藏", dim: "starred", val: "" }] });
+  if (f.status.size) groups.push({ dim: "status", items: [...f.status].map(v => ({ text: v, dim: "status", val: v })) });
+  if (f.locations.size) groups.push({ dim: "locations", items: [...f.locations].map(v => ({ text: v, dim: "locations", val: v })) });
+  if (f.industries.size) groups.push({ dim: "industries", items: [...f.industries].map(v => ({ text: v, dim: "industries", val: v })) });
+  if (f.jobs.size) groups.push({ dim: "jobs", items: [...f.jobs].map(v => ({ text: v, dim: "jobs", val: v })) });
+  if (f.keyword) groups.push({ dim: "keyword", items: [{ text: `搜索“${f.keyword}”`, dim: "keyword", val: f.keyword }] });
+  return groups;
 }
 
-// 渲染四组筛选 chips（状态/地点/行业/岗位）
+// 结果计数：当前条件下命中多少家（纯函数可测）
+function countFiltered(f) {
+  return COMPANIES.filter(c => matchFilters(c, f, getState)).length;
+}
+
+// 移除单个筛选条件（按维度+值）
+function removeFilterItem(dim, val) {
+  if (dim === "keyword") {
+    filters.keyword = "";
+    const inp = document.getElementById("searchInput");
+    if (inp) inp.value = "";
+  } else if (dim === "starred") {
+    filters.starred = false;
+  } else {
+    filters[dim].delete(val);
+  }
+  refreshFilterUI();
+  applyFilters();
+}
+
+// 已选条件条：同维"或" / 跨维"+" / 结果计数 / 单条件 ✕
+function renderFilterSummary() {
+  const bar = document.getElementById("filterSummary");
+  const groups = formatFilterParts(filters);
+  if (groups.length === 0) { bar.classList.add("hidden"); bar.innerHTML = ""; return; }
+  bar.classList.remove("hidden");
+  const count = countFiltered(filters);
+  const groupHTML = groups.map(g =>
+    g.items.map(it =>
+      `<span class="fs-item" data-dim="${it.dim}">${escapeHtml(it.text)}<button class="fs-x" onclick="removeFilterItem('${it.dim}','${escapeHtml(it.val)}')" aria-label="移除 ${escapeHtml(it.text)}">✕</button></span>`
+    ).join("<span class='fs-or'>或</span>")
+  ).join("<span class='fs-plus'>+</span>");
+  bar.innerHTML = `已选：${groupHTML} <span class="fs-count">共 ${count} 家 / ${COMPANIES.length}</span> <button class="fs-clear" onclick="clearFilters()">清除全部</button>`;
+}
+
+// chips 折叠渲染：前 max 个 + 更多按钮（默认收起，点击展开）
+function chipsHTML(values, dim, max = 0) {
+  const all = values.map(v =>
+    `<button class="chip" data-dim="${dim}" data-value="${escapeHtml(v)}" onclick="toggleFilter('${dim}','${escapeHtml(v)}')">${escapeHtml(v)}</button>`
+  );
+  if (max > 0 && all.length > max) {
+    const visible = all.slice(0, max).join("");
+    const hidden = all.slice(max).join("");
+    return `${visible}<span class="chip-more-wrap">${hidden}<button class="chip chip-more" onclick="this.parentNode.classList.toggle('open');this.textContent=this.parentNode.classList.contains('open')?'收起 ▴':'更多 ▾'">更多 ▾</button></span>`;
+  }
+  return all.join("");
+}
+
+// 渲染三组筛选 chips（地点/行业/岗位；状态由顶部仪表盘承担）
 function renderFilterChips() {
-  // 状态组
-  document.getElementById("statusChips").innerHTML = STATUS_OPTIONS.map(s =>
-    `<button class="chip" data-dim="status" data-value="${escapeHtml(s)}" onclick="toggleFilter('status','${escapeHtml(s)}')">${escapeHtml(s)}</button>`
-  ).join("") +
-  `<button class="chip ${filters.starred ? "active" : ""}" data-dim="starred" data-value="1" onclick="toggleFilter('starred','1')">⭐ 收藏</button>`;
-
-  // 地点组
-  document.getElementById("locChips").innerHTML = extractCities(COMPANIES).map(city =>
-    `<button class="chip" data-dim="locations" data-value="${escapeHtml(city)}" onclick="toggleFilter('locations','${escapeHtml(city)}')">${escapeHtml(city)}</button>`
-  ).join("");
-
-  // 行业组（活动隐藏）
-  document.getElementById("indChips").innerHTML = [...new Set(COMPANIES.flatMap(c => c.category))].filter(c => c !== "活动").map(cat =>
-    `<button class="chip" data-dim="industries" data-value="${escapeHtml(cat)}" onclick="toggleFilter('industries','${escapeHtml(cat)}')">${escapeHtml(cat)}</button>`
-  ).join("");
-
-  // 岗位组（高频词）
-  const jobs = extractJobKeywords(COMPANIES, 2);
-  document.getElementById("jobChips").innerHTML = jobs.map(j =>
-    `<button class="chip" data-dim="jobs" data-value="${escapeHtml(j)}" onclick="toggleFilter('jobs','${escapeHtml(j)}')">${escapeHtml(j)}</button>`
-  ).join("");
+  document.getElementById("locChips").innerHTML = chipsHTML(extractCities(COMPANIES), "locations", 6);
+  document.getElementById("indChips").innerHTML = chipsHTML(
+    [...new Set(COMPANIES.flatMap(c => c.category))].filter(c => c !== "活动"), "industries", 6
+  );
+  document.getElementById("jobChips").innerHTML = chipsHTML(extractJobKeywords(COMPANIES, 2), "jobs", 6);
 }
 
 // ============================================================
