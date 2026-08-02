@@ -10,7 +10,7 @@
  *   deadline : 截止日期 "YYYY-MM-DD"（可选，用于倒计时）
  * ============================================================ */
 
-window.DATA_VERSION = 4;
+window.DATA_VERSION = 5;
 
 window.COMPANIES = [
   {
@@ -23,7 +23,7 @@ window.COMPANIES = [
   },
   {
     id: "shopee", name: "Shopee虾皮", type: "秋招",
-    category: ["AI"],
+    category: ["互联网"],
     jobs: ["研发岗", "算法岗", "产品岗", "职能岗"],
     location: "北京/上海/深圳", refCode: "DSkUucG8",
     link: "https://app.mokahr.com/m/campus_apply/shopee/2962?recommendCode=DSkUucG8#/jobs",
@@ -31,7 +31,7 @@ window.COMPANIES = [
   },
   {
     id: "cmbnt", name: "招银网络科技", type: "秋招",
-    category: ["互联网科技"],
+    category: ["互联网"],
     jobs: ["后端开发工程师", "前端开发工程师", "算法工程师", "测试技术开发工程师", "运维研发工程师"],
     location: "深圳/杭州/成都", refCode: "COALPY",
     link: "https://cmbnt.cmbchina.com/pages/bindInvited.html?qrCode=D52CE83B64444EB7AB40B84854BCCA39&rand=1784281202267&blNtCode=COALPY",
@@ -39,7 +39,7 @@ window.COMPANIES = [
   },
   {
     id: "intsig", name: "合合信息", type: "秋招",
-    category: ["AI"],
+    category: ["AI/机器人"],
     jobs: ["算法类", "技术类", "产品类", "运营类", "设计类", "职能类"],
     location: "上海", refCode: "EV3PKS",
     link: "https://intsig.zhiye.com/campus/jobs?shareId=8ca26137-bd70-4a41-bc7d-9b624a9d5a81&shareSource=2",
@@ -47,7 +47,7 @@ window.COMPANIES = [
   },
   {
     id: "itek", name: "埃科光电", type: "秋招",
-    category: ["互联网科技"],
+    category: ["科技/硬件"],
     jobs: ["技术岗"],
     location: "合肥", refCode: "XDYXF047",
     link: "http://career.i-tek.cn/",
@@ -55,7 +55,7 @@ window.COMPANIES = [
   },
   {
     id: "pudu", name: "普渡机器人", type: "秋招",
-    category: ["AI"],
+    category: ["AI/机器人"],
     jobs: ["算法", "软件", "硬件", "机械", "产品", "营销"],
     location: "深圳", refCode: "EVKRV0",
     link: "https://pudutech1.zhiye.com/campus/jobs?shareId=71b02d32-26ce-4212-be41-1f7e43d63b4c&shareSource=2",
@@ -63,7 +63,7 @@ window.COMPANIES = [
   },
   {
     id: "iflytek", name: "科大讯飞", type: "秋招",
-    category: ["AI"],
+    category: ["AI/机器人"],
     jobs: ["研究算法", "研发", "AI研发", "产品", "营销", "职能", "设计"],
     location: "合肥", refCode: "EVBRH1",
     link: "https://iflytek.zhiye.com/campus/jobs",
@@ -79,7 +79,7 @@ window.COMPANIES = [
   },
   {
     id: "oppo", name: "OPPO", type: "秋招",
-    category: ["互联网科技"],
+    category: ["科技/硬件"],
     jobs: ["算法", "软件", "硬件", "营销", "产品等八大类100+岗位"],
     location: "深圳/东莞", refCode: "X1757111",
     link: "https://careers.oppo.com/university/oppo/campus/post?shareId=16923",
@@ -87,7 +87,7 @@ window.COMPANIES = [
   },
   {
     id: "dexmal", name: "Dexmal原力灵机", type: "秋招",
-    category: ["AI"],
+    category: ["AI/机器人"],
     jobs: ["研发类", "工程/机械类", "职能/支持类", "产品/策划/项目类"],
     location: "北京/上海", refCode: "966SQH7",
     link: "https://dexmal-inc.jobs.feishu.cn/s/XZm3_Z6dywA",
@@ -95,7 +95,7 @@ window.COMPANIES = [
   },
   {
     id: "threatbook", name: "微步在线", type: "秋招",
-    category: ["网络安全"],
+    category: ["安全"],
     jobs: ["研发", "安全", "产品", "设计", "销售管培", "市场运营"],
     location: "北京", refCode: "DSkqt7Cx",
     link: "https://app.mokahr.com/m/campus_apply/threatbook/39679?recommendCode=DSkqt7Cx#/jobs",
@@ -103,7 +103,7 @@ window.COMPANIES = [
   },
   {
     id: "baidu", name: "百度", type: "秋招",
-    category: ["AI"],
+    category: ["互联网"],
     jobs: ["技术类", "产品类", "运营类"],
     location: "北京", refCode: "IZS1K1",
     link: "https://dwz.cn/apEwkEt3",
@@ -111,7 +111,7 @@ window.COMPANIES = [
   },
   {
     id: "dji", name: "DJI大疆", type: "秋招",
-    category: ["智能驾驶"],
+    category: ["科技/硬件"],
     jobs: ["算法类", "软件类", "硬件类", "芯片类等12大类100+岗位"],
     location: "深圳", refCode: "DSpqFDWr",
     link: "https://app.mokahr.com/m/campus-recruitment/dji/143359?recommendCode=DSpqFDWr#/jobs",
@@ -119,7 +119,7 @@ window.COMPANIES = [
   },
   {
     id: "xunlei", name: "迅雷", type: "秋招", program: "产品星计划",
-    category: ["互联网科技"],
+    category: ["互联网"],
     jobs: ["X-PEP产品星计划", "服务器开发工程师"],
     location: "深圳", refCode: "DSZAne8X",
     link: "https://app.mokahr.com/m/campus_apply/xunlei/26600?recommendCode=DSZAne8X#/jobs",
@@ -135,7 +135,7 @@ window.COMPANIES = [
   },
   {
     id: "agirobot", name: "智元机器人", type: "秋招",
-    category: ["AI"],
+    category: ["AI/机器人"],
     jobs: ["技术类", "营销服类", "供应链与制造类"],
     location: "上海", refCode: "4RJGH2F",
     link: "https://agirobot.jobs.feishu.cn/s/BZq88d0rFDw",
@@ -159,7 +159,7 @@ window.COMPANIES = [
   },
   {
     id: "inovance", name: "汇川技术", type: "秋招",
-    category: ["互联网科技"],
+    category: ["工业/制造"],
     jobs: ["技术类", "技能类", "营销类", "供应链管理类", "质量类", "其他职能类"],
     location: "深圳/苏州", refCode: "ADE3CAE",
     link: "https://recruit.inovance.com/#/jobs?ref=ADE3CAE",
@@ -167,7 +167,7 @@ window.COMPANIES = [
   },
   {
     id: "pdd", name: "拼多多", type: "提前批",
-    category: ["互联网科技"],
+    category: ["互联网"],
     jobs: ["技术类", "运营类", "职能类", "市场营销类", "设计类", "视觉类"],
     location: "上海", refCode: "CXX5XFMHAH",
     link: "https://careers.pddglobalhr.com/campus/grad?t=CXX5XFMHAH",
@@ -175,7 +175,7 @@ window.COMPANIES = [
   },
   {
     id: "kuaishou", name: "快手", type: "提前批", program: "快Star",
-    category: ["AI"],
+    category: ["互联网"],
     jobs: ["大模型", "AI infra", "音视频", "推荐", "广告等九大方向"],
     location: "北京", refCode: "campusYrAmiVqrV",
     link: "https://campus.kuaishou.cn/recruit/campus/e/h5/#/campus/jobs?code=campusYrAmiVqrV",
@@ -215,7 +215,7 @@ window.COMPANIES = [
   },
   {
     id: "sangfor", name: "深信服", type: "秋招", program: "XSTAR",
-    category: ["网络安全"],
+    category: ["安全"],
     jobs: ["研发类", "市场类"],
     location: "深圳", refCode: "NTA5MRI",
     link: "https://app.mokahr.com/m/recommendation-apply/sangfor/5369?sharePageId=3755022&recommendCode=NTA5MRI&codeType=1#/recommendation/page/3755022",
@@ -271,7 +271,7 @@ window.COMPANIES = [
   },
   {
     id: "keyence", name: "基恩士", type: "秋招",
-    category: ["互联网科技"],
+    category: ["工业/制造"],
     jobs: ["销售工程师", "销售"],
     location: "全国多地", refCode: "EVKJ10",
     link: "https://keyence.zhiye.com/campus/jobs?shareId=f4c8fe60-3f51-4443-8bd2-081d84b83e89&shareSource=2",
@@ -279,7 +279,7 @@ window.COMPANIES = [
   },
   {
     id: "insta360", name: "影石Insta360", type: "秋招",
-    category: ["互联网科技"],
+    category: ["科技/硬件"],
     jobs: ["技术", "美术与设计", "产品", "综合", "业务", "销售", "供应链"],
     location: "深圳", refCode: "HMMUJJQ",
     link: "https://arashivision.jobs.feishu.cn/campus/m",
@@ -287,7 +287,7 @@ window.COMPANIES = [
   },
   {
     id: "awinic", name: "艾为电子", type: "秋招",
-    category: ["互联网科技"],
+    category: ["科技/硬件"],
     jobs: ["大量技术岗(数模混合)"],
     location: "上海", refCode: null,
     link: "https://neitui.italent.cn/awinic/sharejobs?shareId=fb661a70-3c2d-473e-9a2d-69f622bd7857&language=zh_CN",
@@ -311,7 +311,7 @@ window.COMPANIES = [
   },
   {
     id: "envision", name: "远景能源", type: "秋招",
-    category: ["互联网科技"],
+    category: ["工业/制造"],
     jobs: ["电气", "机械", "自动化", "材料", "能动", "土木等11大类"],
     location: "上海/无锡", refCode: "DSqDB4Mx",
     link: "https://app.mokahr.com/m/campus_apply/envisiongroup/43123?recommendCode=DSqDB4Mx#/jobs",
