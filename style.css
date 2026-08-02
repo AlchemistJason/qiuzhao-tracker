@@ -285,21 +285,24 @@
     --shadow-lg: 0 14px 40px rgba(31, 41, 80, 0.12);
   }
 
-  /* —— 页面氛围背景 —— */
-  body {
+  /* —— 页面氛围背景（用 fixed 伪元素替代 background-attachment:fixed，避免移动端滚动性能问题） —— */
+  html { background: var(--bg); }
+  body { background: transparent; }
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
     background:
       radial-gradient(900px 480px at 12% -10%, rgba(124,156,255,0.13), transparent 60%),
       radial-gradient(900px 520px at 92% -8%, rgba(167,139,250,0.11), transparent 60%),
-      radial-gradient(700px 500px at 55% 110%, rgba(94,234,212,0.07), transparent 60%),
-      var(--bg);
-    background-attachment: fixed;
+      radial-gradient(700px 500px at 55% 110%, rgba(94,234,212,0.07), transparent 60%);
   }
-  [data-theme="light"] body {
+  [data-theme="light"] body::before {
     background:
       radial-gradient(900px 480px at 12% -10%, rgba(76,110,245,0.07), transparent 60%),
-      radial-gradient(900px 520px at 92% -8%, rgba(139,92,246,0.06), transparent 60%),
-      var(--bg);
-    background-attachment: fixed;
+      radial-gradient(900px 520px at 92% -8%, rgba(139,92,246,0.06), transparent 60%);
   }
 
   /* —— 滚动条 —— */
@@ -620,4 +623,29 @@
 @media (max-width: 768px) {
   .kanban { padding-bottom: 12px; }
   .kanban-col { flex: 0 0 170px; min-width: 170px; }
+}
+
+/* ====== v4.4 前端专项修复：无障碍 & 移动端性能 ====== */
+
+/* P0-3: 尊重系统"减少动态效果"偏好（WCAG 2.3.3） */
+@media (prefers-reduced-motion: reduce) {
+  .deadline.urgent { animation: none; }
+  * { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
+}
+
+/* P0-4: iOS 聚焦自动放大（input <16px 时 Safari 强制缩放） */
+.search-box input, .note-input, .sync-code-text, #syncCodeInput {
+  font-size: 16px;
+}
+
+/* P1-5: 模态框键盘可达焦点样式 */
+.modal-close:focus-visible,
+.btn:focus-visible,
+.icon-btn:focus-visible,
+.filter-btn:focus-visible,
+.star-btn:focus-visible,
+.copy-mini:focus-visible,
+.ref-code:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
