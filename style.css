@@ -1040,3 +1040,32 @@ mark.hl {
 }
 .fp-group-body .fp-opts { gap: 1px; }
 .fp-group-body .fp-opt { padding: 4px 6px; }
+
+/* ====== v5.6.1 分区级折叠 + 组默认收起 ====== */
+
+/* 分区头（地点/行业/岗位 可收起） */
+.fp-sec-head {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 800;
+  padding: 7px 8px;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background 0.15s;
+  text-align: left;
+}
+.fp-sec-head:hover { background: var(--accent-glow); }
+.fp-sec-body { padding-top: 2px; }
+.fp-sec.collapsed .fp-sec-body { display: none; }
+.fp-sec.collapsed .fp-sec-head .fp-caret { transform: rotate(-90deg); }
+
+/* 组默认收起（caret 状态同步） */
+.fp-group .fp-caret { transform: rotate(-90deg); }
+.fp-group:not(.collapsed) .fp-caret { transform: rotate(0deg); }
+.fp-group.collapsed .fp-caret { transform: rotate(-90deg); }
