@@ -332,7 +332,7 @@ function renderTable(data) {
 
     return `
     <tr class="${starredClass}">
-      <td><button class="star-btn ${s.starred ? "active" : ""}" onclick="toggleStar('${c.id}')" aria-pressed="${s.starred}" aria-label="收藏 ${escapeHtml(c.name)}">${starIcon}</button></td>
+      <td><button class="star-btn ${s.starred ? "active" : ""}" onclick="toggleStar('${c.id}')" data-star-id="${c.id}" aria-pressed="${s.starred}" aria-label="收藏 ${escapeHtml(c.name)}">${starIcon}</button></td>
       <td><strong>${escapeHtml(c.name)}</strong></td>
       <td><span class="type-tag ${escapeHtml(c.type)}">${escapeHtml(c.type)}</span>${programTag}</td>
       <td><div class="job-tags">${jobTags}</div></td>
@@ -373,7 +373,7 @@ function renderCards(data) {
     <div class="job-card ${starredClass}">
       <div class="card-header">
         <h3>${escapeHtml(c.name)}</h3>
-        <button class="star-btn ${s.starred ? "active" : ""}" onclick="toggleStar('${c.id}')" aria-pressed="${s.starred}" aria-label="收藏 ${escapeHtml(c.name)}">${starIcon}</button>
+        <button class="star-btn ${s.starred ? "active" : ""}" onclick="toggleStar('${c.id}')" data-star-id="${c.id}" aria-pressed="${s.starred}" aria-label="收藏 ${escapeHtml(c.name)}">${starIcon}</button>
       </div>
       <div class="card-body">
         <span class="type-tag ${escapeHtml(c.type)}">${escapeHtml(c.type)}</span>${programTag}
@@ -485,7 +485,7 @@ function renderKanban(data) {
       <div class="kanban-card ${s.starred ? "favorited" : ""}">
         <div class="kanban-card-head">
           <strong>${escapeHtml(c.name)}</strong>
-          <button class="star-btn ${s.starred ? "active" : ""}" onclick="toggleStar('${c.id}')" aria-pressed="${s.starred}" aria-label="收藏 ${escapeHtml(c.name)}">${s.starred ? "⭐" : "☆"}</button>
+          <button class="star-btn ${s.starred ? "active" : ""}" onclick="toggleStar('${c.id}')" data-star-id="${c.id}" aria-pressed="${s.starred}" aria-label="收藏 ${escapeHtml(c.name)}">${s.starred ? "⭐" : "☆"}</button>
         </div>
         <div class="kanban-card-meta">
           ${deadlineHTML(c.deadline)}
@@ -720,7 +720,19 @@ function toggleStar(id) {
   touchState(id);
   saveState();
   renderDashboard();
-  applyFilters();
+  renderTodo();
+  renderWeekly();
+  // P1-8: 局部更新星标（不重建列表，保持焦点/滚动位置）
+  const st = getState(id);
+  document.querySelectorAll(`[data-star-id="${id}"]`).forEach(btn => {
+    btn.textContent = st.starred ? "⭐" : "☆";
+    btn.classList.toggle("active", st.starred);
+    btn.setAttribute("aria-pressed", String(st.starred));
+  });
+  // 特例：在"收藏"筛选下取消收藏 → 该行应消失，需全量刷新
+  if (currentFilter === "starred" && !st.starred) {
+    applyFilters();
+  }
 }
 
 function setStatus(id, status, el) {
@@ -873,7 +885,15 @@ function openSyncModal(mode) {
   const modal = document.getElementById("syncModal");
   const title = document.getElementById("syncTitle");
   const body = document.getElementById("syncBody");
+  // P1-5: 记录触发按钮，关闭时还原焦点
+  syncTriggerEl = document.activeElement;
   modal.style.display = "flex";
+  document.addEventListener("keydown", syncModalKeydown);
+  // P1-5: 焦点移入弹窗（等 body 渲染完成）
+  setTimeout(() => {
+    const first = modal.querySelector("button, [href], input, select, textarea");
+    if (first) first.focus();
+  }, 50);
 
   if (mode === "export") {
     title.textContent = "📤 导出状态 · 同步到另一设备";
@@ -908,7 +928,39 @@ function openSyncModal(mode) {
 
 function closeSyncModal() {
   document.getElementById("syncModal").style.display = "none";
+  document.removeEventListener("keydown", syncModalKeydown);
   stopQrScanner();
+  // P1-5: 焦点归还触发按钮
+  if (syncTriggerEl && typeof syncTriggerEl.focus === "function") {
+    try { syncTriggerEl.focus(); } catch(e) {}
+  }
+  syncTriggerEl = null;
+}
+
+// P1-5: 模态框键盘管理（Esc 关闭 + 焦点圈定在弹窗内）
+let syncTriggerEl = null;
+
+function syncModalKeydown(e) {
+  const modal = document.getElementById("syncModal");
+  if (modal.style.display === "none") return;
+  if (e.key === "Escape") {
+    closeSyncModal();
+    return;
+  }
+  // Tab 焦点圈定（focus trap）
+  if (e.key === "Tab") {
+    const focusables = modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+    if (focusables.length === 0) return;
+    const first = focusables[0];
+    const last = focusables[focusables.length - 1];
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault();
+      first.focus();
+    }
+  }
 }
 
 function copySyncText() {
@@ -935,12 +987,32 @@ function mergeSync(incoming) {
   mergeIncoming(incoming);
 }
 
-// 摄像头扫码（html5-qrcode）
+// 摄像头扫码（html5-qrcode，按需动态加载）
 let qrScanner = null;
+
+// 动态加载外部脚本（P0-2：避免首屏全量下载 ~300KB 扫码库）
+function loadScript(src) {
+  return new Promise((resolve, reject) => {
+    const s = document.createElement("script");
+    s.src = src;
+    s.onload = resolve;
+    s.onerror = () => reject(new Error("script load failed"));
+    document.head.appendChild(s);
+  });
+}
 
 async function startQrScanner() {
   // 确保上一个实例彻底释放，避免重复 start 报错
   await stopQrScanner();
+  if (typeof Html5Qrcode === "undefined") {
+    try {
+      await loadScript("https://cdn.staticfile.org/html5-qrcode/2.3.8/html5-qrcode.min.js");
+    } catch(e) {
+      const hint = document.querySelector(".modal-hint");
+      if (hint) hint.textContent += "（摄像头组件加载失败，可用文本码同步）";
+      return;
+    }
+  }
   if (typeof Html5Qrcode === "undefined") {
     const hint = document.querySelector(".modal-hint");
     if (hint) hint.textContent += "（摄像头组件加载失败，可用文本码同步）";
