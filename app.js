@@ -857,43 +857,64 @@ function renderFilterSummary() {
 }
 
 // ============================================================
-// v5.5: 分级目录筛选（地区→城市 / 方向→岗位 树形折叠）
+// v5.6: 分级目录筛选（省份→城市 / 方向→标准岗位 树形折叠）
 // ============================================================
 
-// 城市 → 地区 映射（公开常识）
-const CITY_REGION = {
-  "北京": "华北", "上海": "华东", "杭州": "华东", "合肥": "华东", "苏州": "华东", "无锡": "华东", "南京": "华东",
-  "深圳": "华南", "广州": "华南", "东莞": "华南",
-  "郑州": "华中", "武汉": "华中", "长沙": "华中",
-  "成都": "西南", "重庆": "西南", "西安": "西北",
-  "全国多地": "全国"
+// 城市 → 省份 映射（公开常识，用户要求按省份分级）
+const CITY_PROVINCE = {
+  "深圳": "广东", "广州": "广东", "东莞": "广东",
+  "苏州": "江苏", "无锡": "江苏", "南京": "江苏",
+  "杭州": "浙江", "合肥": "安徽",
+  "上海": "上海", "北京": "北京",
+  "成都": "四川", "郑州": "河南", "西安": "陕西", "重庆": "重庆",
+  "武汉": "湖北", "长沙": "湖南",
+  "全国多地": "全国", "线上": "线上"
 };
 
-// 岗位 → 方向 关键词映射（纯函数可测）
-const JOB_DIRS = [
-  { dir: "技术类", keys: ["算法", "研发", "开发", "后端", "前端", "客户端", "测试", "数据", "机器学习", "自然语言", "计算机视觉", "大模型", "强化学习", "挖掘", "架构", "运维", "安全", "嵌入式", "硬件", "工程"] },
-  { dir: "产品/运营", keys: ["产品", "运营", "项目"] },
-  { dir: "市场/职能", keys: ["市场", "销售", "职能", "管培", "设计", "美术", "策划", "内容"] }
+// 岗位标准化关键词表（从原始岗位文本提取，消灭"算法岗/算法/算法类"变体与噪音）
+const JOB_KEYWORDS = [
+  "算法", "研发", "开发", "后端", "前端", "客户端", "测试", "运维", "安全",
+  "数据", "大模型", "推荐", "音视频", "游戏引擎", "嵌入式", "硬件", "软件", "机械", "电气",
+  "产品", "运营", "项目管理", "用户体验", "策划", "美术", "设计",
+  "市场", "销售", "供应链", "质量", "人力资源", "管培", "发行", "职能", "综合"
 ];
 
-// 城市按地区分组（纯函数可测）
-function groupCitiesByRegion(cities) {
+// 岗位方向分组（标准词 → 方向）
+const JOB_DIRS = [
+  { dir: "技术类", keys: ["算法", "研发", "开发", "后端", "前端", "客户端", "测试", "运维", "安全", "数据", "大模型", "推荐", "音视频", "游戏引擎", "嵌入式", "硬件", "软件", "机械", "电气"] },
+  { dir: "产品/运营", keys: ["产品", "运营", "项目管理", "用户体验", "策划", "发行"] },
+  { dir: "市场/职能", keys: ["市场", "销售", "设计", "美术", "供应链", "质量", "人力资源", "管培", "职能", "综合"] }
+];
+
+// 城市按省份分组（纯函数可测）
+function groupCitiesByProvince(cities) {
   const map = {};
   cities.forEach(city => {
-    const region = CITY_REGION[city] || "其他";
-    if (!map[region]) map[region] = [];
-    map[region].push(city);
+    const province = CITY_PROVINCE[city] || "其他";
+    if (!map[province]) map[province] = [];
+    map[province].push(city);
   });
-  const order = ["华东", "华南", "华北", "华中", "西南", "西北", "全国", "其他"];
-  return order.filter(r => map[r]).map(r => ({ region: r, cities: map[r] }));
+  const order = ["广东", "江苏", "浙江", "上海", "北京", "安徽", "四川", "河南", "陕西", "重庆", "湖北", "湖南", "全国", "线上", "其他"];
+  return order.filter(p => map[p]).map(p => ({ province: p, cities: map[p] }));
 }
 
-// 岗位按方向分组（纯函数可测）
+// 岗位标准化提取：扫描原始岗位文本，命中标准词则计数（≥min 次才进筛选，自动去噪）
+function extractStandardJobs(companies, min = 2) {
+  const freq = {};
+  companies.forEach(c => (c.jobs || []).forEach(j => {
+    JOB_KEYWORDS.forEach(kw => {
+      if (j.includes(kw)) freq[kw] = (freq[kw] || 0) + 1;
+    });
+  }));
+  return Object.keys(freq).filter(k => freq[k] >= min);
+}
+
+// 岗位按方向分组（纯函数可测；基于标准词，无变体重复）
 function groupJobsByDirection(jobs) {
   const groups = JOB_DIRS.map(g => ({ dir: g.dir, jobs: [] }));
   const other = { dir: "其他", jobs: [] };
   jobs.forEach(j => {
-    const hit = JOB_DIRS.find(g => g.keys.some(k => j.includes(k)));
+    const hit = JOB_DIRS.find(g => g.keys.includes(j));
     if (hit) groups.find(g => g.dir === hit.dir).jobs.push(j);
     else other.jobs.push(j);
   });
@@ -902,7 +923,7 @@ function groupJobsByDirection(jobs) {
   return out;
 }
 
-// 树形分组渲染（分级目录：组头可折叠，叶子 checkbox 多选）
+// 树形分组渲染（分级目录：组头可折叠，叶子 checkbox 多选，纵向层级）
 function treeHTML(groups, dim, keyField) {
   return groups.map(g =>
     `<div class="fp-group">
@@ -918,16 +939,16 @@ function treeHTML(groups, dim, keyField) {
   ).join("");
 }
 
-// v5.5: 筛选下拉面板（分级目录：地点按地区、岗位按方向，行业平铺）
+// v5.6: 筛选下拉面板（分级目录：地点按省份、岗位按方向，行业纵向平铺）
 function renderFilterPanel() {
   const optsHTML = (values, dim) => values.map(v =>
     `<label class="fp-opt"><input type="checkbox" data-dim="${dim}" data-value="${escapeHtml(v)}" onchange="toggleFilter('${dim}','${escapeHtml(v)}')"> <span>${escapeHtml(v)}</span></label>`
   ).join("");
-  document.getElementById("fpLoc").innerHTML = treeHTML(groupCitiesByRegion(extractCities(COMPANIES)), "locations", "region");
+  document.getElementById("fpLoc").innerHTML = treeHTML(groupCitiesByProvince(extractCities(COMPANIES)), "locations", "province");
   document.getElementById("fpInd").innerHTML = optsHTML(
     [...new Set(COMPANIES.flatMap(c => c.category))].filter(c => c !== "活动"), "industries"
   );
-  document.getElementById("fpJob").innerHTML = treeHTML(groupJobsByDirection(extractJobKeywords(COMPANIES, 2)), "jobs", "dir");
+  document.getElementById("fpJob").innerHTML = treeHTML(groupJobsByDirection(extractStandardJobs(COMPANIES, 2)), "jobs", "dir");
 }
 
 // 开关筛选面板 + 点击外部 / Esc 关闭
