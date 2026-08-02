@@ -923,10 +923,10 @@ function groupJobsByDirection(jobs) {
   return out;
 }
 
-// 树形分组渲染（分级目录：组头可折叠，叶子 checkbox 多选，纵向层级）
+// 树形分组渲染（分级目录：组头可折叠，默认收起，叶子 checkbox 多选）
 function treeHTML(groups, dim, keyField) {
   return groups.map(g =>
-    `<div class="fp-group">
+    `<div class="fp-group collapsed">
       <button type="button" class="fp-group-head" onclick="this.parentNode.classList.toggle('collapsed')">
         <span class="fp-caret">▾</span>${escapeHtml(g[keyField])}<span class="fp-group-count">${(g.cities || g.jobs).length}</span>
       </button>
