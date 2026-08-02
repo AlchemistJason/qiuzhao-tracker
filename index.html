@@ -50,18 +50,27 @@
   <div class="toolbar">
     <div class="search-box">
       <span class="search-icon" aria-hidden="true">🔍</span>
-      <input type="text" id="searchInput" placeholder="搜索公司、岗位、地点、内推码..." aria-label="搜索公司、岗位、地点、内推码">
+      <input type="text" id="searchInput" placeholder="搜索公司、岗位、地点（多词空格分隔）..." aria-label="搜索公司、岗位、地点、内推码">
     </div>
     <div class="filter-group" id="filterGroup">
-      <button class="filter-btn active" data-filter="all">全部<span class="count-badge" id="cAll"></span></button>
-      <button class="filter-btn" data-filter="starred">⭐ 收藏<span class="count-badge" id="cStar"></span></button>
-      <button class="filter-btn" data-filter="pending">⏳ 未投递<span class="count-badge" id="cPending"></span></button>
-      <button class="filter-btn" data-filter="active">🔄 进行中<span class="count-badge" id="cActive"></span></button>
-      <button class="filter-btn" data-filter="done">✅ 已结束<span class="count-badge" id="cDone"></span></button>
-      <span style="width:1px;background:var(--border);margin:0 4px;"></span>
-      <select id="locFilter" class="loc-select" aria-label="按地点筛选"><option value="all">📍 全部地点</option></select>
-      <div id="catFilters" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+      <div class="filter-sec">
+        <span class="filter-sec-label">状态</span>
+        <div class="chips" id="statusChips"></div>
+      </div>
+      <div class="filter-sec">
+        <span class="filter-sec-label">地点</span>
+        <div class="chips" id="locChips"></div>
+      </div>
+      <div class="filter-sec">
+        <span class="filter-sec-label">行业</span>
+        <div class="chips" id="indChips"></div>
+      </div>
+      <div class="filter-sec">
+        <span class="filter-sec-label">岗位</span>
+        <div class="chips" id="jobChips"></div>
+      </div>
     </div>
+    <div class="filter-summary hidden" id="filterSummary"></div>
     <div class="view-toggle">
       <button id="tableViewBtn" class="active" onclick="switchView('table')">📋 表格</button>
       <button id="cardViewBtn" onclick="switchView('card')">🗂️ 卡片</button>
