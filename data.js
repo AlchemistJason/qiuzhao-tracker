@@ -10,7 +10,7 @@
  *   deadline : 截止日期 "YYYY-MM-DD"（可选，用于倒计时）
  * ============================================================ */
 
-window.DATA_VERSION = 5;
+window.DATA_VERSION = 6;
 
 window.COMPANIES = [
   {
@@ -57,8 +57,8 @@ window.COMPANIES = [
     id: "pudu", name: "普渡机器人", type: "秋招",
     category: ["AI/机器人"],
     jobs: ["算法", "软件", "硬件", "机械", "产品", "营销"],
-    location: "深圳", refCode: "EVKRV0",
-    link: "https://pudutech1.zhiye.com/campus/jobs?shareId=71b02d32-26ce-4212-be41-1f7e43d63b4c&shareSource=2",
+    location: "深圳", refCode: "ES3RG1",
+    link: "https://pudutech1.zhiye.com/campus/jobs?shareId=19eb0b83-dae3-4f71-a47b-a76e13a97207&shareSource=2&qr=1&memory=%7B%7D&silence=1",
     note: ""
   },
   {
@@ -82,7 +82,7 @@ window.COMPANIES = [
     category: ["科技/硬件"],
     jobs: ["算法", "软件", "硬件", "营销", "产品等八大类100+岗位"],
     location: "深圳/东莞", refCode: "X1757111",
-    link: "https://careers.oppo.com/university/oppo/campus/post?shareId=16923",
+    link: "https://careers.oppo.com/university/oppo/campus/post?shareId=19939",
     note: "每人可投2个岗位，每周五推进笔试"
   },
   {
@@ -324,5 +324,301 @@ window.COMPANIES = [
     location: "线上", refCode: null,
     link: "https://uploadfiles.nowcoder.com/files/20260721/1030032950_1784607495959/shuangxuanhui.jpg",
     note: "扫码加牛客官方，填申请表，1分钟即可"
-  }
+  },
+  {
+    id: "xiaomi", name: "小米", type: "秋招",
+    category: ["科技/硬件"],
+    jobs: ["算法", "研发", "产品", "运营"],
+    location: "北京/上海/深圳/南京/武汉/西安", refCode: "88FQ6SE",
+    link: "https://xiaomi.jobs.f.mioffice.cn/s/Mz6F5e_P6mA",
+    note: "17+职类全面开放，选择大使推荐"
+  },
+  {
+    id: "tencent", name: "腾讯", type: "秋招",
+    category: ["互联网"],
+    jobs: ["产品", "技术", "运营", "设计", "市场"],
+    location: "深圳/北京/上海/广州/成都/杭州", refCode: "Y60XZLXDKH",
+    link: "https://join.qq.com/resume.html?k=aTXCwOsI3BrRBTK2KkA2Pp-koXnwW3cpRelOqQ2wf0I",
+    note: ""
+  },
+  {
+    id: "fandow", name: "凡岛", type: "秋招",
+    category: ["互联网"],
+    jobs: ["运营", "市场", "产品", "研发"],
+    location: "广州", refCode: "FBTWXNM",
+    link: "https://job.fandow.com/home?pushCode=FBTWXNM",
+    note: "日化消费品牌"
+  },
+  {
+    id: "obsbot", name: "OBSBOT寻影", type: "秋招",
+    category: ["科技/硬件"],
+    jobs: ["算法", "研发", "硬件", "设计"],
+    location: "深圳", refCode: "H55TZDG",
+    link: "https://n8r2cr07gk.jobs.feishu.cn/s/mp5Achbcw9U",
+    note: "校园大使推荐，智能摄像设备"
+  },
+  {
+    id: "moonton", name: "沐瞳科技", type: "秋招",
+    category: ["游戏"],
+    jobs: ["策划", "技术", "美术", "运营"],
+    location: "上海", refCode: "K4QWT7E",
+    link: "https://moonton.jobs.feishu.cn/s/IVUKol8SHEQ",
+    note: "字节旗下游戏公司，选择大使推荐"
+  },
+  {
+    id: "yoka", name: "游卡", type: "秋招",
+    category: ["游戏"],
+    jobs: ["策划", "技术", "美术", "运营"],
+    location: "杭州", refCode: "DSaPNpNf",
+    link: "https://app.mokahr.com/m/campus-recruitment/yokagames/41940?recommendCode=DSaPNpNf#/jobs",
+    note: "三国杀出品方"
+  },
+  {
+    id: "cvte", name: "CVTE视源股份", type: "秋招",
+    category: ["科技/硬件"],
+    jobs: ["技术", "产品", "营销", "职能"],
+    location: "广州", refCode: "CVTECDWQY",
+    link: "https://campus.cvte.com",
+    note: "中外合营，交互智能平板龙头"
+  },
+  {
+    id: "hundsun", name: "恒生电子", type: "秋招",
+    category: ["互联网"],
+    jobs: ["研发", "算法", "产品", "测试"],
+    location: "杭州", refCode: "EZ3A8B",
+    link: "https://campus.hundsun.com/campus/jobs?shareId=21888270-b2a2-4afb-8c23-2725730527fb&shareSource=2",
+    note: "金融科技"
+  },
+  {
+    id: "sunwoda", name: "欣旺达", type: "秋招",
+    category: ["工业/制造"],
+    jobs: ["研发", "工程", "职能"],
+    location: "深圳", refCode: "EV3X0V",
+    link: "https://sunwodacampus.zhiye.com/campus/jobs?shareId=e0b808c2-4aae-408c-9ad6-1af2a36b01d6&shareSource=2&qr=1",
+    note: "锂电池龙头"
+  },
+  {
+    id: "ktc", name: "康冠科技", type: "秋招",
+    category: ["科技/硬件"],
+    jobs: ["研发", "硬件", "销售", "职能"],
+    location: "深圳", refCode: "ESVGTG",
+    link: "https://careerktc.zhiye.com/campus/jobs?shareId=c347213b-ae3d-4351-93ac-fc74302f26ad&shareSource=2",
+    note: "显示终端上市公司"
+  },
+  {
+    id: "horizon", name: "地平线", type: "秋招",
+    category: ["智能驾驶"],
+    jobs: ["算法", "软件", "硬件", "测试"],
+    location: "北京/上海/杭州/南京", refCode: "dcncha",
+    link: "https://wecruit.hotjob.cn/SU62d915040dcad43c775ec12c/mc/position/campus?acotycoCode=dcnhca&projectId=103302&recruitType=1",
+    note: "自动驾驶芯片"
+  },
+  {
+    id: "pape", name: "叠纸", type: "秋招",
+    category: ["游戏"],
+    jobs: ["策划", "美术", "技术", "运营"],
+    location: "上海", refCode: "TBVQ96N",
+    link: "https://career.papegames.com/s/Ilctrt2OId8",
+    note: "恋与制作人出品方，选择大使推荐"
+  },
+  {
+    id: "bambulab", name: "拓竹科技", type: "秋招",
+    category: ["科技/硬件"],
+    jobs: ["算法", "研发", "硬件", "软件"],
+    location: "深圳/上海", refCode: "ERN6CB4",
+    link: "https://bambulab.jobs.feishu.cn/s/Gm-idTZDK6s",
+    note: "3D打印龙头，选择大使推荐"
+  },
+  {
+    id: "zuoyebang", name: "作业帮", type: "秋招",
+    category: ["教育"],
+    jobs: ["算法", "研发", "产品", "运营"],
+    location: "北京/上海/郑州/西安/合肥", refCode: "DSKz14EA",
+    link: "https://app.mokahr.com/m/campus_apply/zuoyebang/39595?recommendCode=DSKz14EA&hash=%23%2Fjobs#/jobs",
+    note: ""
+  },
+  {
+    id: "cctc", name: "三环集团", type: "秋招",
+    category: ["工业/制造"],
+    jobs: ["研发", "机电", "职能", "技术支持"],
+    location: "潮州/深圳", refCode: "880128",
+    link: "https://hr.cctc.cc",
+    note: "电子陶瓷与先进材料上市公司"
+  },
+  {
+    id: "luster", name: "凌云光", type: "秋招",
+    category: ["AI/机器人"],
+    jobs: ["算法", "研发", "光学", "硬件"],
+    location: "北京", refCode: "DSQNdtMh",
+    link: "https://app.mokahr.com/m/campus_apply/lusterinc/44882?recommendCode=DSQNdtMh#/jobs",
+    note: "机器视觉龙头"
+  },
+  {
+    id: "tencentmusic", name: "腾讯音乐", type: "秋招",
+    category: ["互联网"],
+    jobs: ["AI", "技术", "产品", "设计", "市场"],
+    location: "深圳/北京", refCode: "DS2ADHUY",
+    link: "https://join.tencentmusic.com/campus/post?type=40",
+    note: "腾讯旗下"
+  },
+  {
+    id: "blueinteractive", name: "深蓝互动", type: "秋招",
+    category: ["游戏"],
+    jobs: ["策划", "美术", "技术", "运营"],
+    location: "广州", refCode: "DS9fAcYP",
+    link: "https://app.mokahr.com/m/campus_apply/blueinteractive/38434?recommendCode=DS9fAcYP#/jobs",
+    note: ""
+  },
+  {
+    id: "ztgame", name: "巨人网络", type: "秋招",
+    category: ["游戏"],
+    jobs: ["策划", "技术", "美术", "运营"],
+    location: "上海", refCode: "DSVThWFJ",
+    link: "https://app.mokahr.com/campus-recruitment/ztgame/92438?recommendCode=DSVThWFJ#/jobs",
+    note: ""
+  },
+  {
+    id: "lingxi", name: "灵犀互娱", type: "秋招",
+    category: ["游戏"],
+    jobs: ["策划", "技术", "美术", "运营"],
+    location: "广州/杭州/上海", refCode: "11RIL2",
+    link: "https://campus-talent.alibaba.com/campus/position?campusShareCode=zcxp_FDgqK0Bk1vouANozytixPuOf9AT0DIYSmzVu0c%3D&batchId=100000760001",
+    note: "阿里旗下，加入意向单仅灵犀互娱"
+  },
+  {
+    id: "poizon", name: "得物", type: "秋招",
+    category: ["互联网"],
+    jobs: ["技术", "产品", "运营", "设计"],
+    location: "上海", refCode: "ARUNW33",
+    link: "https://poizon.jobs.feishu.cn/s/NXW2B_MdXgk",
+    note: "选择校园大使推荐"
+  },
+  {
+    id: "sohu", name: "搜狐集团", type: "秋招",
+    category: ["互联网"],
+    jobs: ["技术", "产品", "运营", "市场"],
+    location: "北京", refCode: "DSeRyPfv",
+    link: "https://app.mokahr.com/m/campus_apply/sohu/5682?recommendCode=DSeRyPfv#/jobs",
+    note: "搜狐集团（区别于搜狐畅游）"
+  },
+  {
+    id: "didi", name: "滴滴", type: "秋招",
+    category: ["互联网"],
+    jobs: ["技术", "产品", "运营", "职能"],
+    location: "北京", refCode: "DSAyag5c",
+    link: "https://app.mokahr.com/m/campus-recruitment/didiglobal/96064?recommendCode=DSAyag5c#/jobs",
+    note: ""
+  },
+  {
+    id: "ant", name: "蚂蚁", type: "秋招",
+    category: ["互联网"],
+    jobs: ["技术", "产品", "运营", "数据"],
+    location: "杭州/北京/上海/深圳", refCode: null,
+    link: "https://hrrecommend.antgroup.com/job-list.html?source=campus_external_recommend&code=xy2vWPFu9IUWJcTewzgjZbZ7Med5UTHQgI1OUZgCqDM%3D",
+    note: "点击链接即内推"
+  },
+  {
+    id: "taobaoshan", name: "淘宝闪购", type: "秋招",
+    category: ["互联网"],
+    jobs: ["AI", "运营"],
+    location: "杭州", refCode: "2T51KE6G",
+    link: "https://campus-talent.alibaba.com/campus/position?campusShareCode=W1cc4K%2FJo7sYKJR55lr5xWWfRCNoEqSAr8bT3AWGkpTRha6TcOM_NtcsyzskX_Vc&batchId=100000760001",
+    note: "阿里系，AI类占比95%，选择淘宝闪购岗位"
+  },
+  {
+    id: "bilibili", name: "哔哩哔哩", type: "秋招",
+    category: ["互联网"],
+    jobs: ["产品运营", "项目管理", "市场", "内容"],
+    location: "上海", refCode: "C2P32W",
+    link: "https://jobs.bilibili.com/campus/positions?token=875ce039-7878-45de-a0bb-af62dd295ba2&page=1",
+    note: ""
+  },
+  {
+    id: "lenovo", name: "联想", type: "秋招",
+    category: ["科技/硬件"],
+    jobs: ["技术", "产品", "市场", "职能"],
+    location: "北京", refCode: "2027XZLMLY",
+    link: "https://talent.lenovo.com.cn",
+    note: "创建简历选联想员工推荐并输入ITcode"
+  },
+  {
+    id: "meituan", name: "美团", type: "秋招",
+    category: ["互联网"],
+    jobs: ["技术", "产品", "运营", "市场"],
+    location: "北京/上海", refCode: "FWPZMZ9",
+    link: "https://zhaopin.meituan.com/m/campus",
+    note: "内推码填写位置不明显，注意手动填写"
+  },
+  {
+    id: "boke", name: "波克", type: "秋招",
+    category: ["游戏"],
+    jobs: ["技术", "美术", "产品", "发行"],
+    location: "上海", refCode: "VHZ5M8C",
+    link: "https://boke.jobs.feishu.cn/s/29bMSqNQCLc",
+    note: "选择校园大使推荐"
+  },
+  {
+    id: "fanruan", name: "帆软", type: "提前批",
+    category: ["互联网"],
+    jobs: ["研发", "产品", "市场", "职能"],
+    location: "无锡/南京", refCode: "BLGLY",
+    link: "https://t6ixa9nyl6.jiandaoyun.com/f/65e1a1308ce7672fded0f0cf?ext=BLGLY",
+    note: "BI软件龙头"
+  },
+  {
+    id: "sunnyoptical", name: "舜宇", type: "秋招",
+    category: ["科技/硬件"],
+    jobs: ["研发", "光学", "硬件", "职能"],
+    location: "宁波", refCode: "DSJEz2rP",
+    link: "https://app.mokahr.com/m/campus-recruitment/sunnyoptical/45602?recommendCode=DSJEz2rP#/jobs",
+    note: "光学镜头龙头"
+  },
+  {
+    id: "sfauto", name: "四方继保", type: "秋招",
+    category: ["工业/制造"],
+    jobs: ["研发", "工程", "技术支持"],
+    location: "北京", refCode: null,
+    link: "https://sf-auto1.zhiye.com/campus/jobs?shareId=6ae9525a-b100-487e-b3e6-9c20c72f6a90&shareSource=2&qr=1&memory=%7B%7D&silence=1",
+    note: "电力自动化，点击链接即内推"
+  },
+  {
+    id: "haier", name: "海尔", type: "提前批",
+    category: ["科技/硬件"],
+    jobs: ["研发", "技术", "市场", "职能"],
+    location: "青岛/北京/上海", refCode: "GHJ530",
+    link: "https://maker.haier.net/client/campusmobile/customizedjobs/type/top.html?inviter_code=UDFMb2ZaK3F3Mjg9",
+    note: "家电龙头"
+  },
+  {
+    id: "qunhe", name: "群核科技", type: "秋招",
+    category: ["互联网"],
+    jobs: ["算法", "研发", "产品", "设计"],
+    location: "杭州", refCode: "DS8SfASG",
+    link: "https://app.mokahr.com/m/campus_apply/qunhemail/2832?recommendCode=DS8SfASG#/jobs",
+    note: "酷家乐母公司"
+  },
+  {
+    id: "arcsoft", name: "虹软科技", type: "提前批",
+    category: ["AI/机器人"],
+    jobs: ["算法", "研发", "测试"],
+    location: "杭州/上海", refCode: "IVVA3A",
+    link: "https://neitui.italent.cn/arcsoft/sharejobs?shareId=cb2dfc5d-92ac-4dec-bf3d-0080bda41595&language=zh_CN",
+    note: "视觉AI"
+  },
+  {
+    id: "yealink", name: "亿联网络", type: "提前批",
+    category: ["科技/硬件"],
+    jobs: ["研发", "硬件", "软件", "测试"],
+    location: "厦门", refCode: "EVBJSA",
+    link: "https://yealink.zhiye.com/campus/jobs?shareId=24014015-cb4a-4a8a-beb2-04acf1236b4e&shareSource=2",
+    note: "统一通信设备"
+  },
+  {
+    id: "vivo", name: "vivo", type: "秋招",
+    category: ["科技/硬件"],
+    jobs: ["算法", "软件", "硬件", "设计"],
+    location: "深圳/东莞", refCode: "EV1AV0",
+    link: "https://hr-campus.vivo.com/campus/jobs?shareId=307651af-8827-443a-9fe0-ebd5a0f3e724&shareSource=2",
+    note: ""
+  },
 ];
