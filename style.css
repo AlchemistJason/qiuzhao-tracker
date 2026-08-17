@@ -1069,3 +1069,117 @@ mark.hl {
 .fp-group .fp-caret { transform: rotate(-90deg); }
 .fp-group:not(.collapsed) .fp-caret { transform: rotate(0deg); }
 .fp-group.collapsed .fp-caret { transform: rotate(-90deg); }
+
+/* ====== v6 岗位级投递：岗位管理弹窗 / chips / 📎 入口 ====== */
+
+/* 📎 岗位管理入口（表格/卡片/看板状态列旁） */
+.job-mini {
+  border: 1px solid var(--border);
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  border-radius: 6px;
+  padding: 4px 6px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+  line-height: 1;
+  white-space: nowrap;
+}
+.job-mini:hover { border-color: var(--accent); color: var(--accent); }
+.job-count {
+  background: var(--accent);
+  color: #fff;
+  border-radius: 999px;
+  font-size: 9px;
+  min-width: 13px;
+  height: 13px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 3px;
+  margin-left: 2px;
+}
+
+/* 已投岗位 chips（卡片/看板） */
+.card-applied-jobs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 6px 0;
+}
+.job-chip {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+}
+.job-chip[data-status="已投递"] { color: var(--cyan); border-color: rgba(34,211,238,0.35); }
+.job-chip[data-status="笔试中"] { color: var(--orange); border-color: rgba(251,146,60,0.35); }
+.job-chip[data-status="面试中"] { color: var(--purple); border-color: rgba(167,139,250,0.35); }
+.job-chip[data-status="Offer"] { color: var(--green); border-color: rgba(52,211,153,0.4); font-weight: 600; }
+.job-chip[data-status="已拒绝"] { color: var(--text-muted); text-decoration: line-through; }
+
+/* 岗位管理弹窗 */
+.job-modal-agg {
+  font-size: 12px;
+  color: var(--accent);
+  font-weight: 700;
+  margin-bottom: 10px;
+  padding: 6px 10px;
+  background: var(--accent-glow);
+  border-radius: 8px;
+}
+.job-input-row {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+.job-input {
+  flex: 1;
+  padding: 9px 12px;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg-secondary);
+  color: var(--text);
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.job-input:focus { border-color: var(--accent); }
+.job-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  margin-bottom: 6px;
+  background: var(--card);
+}
+.job-row-name {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 600;
+  word-break: break-all;
+}
+.job-row .status-select { width: auto; }
+.job-row-del {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 13px;
+  cursor: pointer;
+  padding: 6px 8px;
+}
+.job-row-del:hover { color: var(--red); }
+.job-empty {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 12px;
+  padding: 16px 0;
+  border: 1px dashed var(--border);
+  border-radius: 10px;
+}
