@@ -117,10 +117,16 @@ function matchFilters(c, f, getSt) {
   if (f.status.size && !f.status.has(s.status)) return false;
   if (f.locations.size && !(c.location || "").split("/").some(l => f.locations.has(l.trim()))) return false;
   if (f.industries.size && !c.category.some(cat => f.industries.has(cat))) return false;
-  if (f.jobs.size && !c.jobs.some(j => [...f.jobs].some(k => j.includes(k)))) return false;
+  // v6: 岗位筛选匹配 公司招聘岗位 OR 已投递岗位
+  if (f.jobs.size) {
+    const applied = Object.keys(s.jobs || {});
+    const matchRecruit = c.jobs.some(j => [...f.jobs].some(k => j.includes(k)));
+    const matchApplied = applied.some(j => [...f.jobs].some(k => j.includes(k)));
+    if (!matchRecruit && !matchApplied) return false;
+  }
   if (f.keyword) {
     const words = splitKeywords(f.keyword);
-    const haystack = `${c.name} ${c.jobs.join(" ")} ${c.location} ${c.category.join(" ")} ${c.note} ${c.refCode || ""} ${c.program || ""}`.toLowerCase();
+    const haystack = `${c.name} ${c.jobs.join(" ")} ${c.location} ${c.category.join(" ")} ${c.note} ${c.refCode || ""} ${c.program || ""} ${Object.keys(s.jobs || {}).join(" ")}`.toLowerCase();
     if (!words.every(w => haystack.includes(w))) return false;  // 空格分词 AND
   }
   return true;
@@ -166,9 +172,41 @@ function parseLocalDate(str) {
 function defaultState() {
   const companies = {};
   COMPANIES.forEach(c => {
-    companies[c.id] = { status: "未投递", starred: false, note: "", lastUpdate: null };
+    companies[c.id] = { status: "未投递", starred: false, note: "", lastUpdate: null, jobs: {} };
   });
-  return { version: 2, companies };
+  return { version: 3, companies };
+}
+
+// ============================================================
+// v6: 岗位级投递状态（一个公司投多个岗位，各自独立进度）
+// ============================================================
+const JOB_STATUS_RANK = { "Offer": 6, "面试中": 5, "笔试中": 4, "已投递": 3, "已拒绝": 2, "未投递": 1 };
+
+// 公司总状态聚合（纯函数可测）：无岗位回退 fallback；有岗位取最高优先级
+function deriveCompanyStatus(jobsMap, fallback) {
+  const vals = Object.values(jobsMap || {});
+  if (vals.length === 0) return fallback || "未投递";
+  let best = "未投递";
+  vals.forEach(v => {
+    if ((JOB_STATUS_RANK[v] || 0) > (JOB_STATUS_RANK[best] || 0)) best = v;
+  });
+  return best;
+}
+
+// v2 → v3 无损迁移（纯函数可测）：老状态保留，补 jobs 空映射
+function upgradeToV3(state) {
+  const v = { version: 3, companies: {} };
+  Object.keys(state.companies || {}).forEach(id => {
+    const st = state.companies[id] || {};
+    v.companies[id] = {
+      status: st.status || "未投递",
+      starred: !!st.starred,
+      note: st.note || "",
+      lastUpdate: st.lastUpdate === undefined ? null : st.lastUpdate,
+      jobs: st.jobs && typeof st.jobs === "object" ? st.jobs : {}
+    };
+  });
+  return v;
 }
 
 function loadState() {
@@ -178,17 +216,21 @@ function loadState() {
   if (raw) {
     try {
       const parsed = JSON.parse(raw);
-      // v2 格式直接使用
-      if (parsed && parsed.version === 2 && parsed.companies) {
+      // v3 格式直接使用
+      if (parsed && parsed.version === 3 && parsed.companies) {
         return parsed;
+      }
+      // v2 格式 → v3 迁移（补 jobs 映射，老数据无损）
+      if (parsed && parsed.version === 2 && parsed.companies) {
+        return upgradeToV3(parsed);
       }
       // 旧格式（v1：无 version 字段，companies 以公司名为 key）→ 自动迁移
       if (parsed && parsed.companies && typeof parsed.companies === "object") {
-        return migrateV1(parsed);
+        return upgradeToV3(migrateV1(parsed));
       }
       // 更旧的格式（直接 {name: {status...}} 无 companies 包裹）
       if (parsed && typeof parsed === "object" && !parsed.companies && !parsed.version) {
-        return migrateBare(parsed);
+        return upgradeToV3(migrateBare(parsed));
       }
     } catch(e) {
       console.warn("状态数据损坏，尝试回滚快照", e);
@@ -201,7 +243,7 @@ function loadState() {
     const newest = snapshots[snapshots.length - 1];
     if (newest && newest.data && newest.data.companies) {
       showToast("⚠️ 状态已从最近备份自动恢复");
-      return newest.data;
+      return upgradeToV3(newest.data);
     }
   }
   return defaultState();
@@ -282,6 +324,8 @@ function getState(id) {
   }
   // 兼容老数据：缺 lastUpdate 字段补 null
   if (userState.companies[id].lastUpdate === undefined) userState.companies[id].lastUpdate = null;
+  // v6 兼容：缺 jobs 映射补空对象
+  if (userState.companies[id].jobs === undefined) userState.companies[id].jobs = {};
   return userState.companies[id];
 }
 
@@ -421,7 +465,12 @@ function renderTable(data) {
           <button class="copy-mini" onclick="copyCompany(this,'${c.id}')" title="复制整条投递信息" aria-label="复制整条信息">📋</button>
         </div>
       </td>
-      <td><select class="status-select" data-status="${escapeHtml(s.status)}" aria-label="投递状态" onchange="setStatus('${c.id}', this.value, this)">${statusOptions}</select></td>
+      <td>
+        <div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap">
+          <select class="status-select" data-status="${escapeHtml(s.status)}" aria-label="投递状态" onchange="setStatus('${c.id}', this.value, this)">${statusOptions}</select>
+          <button class="job-mini" onclick="openJobModal('${c.id}')" title="管理投递岗位" aria-label="管理投递岗位">📎<span class="job-count">${Object.keys(s.jobs).length || ""}</span></button>
+        </div>
+      </td>
       <td><input type="text" class="note-input" placeholder="点击添加..." aria-label="个人备注" value="${escapeHtml(s.note)}" onblur="setNote('${c.id}', this.value)"></td>
     </tr>`;
   }).join("");
@@ -457,11 +506,13 @@ function renderCards(data) {
         <span style="margin-left:6px">${deadlineHTML(c.deadline)}</span>
       </div>
       <div class="card-jobs">${jobTags}</div>
+      ${Object.keys(s.jobs).length ? `<div class="card-applied-jobs">${Object.keys(s.jobs).map(n => `<span class="job-chip" data-status="${escapeHtml(s.jobs[n])}">${escapeHtml(n)}·${escapeHtml(s.jobs[n])}</span>`).join("")}</div>` : ""}
       <div class="card-info">${escapeHtml(c.note)}</div>
       <div class="card-footer">
         ${refHTML}
         ${c.link ? `<a href="${safeLink(c.link)}" target="_blank" rel="noopener" class="link-btn">投递</a>` : ""}
         <button class="copy-mini" onclick="copyCompany(this,'${c.id}')" title="复制整条投递信息" aria-label="复制整条信息">📋</button>
+        <button class="job-mini" onclick="openJobModal('${c.id}')" title="管理投递岗位" aria-label="管理投递岗位">📎<span class="job-count">${Object.keys(s.jobs).length || ""}</span></button>
         <select class="status-select" data-status="${escapeHtml(s.status)}" aria-label="投递状态" onchange="setStatus('${c.id}', this.value, this)">${statusOptions}</select>
       </div>
       <input type="text" class="note-input" style="margin-top:8px" placeholder="个人备注..." aria-label="个人备注" value="${escapeHtml(s.note)}" onblur="setNote('${c.id}', this.value)">
@@ -567,7 +618,11 @@ function renderKanban(data) {
           ${c.refCode ? `<span class="ref-code" onclick="copyCode(this,'${c.id}')">${escapeHtml(c.refCode)}</span>` : ""}
           ${c.link ? `<a href="${safeLink(c.link)}" target="_blank" rel="noopener" class="link-btn">投递</a>` : ""}
         </div>
-        <select class="status-select" data-status="${escapeHtml(s.status)}" aria-label="投递状态" onchange="setStatus('${c.id}', this.value, this)">${statusOptions}</select>
+        ${Object.keys(s.jobs).length ? `<div class="card-applied-jobs">${Object.keys(s.jobs).map(n => `<span class="job-chip" data-status="${escapeHtml(s.jobs[n])}">${escapeHtml(n)}·${escapeHtml(s.jobs[n])}</span>`).join("")}</div>` : ""}
+        <div style="display:flex;gap:4px;align-items:center">
+          <select class="status-select" data-status="${escapeHtml(s.status)}" aria-label="投递状态" onchange="setStatus('${c.id}', this.value, this)">${statusOptions}</select>
+          <button class="job-mini" onclick="openJobModal('${c.id}')" title="管理投递岗位" aria-label="管理投递岗位">📎<span class="job-count">${Object.keys(s.jobs).length || ""}</span></button>
+        </div>
       </div>`;
     }).join("");
     return `
@@ -1050,8 +1105,15 @@ function toggleStar(id) {
 }
 
 function setStatus(id, status, el) {
-  const prev = getState(id).status;
-  getState(id).status = status;
+  const s = getState(id);
+  // v6: 已记录投递岗位时，公司总状态由岗位自动聚合，禁止手动覆盖
+  if (Object.keys(s.jobs).length > 0) {
+    el.value = deriveCompanyStatus(s.jobs, s.status);
+    showToast("已记录投递岗位，总进度由岗位自动聚合（点 📎 管理）");
+    return;
+  }
+  const prev = s.status;
+  s.status = status;
   touchState(id);
   el.setAttribute("data-status", status);
   saveState();
@@ -1063,6 +1125,96 @@ function setStatus(id, status, el) {
     const c = COMPANIES.find(x => x.id === id);
     showToast(`${c ? c.name : id}：${prev} → ${status}`);
   }
+}
+
+// ============================================================
+// v6: 岗位级投递管理（一个公司可投多个岗位，各自独立进度）
+// ============================================================
+let jobModalId = null;
+
+function refreshAll() {
+  renderDashboard();
+  renderTodo();
+  renderWeekly();
+  refreshFilterUI();
+  applyFilters();
+}
+
+// 添加投递岗位（自由填写，去重/trim/限长防注入）
+function addAppliedJob(id) {
+  const input = document.getElementById("jobInput");
+  const name = (input.value || "").trim().slice(0, 30);
+  if (!name) { showToast("请输入岗位名"); return; }
+  const s = getState(id);
+  if (s.jobs[name]) { showToast("该岗位已在列表"); return; }
+  s.jobs[name] = "已投递";
+  s.status = deriveCompanyStatus(s.jobs, s.status);  // 聚合写回
+  touchState(id);
+  saveState();
+  renderJobModal(id);
+  refreshAll();
+  input.value = "";
+  input.focus();
+}
+
+function removeAppliedJob(id, name) {
+  const s = getState(id);
+  delete s.jobs[name];
+  s.status = deriveCompanyStatus(s.jobs, s.status);  // 聚合写回
+  touchState(id);
+  saveState();
+  renderJobModal(id);
+  refreshAll();
+}
+
+function setJobStatus(id, name, status) {
+  const s = getState(id);
+  s.jobs[name] = status;
+  s.status = deriveCompanyStatus(s.jobs, s.status);  // 聚合写回
+  touchState(id);
+  saveState();
+  renderJobModal(id);
+  refreshAll();
+}
+
+function openJobModal(id) {
+  jobModalId = id;
+  const modal = document.getElementById("jobModal");
+  modal.style.display = "flex";
+  renderJobModal(id);
+  setTimeout(() => {
+    const inp = document.getElementById("jobInput");
+    if (inp) inp.focus();
+  }, 50);
+}
+
+function closeJobModal() {
+  document.getElementById("jobModal").style.display = "none";
+  jobModalId = null;
+}
+
+function renderJobModal(id) {
+  const c = COMPANIES.find(x => x.id === id);
+  if (!c) return;
+  const s = getState(id);
+  document.getElementById("jobModalTitle").textContent = `${c.name} · 投递岗位`;
+  const agg = deriveCompanyStatus(s.jobs, s.status);
+  document.getElementById("jobModalAgg").textContent = `总进度：${agg}（由各岗位自动聚合）`;
+  const rows = Object.keys(s.jobs).map(name =>
+    `<div class="job-row">
+      <span class="job-row-name">${escapeHtml(name)}</span>
+      <select class="status-select" aria-label="岗位 ${escapeHtml(name)} 状态" onchange="setJobStatus('${id}','${escapeHtml(name)}',this.value)">
+        ${STATUS_OPTIONS.map(o => `<option value="${o}" ${s.jobs[name] === o ? "selected" : ""}>${o}</option>`).join("")}
+      </select>
+      <button class="job-row-del" onclick="removeAppliedJob('${id}','${escapeHtml(name)}')" aria-label="删除岗位 ${escapeHtml(name)}">✕</button>
+    </div>`
+  ).join("");
+  document.getElementById("jobModalList").innerHTML = rows || `<div class="job-empty">还没记录投递岗位，输入岗位名添加 👇</div>`;
+  // 同步输入框回车添加
+  const inp = document.getElementById("jobInput");
+  if (inp) inp.onkeydown = function(e) {
+    if (e.key === "Enter" && !e.isComposing) { e.preventDefault(); addAppliedJob(id); }
+  };
 }
 
 function setNote(id, note) {
@@ -1110,10 +1262,11 @@ function toggleTheme() {
 // 导出 CSV
 // ============================================================
 function exportCSV() {
-  const rows = [["序号", "公司", "类型", "专项", "岗位", "地点", "截止日期", "内推码", "投递状态", "个人备注"]];
+  const rows = [["序号", "公司", "类型", "专项", "岗位", "地点", "截止日期", "内推码", "投递状态", "已投岗位", "个人备注"]];
   COMPANIES.forEach((c, i) => {
     const s = getState(c.id);
-    rows.push([i + 1, c.name, c.type, c.program || "", c.jobs.join("、"), c.location, c.deadline || "", c.refCode || "链接即内推", s.status, s.note]);
+    const appliedJobs = Object.entries(s.jobs || {}).map(([n, st]) => `${n}:${st}`).join("|");
+    rows.push([i + 1, c.name, c.type, c.program || "", c.jobs.join("、"), c.location, c.deadline || "", c.refCode || "链接即内推", s.status, appliedJobs, s.note]);
   });
   const csv = rows.map(r => r.map(csvSafe).join(",")).join("\n");
   const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8" });
@@ -1192,7 +1345,8 @@ function importJSON(event) {
 // 二维码跨设备同步（手机↔电脑）
 // ============================================================
 function encodeSyncCode() {
-  const payload = { v: 2, c: userState.companies };
+  // v6: 同步码升级到 v3（含岗位级 jobs 映射）；兼容 v2 老码解码
+  const payload = { v: 3, c: userState.companies };
   const json = JSON.stringify(payload);
   // UTF-8 安全 base64
   return btoa(unescape(encodeURIComponent(json)));
@@ -1296,8 +1450,9 @@ function importSyncFromText() {
   if (!ta || !ta.value.trim()) { showToast("请先粘贴同步码"); return; }
   try {
     const payload = decodeSyncCode(ta.value);
-    if (!payload || payload.v !== 2 || !payload.c) throw new Error("格式错误");
-    mergeSync(payload.c);
+    if (!payload || (payload.v !== 2 && payload.v !== 3) || !payload.c) throw new Error("格式错误");
+    // v6: 兼容 v2 老码，统一升级到 v3 后合并
+    mergeSync(upgradeToV3({ version: payload.v, companies: payload.c }).companies);
     showToast("✅ 状态同步完成");
     closeSyncModal();
   } catch(e) {
@@ -1349,8 +1504,9 @@ async function startQrScanner() {
       function(decodedText) {
         try {
           const payload = decodeSyncCode(decodedText);
-          if (payload && payload.v === 2 && payload.c) {
-            mergeSync(payload.c);
+          if (payload && (payload.v === 2 || payload.v === 3) && payload.c) {
+            // v6: 兼容 v2 老码，统一升级到 v3 后合并
+            mergeSync(upgradeToV3({ version: payload.v, companies: payload.c }).companies);
             showToast("✅ 扫码同步成功");
             closeSyncModal();
           } else {
