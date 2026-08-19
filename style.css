@@ -1183,3 +1183,30 @@ mark.hl {
   border: 1px dashed var(--border);
   border-radius: 10px;
 }
+
+/* ====== v7 云同步：徽标状态 + 设置弹窗 ====== */
+
+.cloud-off { border-color: var(--border); color: var(--text-muted); }
+.cloud-ok { border-color: rgba(52,211,153,0.5); color: var(--green); }
+.cloud-syncing { border-color: var(--accent); color: var(--accent); animation: cloudPulse 1s infinite; }
+.cloud-err { border-color: var(--red); color: var(--red); }
+@keyframes cloudPulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+.cloud-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  margin: 10px 0 4px;
+}
+.cloud-check { font-weight: 500; color: var(--text-secondary); display: flex; align-items: center; gap: 6px; }
+.cloud-check input { accent-color: var(--accent); }
+.cloud-status {
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--accent);
+  font-weight: 600;
+  padding: 6px 10px;
+  background: var(--accent-glow);
+  border-radius: 8px;
+}
