@@ -316,6 +316,7 @@ function saveState() {
   } catch(e) {
     console.warn("保存失败", e);
   }
+  scheduleCloudPush();  // v7: 本地变更后防抖云同步
 }
 
 function getState(id) {
@@ -1344,6 +1345,206 @@ function importJSON(event) {
 // ============================================================
 // 二维码跨设备同步（手机↔电脑）
 // ============================================================
+// ============================================================
+// v7: 云同步（LeanCloud REST，纯前端免后端）
+// ============================================================
+const CLOUD_KEY = "qiuzhao2027.cloud";
+const CLOUD_CLASS = "QiuzhaoState";
+const DEFAULT_SERVER = "https://api.leancloud.cn";
+let cloudTimer = null;
+let cloudStatus = "off";  // off | syncing | synced | error
+
+function getCloudConfig() {
+  try {
+    const c = JSON.parse(localStorage.getItem(CLOUD_KEY)) || {};
+    return { appId: c.appId || "", appKey: c.appKey || "", serverURL: c.serverURL || DEFAULT_SERVER, enabled: c.enabled !== false };
+  } catch(e) { return { appId: "", appKey: "", serverURL: DEFAULT_SERVER, enabled: true }; }
+}
+function saveCloudConfig(cfg) {
+  localStorage.setItem(CLOUD_KEY, JSON.stringify(cfg));
+  updateCloudBadge();
+}
+
+// 公司级合并（纯函数可测）：同公司取 lastUpdate 较新者，单方有则用单方
+function mergeCloudState(local, remote) {
+  const out = {};
+  const allIds = new Set([...Object.keys(local.companies || {}), ...Object.keys(remote.companies || {})]);
+  allIds.forEach(id => {
+    const l = local.companies[id];
+    const r = remote.companies[id];
+    if (!l) { out[id] = r; return; }
+    if (!r) { out[id] = l; return; }
+    out[id] = (l.lastUpdate || 0) >= (r.lastUpdate || 0) ? l : r;
+  });
+  return { version: 3, companies: out };
+}
+
+async function cloudFetch(path, opts = {}) {
+  const cfg = getCloudConfig();
+  if (!cfg.appId || !cfg.appKey) throw new Error("未配置云同步");
+  const res = await fetch(cfg.serverURL + path, {
+    ...opts,
+    headers: {
+      "X-LC-Id": cfg.appId,
+      "X-LC-Key": cfg.appKey,
+      "Content-Type": "application/json",
+      ...(opts.headers || {})
+    }
+  });
+  if (!res.ok) throw new Error("云同步 HTTP " + res.status);
+  return res.json();
+}
+
+async function cloudGetObject() {
+  const list = await cloudFetch(`/1.1/classes/${CLOUD_CLASS}?limit=1&order=-updatedAt`);
+  if (list.results && list.results.length > 0 && list.results[0].state) {
+    return { id: list.results[0].objectId, state: JSON.parse(list.results[0].state) };
+  }
+  return null;
+}
+
+async function cloudCreateObject() {
+  const body = { state: JSON.stringify(userState), lastSync: new Date().toISOString() };
+  const created = await cloudFetch(`/1.1/classes/${CLOUD_CLASS}`, { method: "POST", body: JSON.stringify(body) });
+  return created.objectId;
+}
+
+// 上传：先拉云端做公司级合并（避免覆盖另一设备的修改）再整体写入
+async function cloudPush() {
+  const cfg = getCloudConfig();
+  if (!cfg.enabled || !cfg.appId || !cfg.appKey) return;
+  setCloudStatus("syncing");
+  try {
+    const remote = await cloudGetObject();
+    let id = remote && remote.id;
+    if (remote && remote.state) {
+      const merged = mergeCloudState(userState, remote.state);
+      userState = merged;
+      saveStateRaw();
+    } else if (!id) {
+      id = await cloudCreateObject();
+    }
+    if (id) {
+      await cloudFetch(`/1.1/classes/${CLOUD_CLASS}/${id}`, {
+        method: "PUT",
+        body: JSON.stringify({ state: JSON.stringify(userState), lastSync: new Date().toISOString() })
+      });
+    }
+    setCloudStatus("synced");
+  } catch(e) {
+    setCloudStatus("error");
+    console.warn("云同步上传失败", e);
+  }
+}
+
+// 拉取：合并云端到本地（公司级），页面加载与手动触发
+async function cloudPull() {
+  const cfg = getCloudConfig();
+  if (!cfg.enabled || !cfg.appId || !cfg.appKey) return;
+  setCloudStatus("syncing");
+  try {
+    const remote = await cloudGetObject();
+    if (remote && remote.state) {
+      const merged = mergeCloudState(userState, remote.state);
+      userState = merged;
+      saveStateRaw();
+      refreshAll();
+      showToast("☁️ 已从云端同步");
+    } else {
+      await cloudCreateObject();
+    }
+    setCloudStatus("synced");
+  } catch(e) {
+    setCloudStatus("error");
+    console.warn("云同步拉取失败", e);
+  }
+}
+
+// 仅写本地（避免 cloudPull/cloudPush 合并时再次触发防抖上传形成循环）
+function saveStateRaw() {
+  try { localStorage.setItem(STATE_KEY, JSON.stringify(userState)); } catch(e) { console.warn("保存失败", e); }
+}
+
+// 本地变更 → 防抖 8 秒后自动上传
+function scheduleCloudPush() {
+  const cfg = getCloudConfig();
+  if (!cfg.enabled || !cfg.appId || !cfg.appKey) return;
+  clearTimeout(cloudTimer);
+  cloudTimer = setTimeout(cloudPush, 8000);
+}
+
+function setCloudStatus(s) {
+  cloudStatus = s;
+  updateCloudBadge();
+}
+
+function updateCloudBadge() {
+  const btn = document.getElementById("cloudBtn");
+  if (!btn) return;
+  const cfg = getCloudConfig();
+  if (!cfg.appId || !cfg.appKey) {
+    btn.className = "icon-btn cloud-off";
+    btn.title = "☁️ 云同步未配置（点击配置）";
+    return;
+  }
+  if (cloudStatus === "syncing") { btn.className = "icon-btn cloud-syncing"; btn.title = "☁️ 同步中..."; }
+  else if (cloudStatus === "error") { btn.className = "icon-btn cloud-err"; btn.title = "☁️ 同步失败（点击查看）"; }
+  else { btn.className = "icon-btn cloud-ok"; btn.title = "☁️ 云同步正常（点击配置/立即同步）"; }
+}
+
+// 云同步设置弹窗
+function openCloudModal() {
+  const cfg = getCloudConfig();
+  const modal = document.getElementById("cloudModal");
+  document.getElementById("cloudModalTitle").textContent = "☁️ 云同步设置";
+  document.getElementById("cloudAppId").value = cfg.appId;
+  document.getElementById("cloudAppKey").value = cfg.appKey;
+  document.getElementById("cloudServer").value = cfg.serverURL;
+  document.getElementById("cloudEnabled").checked = cfg.enabled;
+  const st = document.getElementById("cloudStatus");
+  st.textContent = cfg.appId ? (cloudStatus === "synced" ? "✅ 已连接" : cloudStatus === "error" ? "⚠️ 上次同步失败" : cloudStatus === "syncing" ? "🔄 同步中" : "⚪ 待同步") : "未配置";
+  modal.style.display = "flex";
+}
+
+function closeCloudModal() {
+  document.getElementById("cloudModal").style.display = "none";
+}
+
+function saveCloudSettings() {
+  const cfg = {
+    appId: document.getElementById("cloudAppId").value.trim(),
+    appKey: document.getElementById("cloudAppKey").value.trim(),
+    serverURL: document.getElementById("cloudServer").value.trim() || DEFAULT_SERVER,
+    enabled: document.getElementById("cloudEnabled").checked
+  };
+  if (!cfg.appId || !cfg.appKey) { showToast("请填写 AppID 和 AppKey"); return; }
+  saveCloudConfig(cfg);
+  cloudStatus = "off";
+  closeCloudModal();
+  showToast("☁️ 配置已保存，开始同步...");
+  cloudPush();
+}
+
+async function testCloud() {
+  const cfg = {
+    appId: document.getElementById("cloudAppId").value.trim(),
+    appKey: document.getElementById("cloudAppKey").value.trim(),
+    serverURL: document.getElementById("cloudServer").value.trim() || DEFAULT_SERVER,
+    enabled: document.getElementById("cloudEnabled").checked
+  };
+  if (!cfg.appId || !cfg.appKey) { showToast("请先填写 AppID 和 AppKey"); return; }
+  const st = document.getElementById("cloudStatus");
+  st.textContent = "🔄 测试中...";
+  try {
+    saveCloudConfig(cfg);
+    await cloudGetObject();
+    st.textContent = "✅ 连接成功";
+    showToast("☁️ 连接成功");
+  } catch(e) {
+    st.textContent = "❌ 连接失败：" + e.message;
+  }
+}
+
 function encodeSyncCode() {
   // v6: 同步码升级到 v3（含岗位级 jobs 映射）；兼容 v2 老码解码
   const payload = { v: 3, c: userState.companies };
@@ -1560,3 +1761,5 @@ renderTodo();          // 今日待办聚合
 renderWeekly();        // 本周动态统计
 switchView(currentView); // 同步初始视图（修复移动端首屏显示空表格的问题）
 checkDeadlineAlert();  // 页面打开时的截止提醒（每天一次）
+updateCloudBadge();    // v7: 云同步状态徽标
+cloudPull();           // v7: 页面加载拉取云端并合并
