@@ -62,5 +62,22 @@
       "link": "",
       "suggestStatus": null
     }
-  ]
+  ],
+  "archive": {
+    "offer": [
+      { "id": "mail-gf-offer-20260826", "company": "广发证券", "jobName": "校园招聘实习生（财富管理部）", "receivedAt": "2026-08-26T07:11:11Z" }
+    ],
+    "interview": [
+      { "id": "mail-baidu-interview-eval-20260826", "company": "百度", "jobName": "Agent算法实习生", "receivedAt": "2026-08-26T12:01:20Z" },
+      { "id": "mail-shein-interview-eval-20260825", "company": "SHEIN", "jobName": "产研实习生", "receivedAt": "2026-08-25T10:16:10Z" }
+    ],
+    "written": [],
+    "reject": [],
+    "deadline": [],
+    "evaluation": [],
+    "clue": [
+      { "id": "mail-anker-campus-20260826", "company": "安克创新", "jobName": "2027届全球校招", "receivedAt": "2026-08-26T05:01:23Z" },
+      { "id": "mail-longcheer-campaign-20260825", "company": "龙旗科技", "jobName": "2027届秋招", "receivedAt": "2026-08-25T10:04:10Z" }
+    ]
+  }
 }
