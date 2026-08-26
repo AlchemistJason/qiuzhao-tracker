@@ -24,7 +24,7 @@
 </script>
 <script src="https://cdn.staticfile.org/qrcodejs/1.0.0/qrcode.min.js" defer></script>
 <!-- html5-qrcode 改为按需动态加载（见 app.js startQrScanner），避免 ~300KB 全量下载 -->
-<link rel="stylesheet" href="style.css?v=6.0">
+<link rel="stylesheet" href="style.css?v=6.1">
 </head>
 <body>
 
@@ -188,8 +188,13 @@
   </div>
 </div>
 
-<script src="data.js?v=6.0"></script>
-<script src="app.js?v=6.0"></script>
+<script src="data.js?v=6.1"></script>
+<!-- 求职Agent · 模块化加载（顺序敏感：core 基础层 → views 视图 → features 交互 → export-sync 导出同步 → main 入口） -->
+<script src="js/core.js?v=6.1"></script>
+<script src="js/views.js?v=6.1"></script>
+<script src="js/features.js?v=6.1"></script>
+<script src="js/export-sync.js?v=6.1"></script>
+<script src="js/main.js?v=6.1"></script>
 
 </body>
 </html>
