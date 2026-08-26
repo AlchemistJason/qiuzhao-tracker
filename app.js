@@ -1198,9 +1198,9 @@ function toggleDynList() {
 function renderDynamicsBar(items) {
   const bar = document.getElementById("dynBar");
   if (!bar) return;
-  if (!items.length) { bar.classList.add("hidden"); return; }
+  window.__dynItems = items;  // 先赋值，保证待办计算可用
+  if (!items.length) { bar.classList.add("hidden"); renderTodo(); return; }
   bar.classList.remove("hidden");
-  window.__dynItems = items;
   document.getElementById("dynCount").textContent = items.length;
   document.getElementById("dynList").innerHTML = items.map(it =>
     `<div class="dyn-item">
@@ -1213,6 +1213,7 @@ function renderDynamicsBar(items) {
       <button class="job-row-del" onclick="ignoreDynamic('${it.id}')" aria-label="忽略该动态">✕</button>
     </div>`
   ).join("");
+  renderTodo();  // v6.0: 动态进入待办计算后重刷待办条
 }
 
 // 采纳动态：匹配到系统公司 → 岗位级状态更新；新公司 → 提示去表格添加
