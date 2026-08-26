@@ -24,7 +24,7 @@
 </script>
 <script src="https://cdn.staticfile.org/qrcodejs/1.0.0/qrcode.min.js" defer></script>
 <!-- html5-qrcode 改为按需动态加载（见 app.js startQrScanner），避免 ~300KB 全量下载 -->
-<link rel="stylesheet" href="style.css?v=5.9">
+<link rel="stylesheet" href="style.css?v=6.0">
 </head>
 <body>
 
@@ -45,6 +45,12 @@
   </div>
 
   <div class="dashboard" id="dashboard"></div>
+  <div class="dyn-bar hidden" id="dynBar">
+    <button class="dyn-toggle" onclick="toggleDynList()">
+      📧 邮件动态 (<span id="dynCount">0</span>) ▾
+    </button>
+    <div id="dynList" class="dyn-list hidden"></div>
+  </div>
   <div class="todo-bar hidden" id="todoBar"></div>
   <div class="weekly-bar hidden" id="weeklyBar"></div>
 
@@ -182,8 +188,8 @@
   </div>
 </div>
 
-<script src="data.js?v=5.9"></script>
-<script src="app.js?v=5.9"></script>
+<script src="data.js?v=6.0"></script>
+<script src="app.js?v=6.0"></script>
 
 </body>
 </html>
