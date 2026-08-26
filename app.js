@@ -660,6 +660,22 @@ function getTodoItems() {
       todo.push({ c, type: "active", days: null, label: s.status === "笔试中" ? "笔试进行中" : "面试进行中" });
     }
   });
+  // v6.0: 邮箱动态中的待办（Offer 待回复 / 截止提醒 / 面试笔试动态）——无需采纳即可提醒
+  (window.__dynItems || []).forEach(it => {
+    if (!["offer", "written", "interview", "deadline"].includes(it.type)) return;
+    let days = null;
+    if (it.dueDate) {
+      const dl = parseLocalDate(it.dueDate);
+      if (dl) { dl.setHours(0, 0, 0, 0); days = Math.round((dl - now) / 86400000); }
+    }
+    const typeLabel = DYN_TYPE_LABEL[it.type] || it.type;
+    todo.push({
+      c: { name: it.company },
+      type: it.type === "deadline" ? "deadline" : "active",
+      days,
+      label: `${typeLabel}${days !== null && days >= 0 ? ` · ${days === 0 ? "今天截止" : days + "天内需处理"}` : "进行中"}`
+    });
+  });
   return todo;
 }
 
