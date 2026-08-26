@@ -1129,6 +1129,100 @@ function setStatus(id, status, el) {
 }
 
 // ============================================================
+// v6.0: 邮件动态追踪（WorkBuddy 扫描邮箱 → dynamics.json → 网站确认应用）
+// ============================================================
+const DYN_SEEN_KEY = "qiuzhao2027.dynSeen";
+const DYN_TYPE_LABEL = { interview: "面试", written: "笔试", offer: "Offer", reject: "拒信", evaluation: "评价", deadline: "截止", other: "线索" };
+
+// 邮件分类（纯函数可测）：按标题+发件人识别秋招通知类型；营销邮件仅保留"新公司校招线索"
+function classifyMail(title, from) {
+  const t = String(title || "");
+  const f = String(from || "").toLowerCase();
+  if (/lietou-edm|zhaopin\.cn|wisdomore|智联|猎聘/.test(f)) {
+    return /(校招|秋招).{0,6}(启动|开始)|空中宣讲会/.test(t) ? "other" : null;
+  }
+  if (/录取|报到须知|恭喜.*录/.test(t)) return "offer";
+  if (/面试/.test(t)) return "interview";
+  if (/笔试/.test(t)) return "written";
+  if (/(逾期视为放弃|报名截止|投递截止)/.test(t)) return "deadline";
+  if (/遗憾|未能通过|不匹配/.test(t)) return "reject";
+  if (/评价邀请|满意度/.test(t)) return "evaluation";
+  if (/校招|秋招|空中宣讲会/.test(t)) return "other";
+  return null;
+}
+
+// 过滤已处理动态并按时间倒序（纯函数可测）
+function filterNewDynamics(items, seenIds) {
+  const seen = new Set(seenIds || []);
+  return (items || []).filter(it => !seen.has(it.id)).sort((a, b) => String(b.time).localeCompare(String(a.time)));
+}
+
+function getDynSeen() {
+  try { return JSON.parse(localStorage.getItem(DYN_SEEN_KEY)) || []; } catch(e) { return []; }
+}
+function markDynSeen(id) {
+  const s = getDynSeen();
+  if (!s.includes(id)) { s.push(id); try { localStorage.setItem(DYN_SEEN_KEY, JSON.stringify(s)); } catch(e) {} }
+}
+
+async function loadDynamics() {
+  let data;
+  try {
+    const res = await fetch("dynamics.json?t=" + Date.now());
+    if (!res.ok) return;
+    data = await res.json();
+  } catch(e) { return; }
+  renderDynamicsBar(filterNewDynamics(data.items || [], getDynSeen()));
+}
+
+function toggleDynList() {
+  document.getElementById("dynList").classList.toggle("hidden");
+}
+
+function renderDynamicsBar(items) {
+  const bar = document.getElementById("dynBar");
+  if (!bar) return;
+  if (!items.length) { bar.classList.add("hidden"); return; }
+  bar.classList.remove("hidden");
+  window.__dynItems = items;
+  document.getElementById("dynCount").textContent = items.length;
+  document.getElementById("dynList").innerHTML = items.map(it =>
+    `<div class="dyn-item">
+      <span class="dyn-type dyn-type-${it.type}">${DYN_TYPE_LABEL[it.type] || it.type}</span>
+      <div class="dyn-main">
+        <strong>${escapeHtml(it.company)}</strong>${it.jobName ? ` · ${escapeHtml(it.jobName)}` : ""}
+        <div class="dyn-sum">${escapeHtml(it.summary || it.title)}</div>
+      </div>
+      ${it.suggestStatus ? `<button class="btn btn-primary dyn-apply" onclick="applyDynamic('${it.id}','${escapeHtml(it.companyId || "")}','${escapeHtml(it.company)}','${escapeHtml(it.jobName || it.title)}','${escapeHtml(it.suggestStatus)}')">采纳</button>` : ""}
+      <button class="job-row-del" onclick="ignoreDynamic('${it.id}')" aria-label="忽略该动态">✕</button>
+    </div>`
+  ).join("");
+}
+
+// 采纳动态：匹配到系统公司 → 岗位级状态更新；新公司 → 提示去表格添加
+function applyDynamic(id, companyId, company, jobName, status) {
+  markDynSeen(id);
+  if (companyId && COMPANIES.some(x => x.id === companyId)) {
+    const s = getState(companyId);
+    s.jobs[jobName] = status;
+    s.status = deriveCompanyStatus(s.jobs, s.status);
+    touchState(companyId);
+    saveState();
+    refreshAll();
+    showToast(`✅ 已采纳：${company} · ${jobName} → ${status}`);
+  } else {
+    showToast(`📌 新公司「${company}」不在系统中，请加入腾讯文档总表后对我说"同步"`);
+  }
+  loadDynamics();
+}
+
+function ignoreDynamic(id) {
+  markDynSeen(id);
+  const items = filterNewDynamics(window.__dynItems || [], getDynSeen());
+  renderDynamicsBar(items);
+}
+
+// ============================================================
 // v6: 岗位级投递管理（一个公司可投多个岗位，各自独立进度）
 // ============================================================
 let jobModalId = null;
