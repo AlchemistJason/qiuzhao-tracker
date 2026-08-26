@@ -1,0 +1,65 @@
+{
+  "updatedAt": "2026-08-27T06:30:00+08:00",
+  "items": [
+    {
+      "id": "mail-gf-offer-20260826",
+      "type": "offer",
+      "company": "广发证券",
+      "companyId": null,
+      "jobName": "校园招聘实习生（财富管理部）",
+      "title": "广发证券校园招聘实习生报到须知",
+      "summary": "⚠️ 恭喜被录取！需在 8月28日前 回复是否接受实习，逾期视为放弃。回复格式：姓名+实习部门+报到时间",
+      "time": "2026-08-26T07:11:11Z",
+      "link": "",
+      "suggestStatus": "Offer"
+    },
+    {
+      "id": "mail-baidu-interview-eval-20260826",
+      "type": "interview",
+      "company": "百度",
+      "companyId": "baidu",
+      "jobName": "Agent算法实习生",
+      "title": "百度在线网络技术（北京）有限公司诚邀您对本次面试进行评价",
+      "summary": "8月26日 17:00 视频面试已进行，待面试结果",
+      "time": "2026-08-26T12:01:20Z",
+      "link": "",
+      "suggestStatus": "面试中"
+    },
+    {
+      "id": "mail-shein-interview-eval-20260825",
+      "type": "interview",
+      "company": "SHEIN",
+      "companyId": null,
+      "jobName": "产研实习生",
+      "title": "【SHEIN校园招聘】面试满意度评价邀请",
+      "summary": "8月25日 14:00 面试已进行，待面试结果",
+      "time": "2026-08-25T10:16:10Z",
+      "link": "",
+      "suggestStatus": "面试中"
+    },
+    {
+      "id": "mail-anker-campus-20260826",
+      "type": "other",
+      "company": "安克创新",
+      "companyId": null,
+      "jobName": "2027届全球校招",
+      "title": "给未来 Makers 的一封信｜安克创新2027届全球校招正式启动",
+      "summary": "全球化智能硬件科技企业（Anker 充电/储能），2027 届全球校招已启动，可在安克招聘官网投递",
+      "time": "2026-08-26T05:01:23Z",
+      "link": "",
+      "suggestStatus": null
+    },
+    {
+      "id": "mail-longcheer-campaign-20260825",
+      "type": "other",
+      "company": "龙旗科技",
+      "companyId": null,
+      "jobName": "2027届秋招",
+      "title": "龙旗科技2027届秋招空中宣讲会",
+      "summary": "A+H 两地上市、全球领先智能产品 ODM，岗位含硬件/软件/结构/测试/采购等大类",
+      "time": "2026-08-25T10:04:10Z",
+      "link": "",
+      "suggestStatus": null
+    }
+  ]
+}
