@@ -1267,3 +1267,20 @@ mark.hl {
   .nav-row { align-items: center; }
   .source-tabs { flex: 1; }
 }
+
+/* ====== v8.3: 移动端导航行/横带/toast 修正 ====== */
+@media (max-width: 768px) {
+  /* 修复 tab 文字互相重叠：v8.1 的 44px 触控规则给了 .source-tabs button min-width:44px，
+     覆盖了 flex 项默认的 min-width:auto，按钮被压到内容宽度以下 → 文字溢出重叠。
+     改回禁止压缩（flex-shrink:0），保持 44px 高度触控目标 */
+  .source-tabs button { flex: 0 0 auto; min-width: 0; padding: 9px 10px; font-size: 13px; }
+  .tab-count { font-size: 9px; padding: 0 4px; margin-left: 2px; }
+  /* 导航行改纵向堆叠：tab 独占一行均布，表格/卡片切换降到第二行右对齐 */
+  .nav-row { flex-direction: column; align-items: stretch; gap: 4px; }
+  .source-tabs { width: 100%; justify-content: space-between; }
+  .nav-row .view-toggle { align-self: flex-end; margin-bottom: 6px; }
+  /* toast 收窄 + 避开底部手势条，不再盖住仪表盘内容 */
+  .toast { max-width: 86vw; font-size: 12px; padding: 8px 16px; bottom: calc(20px + env(safe-area-inset-bottom)); text-align: center; }
+  /* 紧急待办横带紧凑化：「全部 N 项」回到文字级按钮，不再撑成 44px 大 pill 独占一行 */
+  .todo-more { min-width: 0; min-height: 0; padding: 2px 10px; }
+}

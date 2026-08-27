@@ -791,6 +791,9 @@ section("index.html 缓存戳一致性");
   t("来源分页 tab 存在", html.includes('id="tabReferral"') && html.includes('id="tabPool"') && html.includes('id="listViewToggle"'));
   t("筛选面板分区默认收起", (html.match(/class="fp-sec collapsed"/g) || []).length === 4 && html.includes('id="fpNat"'));
   t("导航行结构存在", html.includes('class="nav-row"'));
+  // v8.3: 移动端 tab 防重叠修复必须保留（44px 规则曾致 min-width 压缩重叠）
+  const css8 = fs.readFileSync(path.join(ROOT, "style.css"), "utf8");
+  t("移动端 tab 禁止压缩(flex:0 0 auto)", /\.source-tabs button\s*\{[^}]*flex:\s*0 0 auto/.test(css8));
   // v8.0: 安全——脚本全部本地化，禁止任何第三方脚本源（防 CDN 劫持跳转赌博站）
   t("无第三方脚本源", !/<script[^>]+src="https?:/i.test(html),
     (html.match(/<script[^>]+src="https?:[^"]*/gi) || []).join(","));
