@@ -1241,3 +1241,5 @@ mark.hl {
 .company-site { color: var(--text); text-decoration: none; border-bottom: 1px dashed transparent; transition: all 0.15s; }
 .company-site:hover { color: var(--accent); border-bottom-color: var(--accent); }
 .disc-badge { font-size: 11px; vertical-align: 2px; }
+/* v7.6: 集团分部投递名额标签 */
+.quota-tag { font-size: 11px; color: var(--accent, #4f6ef7); background: rgba(79,110,247,0.10); border: 1px solid rgba(79,110,247,0.25); border-radius: 4px; padding: 0 4px; margin-left: 5px; white-space: nowrap; }

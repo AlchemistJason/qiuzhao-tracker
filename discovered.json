@@ -30,7 +30,7 @@
       ],
       "source": "manual-seed",
       "foundAt": "2026-08-27",
-      "note": "集团校招官网"
+      "note": "集团总入口；阿里系按集团分开校招：每个集团 1 次投递机会、最多 2 个意向，各集团独立入口见下方子条目"
     },
     {
       "id": "jd",
@@ -66,7 +66,7 @@
       ],
       "source": "manual-seed",
       "foundAt": "2026-08-27",
-      "note": "集团校招官网（游戏走互娱/雷火）"
+      "note": "网易互联网总入口（云音乐/严选等）；游戏走互娱/雷火，已在主清单（含内推码），三个池互不冲突可分别投递"
     },
     {
       "id": "ctrip",
@@ -1783,6 +1783,173 @@
       "source": "manual-seed",
       "foundAt": "2026-08-27",
       "note": "央企 AMC（原中国华融），51job 承办页按年换"
+    },
+    {
+      "id": "alibaba-taotian",
+      "name": "阿里巴巴·淘天集团",
+      "officialLink": "https://talent.taotian.com/campus/home",
+      "location": "杭州/北京",
+      "category": [
+        "互联网大厂"
+      ],
+      "parent": "alibaba",
+      "source": "manual-seed",
+      "foundAt": "2026-08-27",
+      "note": "阿里系规则：本集团 1 次投递机会、最多 2 个意向（淘宝天猫）",
+      "quota": 2
+    },
+    {
+      "id": "alibaba-aliyun",
+      "name": "阿里巴巴·阿里云",
+      "officialLink": "https://careers.aliyun.com/campus/home",
+      "location": "杭州/北京",
+      "category": [
+        "互联网大厂"
+      ],
+      "parent": "alibaba",
+      "source": "manual-seed",
+      "foundAt": "2026-08-27",
+      "note": "阿里系规则：本集团 1 次投递机会、最多 2 个意向（含管培生/A Star）",
+      "quota": 2
+    },
+    {
+      "id": "alibaba-tongyi",
+      "name": "阿里巴巴·通义实验室",
+      "officialLink": "https://careers-tongyi.alibaba.com/campus/position-list",
+      "location": "杭州/北京",
+      "category": [
+        "互联网大厂"
+      ],
+      "parent": "alibaba",
+      "source": "manual-seed",
+      "foundAt": "2026-08-27",
+      "note": "阿里系规则：本集团 1 次投递机会、最多 2 个意向（千问大模型核心团队）",
+      "quota": 2
+    },
+    {
+      "id": "alibaba-dingtalk",
+      "name": "阿里巴巴·钉钉",
+      "officialLink": "https://talent.dingtalk.com",
+      "location": "杭州",
+      "category": [
+        "互联网大厂"
+      ],
+      "parent": "alibaba",
+      "source": "manual-seed",
+      "foundAt": "2026-08-27",
+      "note": "阿里系规则：本集团 1 次投递机会、最多 2 个意向（应往届 2024.6-2026.10 可投）",
+      "quota": 2
+    },
+    {
+      "id": "alibaba-amap",
+      "name": "阿里巴巴·高德",
+      "officialLink": "https://talent.amap.com/campus/home",
+      "location": "北京/杭州",
+      "category": [
+        "互联网大厂"
+      ],
+      "parent": "alibaba",
+      "source": "manual-seed",
+      "foundAt": "2026-08-27",
+      "note": "阿里系规则：本集团 1 次投递机会、最多 2 个意向",
+      "quota": 2
+    },
+    {
+      "id": "alibaba-cainiao",
+      "name": "阿里巴巴·菜鸟",
+      "officialLink": "https://talent.cainiao.com/campus",
+      "location": "杭州",
+      "category": [
+        "互联网大厂"
+      ],
+      "parent": "alibaba",
+      "source": "manual-seed",
+      "foundAt": "2026-08-27",
+      "note": "阿里系规则：本集团 1 次投递机会、最多 2 个意向",
+      "quota": 2
+    },
+    {
+      "id": "alibaba-hema",
+      "name": "阿里巴巴·盒马",
+      "officialLink": "https://app.mokahr.com/campus_apply/freshhema/4122",
+      "location": "杭州/上海",
+      "category": [
+        "互联网大厂"
+      ],
+      "parent": "alibaba",
+      "source": "manual-seed",
+      "foundAt": "2026-08-27",
+      "note": "Moka 承办（小盒苗管培），批次链接可能更换",
+      "quota": 2
+    },
+    {
+      "id": "alibaba-aidc",
+      "name": "阿里巴巴·阿里国际AIDC",
+      "officialLink": "https://aidc-jobs.alibaba.com/campus/home",
+      "location": "杭州/深圳",
+      "category": [
+        "互联网大厂"
+      ],
+      "parent": "alibaba",
+      "source": "manual-seed",
+      "foundAt": "2026-08-27",
+      "note": "阿里系规则：本集团 1 次投递机会、最多 2 个意向（国际数字商业）",
+      "quota": 2
+    },
+    {
+      "id": "alibaba-lingxi",
+      "name": "阿里巴巴·灵犀互娱",
+      "officialLink": "https://talent.lingxigames.com/campus/home",
+      "location": "广州/上海",
+      "category": [
+        "互联网大厂"
+      ],
+      "parent": "alibaba",
+      "source": "manual-seed",
+      "foundAt": "2026-08-27",
+      "note": "每人最多 2 个岗位（游戏，27 届已开启）",
+      "quota": 2
+    },
+    {
+      "id": "alibaba-hujing",
+      "name": "阿里巴巴·虎鲸文娱",
+      "officialLink": "https://jobs.hujing-dme.com/campus/",
+      "location": "北京/杭州",
+      "category": [
+        "互联网大厂"
+      ],
+      "parent": "alibaba",
+      "source": "manual-seed",
+      "foundAt": "2026-08-27",
+      "note": "阿里系规则：本集团 1 次投递机会、最多 2 个意向（优酷+大麦）",
+      "quota": 2
+    },
+    {
+      "id": "alibaba-holding",
+      "name": "阿里巴巴·控股集团",
+      "officialLink": "https://talent-holding.alibaba.com",
+      "location": "杭州",
+      "category": [
+        "互联网大厂"
+      ],
+      "parent": "alibaba",
+      "source": "manual-seed",
+      "foundAt": "2026-08-27",
+      "note": "阿里系规则：本集团 1 次投递机会、最多 2 个意向（含阿里星）",
+      "quota": 2
+    },
+    {
+      "id": "netease-youdao",
+      "name": "网易有道",
+      "officialLink": "https://hr.youdao.com",
+      "location": "北京",
+      "category": [
+        "互联网大厂"
+      ],
+      "parent": "netease",
+      "source": "manual-seed",
+      "foundAt": "2026-08-27",
+      "note": "有道自有校招站（独立招聘池）"
     }
   ]
 }

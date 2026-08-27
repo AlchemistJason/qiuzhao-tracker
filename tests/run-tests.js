@@ -694,6 +694,10 @@ if (OFFICIAL_SITES) {
     items.filter(i => knownNames.has(normalizeCompanyName(i.name))).map(i => i.name).join(","));
   t("discovered: officialLink 为 http/https(如有)", items.every(i => !i.officialLink || /^https?:\/\//i.test(i.officialLink)));
   t("discovered: deadline 格式合法(如有)", items.every(i => !i.deadline || /^\d{4}-\d{2}-\d{2}$/.test(i.deadline)));
+  t("discovered: quota 为正整数(如有)", items.every(i => !i.quota || (Number.isInteger(i.quota) && i.quota > 0)),
+    items.filter(i => i.quota && !(Number.isInteger(i.quota) && i.quota > 0)).map(i => i.id).join(","));
+  t("discovered: parent 指向已存在的条目(如有)", items.every(i => !i.parent || items.some(p => p.id === i.parent)),
+    items.filter(i => i.parent && !items.some(p => p.id === i.parent)).map(i => i.id).join(","));
   t("隐私: 不含邮件相关字段", items.every(i => !i.mailId && !i.email && !i.subject));
 })();
 
@@ -708,6 +712,7 @@ if (discoveredToCompany) {
   t("候选映射: 基本字段", dc.id === "x-corp" && dc.discovered === true && dc.link === "https://x.com/campus" && dc.category[0] === "新发现");
   t("候选映射: jobs 文本拆分数组", Array.isArray(dc.jobs) && dc.jobs.length === 2);
   t("候选映射: 缺省字段兜底", discoveredToCompany({ id: "y", name: "y" }).jobs.length === 0 && discoveredToCompany({ id: "y", name: "y" }).deadline === null);
+  t("候选映射: parent/quota 透传", (() => { const g = discoveredToCompany({ id: "z", name: "z", parent: "alibaba", quota: 2 }); return g.parent === "alibaba" && g.quota === 2; })());
 }
 
 // ---------- 6. 缓存戳一致性（防止发版忘改 ?v= 导致用户拿到旧缓存） ----------section("index.html 缓存戳一致性");

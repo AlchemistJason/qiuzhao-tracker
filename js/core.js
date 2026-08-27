@@ -201,6 +201,8 @@ function discoveredToCompany(it) {
     link: it.officialLink || "",
     note: it.note || "",
     deadline: it.deadline || null,
+    parent: it.parent || null,
+    quota: it.quota || null,
     discovered: true
   };
 }

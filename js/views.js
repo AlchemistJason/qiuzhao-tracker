@@ -107,12 +107,13 @@ function buildCommonHTML(c) {
 function nameWithSite(c, keyword) {
   const inner = highlightText(c.name, keyword);
   const badge = c.discovered ? `<span class="disc-badge" title="爬虫新发现，设状态即开始跟踪">🆕</span> ` : "";
+  const quota = c.quota ? `<span class="quota-tag" title="该集团/批次可投递的岗位数上限">可投${c.quota}岗</span>` : "";
   const url = (window.OFFICIAL_SITES || {})[c.id] || (c.discovered ? c.link : "");
   const safe = url ? escapeHtml(safeLink(url)) : "";
   const nameHtml = (safe && safe !== "#")
     ? `<a class="company-site" href="${safe}" target="_blank" rel="noopener" title="官网校招页">${inner}</a>`
     : inner;
-  return badge + nameHtml;
+  return badge + nameHtml + quota;
 }
 
 function renderTable(data) {
