@@ -1244,11 +1244,17 @@ mark.hl {
 /* v7.6: 集团分部投递名额标签 */
 .quota-tag { font-size: 11px; color: var(--accent, #4f6ef7); background: rgba(79,110,247,0.10); border: 1px solid rgba(79,110,247,0.25); border-radius: 4px; padding: 0 4px; margin-left: 5px; white-space: nowrap; }
 
-/* ====== v7.7: 来源分页 tab（内推 / 校招池 / 待办） ====== */
-.source-tabs { display: flex; gap: 6px; margin-bottom: 8px; }
-.source-tabs button { padding: 8px 16px; border: 1.5px solid var(--border); border-radius: 999px; background: var(--card); color: var(--text-secondary); cursor: pointer; font-size: 13px; transition: all 0.2s; white-space: nowrap; }
-.source-tabs button:hover { border-color: var(--accent); color: var(--text); }
-.source-tabs button.active { background: var(--accent); color: #fff; border-color: var(--accent); font-weight: 600; }
+/* ====== v7.8: 导航行——来源 tab 用下划线式导航（不再是 pill），视图切换保持分段控件 ====== */
+.nav-row { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; margin-bottom: 12px; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+.source-tabs { display: flex; gap: 2px; overflow-x: auto; }
+.source-tabs button { padding: 9px 14px; border: none; border-bottom: 2px solid transparent; margin-bottom: -1px; background: none; color: var(--text-secondary); cursor: pointer; font-size: 14px; transition: color 0.15s, border-color 0.15s; white-space: nowrap; }
+.source-tabs button:hover { color: var(--text); }
+.source-tabs button.active { background: none; color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
 .tab-count { display: inline-block; padding: 0 6px; border-radius: 8px; font-size: 10px; background: rgba(128,128,128,0.18); margin-left: 4px; }
-.source-tabs button.active .tab-count { background: rgba(255,255,255,0.22); }
+.source-tabs button.active .tab-count { background: var(--accent); color: #fff; }
 .tab-count.tab-urgent { background: rgba(231,76,60,0.85); color: #fff; }
+.nav-row .view-toggle { margin-bottom: 6px; }
+@media (max-width: 768px) {
+  .nav-row { align-items: center; }
+  .source-tabs { flex: 1; }
+}
