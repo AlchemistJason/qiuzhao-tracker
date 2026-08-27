@@ -1615,6 +1615,174 @@
       "source": "manual-seed",
       "foundAt": "2026-08-27",
       "note": "官方校招官网（高端装备）"
+    },
+    {
+      "id": "citic-bank",
+      "name": "中信银行",
+      "officialLink": "https://job.citicbank.com/",
+      "location": "北京/全国",
+      "category": [
+        "银行"
+      ],
+      "source": "manual-seed",
+      "foundAt": "2026-08-27",
+      "note": "官方独立招聘域名，校招唯一网申渠道"
+    },
+    {
+      "id": "citic-card",
+      "name": "中信银行信用卡中心",
+      "officialLink": "https://creditcard.ecitic.com/zhaopin/",
+      "location": "深圳",
+      "category": [
+        "银行"
+      ],
+      "source": "manual-seed",
+      "foundAt": "2026-08-27",
+      "note": "独立招聘页，与总行分开投递"
+    },
+    {
+      "id": "citictrust",
+      "name": "中信信托",
+      "officialLink": "https://citictrust.zhaopin.com",
+      "location": "北京",
+      "category": [
+        "券商基金"
+      ],
+      "source": "manual-seed",
+      "foundAt": "2026-08-27",
+      "note": "智联承办（2026 届唯一网申渠道），承办方可能按年换"
+    },
+    {
+      "id": "citicprulife",
+      "name": "中信保诚人寿",
+      "officialLink": "https://citicprulife.zhiye.com",
+      "location": "北京/全国",
+      "category": [
+        "银行"
+      ],
+      "source": "manual-seed",
+      "foundAt": "2026-08-27",
+      "note": "北森承办独立网申（保险）"
+    },
+    {
+      "id": "citicprufunds",
+      "name": "中信保诚基金",
+      "officialLink": "https://www.citicprufunds.com.cn/pc/recruit",
+      "location": "上海/深圳",
+      "category": [
+        "券商基金"
+      ],
+      "source": "manual-seed",
+      "foundAt": "2026-08-27",
+      "note": "官网招聘栏目，含校招岗位标记"
+    },
+    {
+      "id": "aibank",
+      "name": "中信百信银行",
+      "officialLink": "https://www.aibank.com/jrwm/xyzp/index.shtml",
+      "location": "北京",
+      "category": [
+        "银行"
+      ],
+      "source": "manual-seed",
+      "foundAt": "2026-08-27",
+      "note": "官网校园招聘栏目（中信×百度直销银行）"
+    },
+    {
+      "id": "citics-hn",
+      "name": "中信证券华南",
+      "officialLink": "https://careers.citics.com/campus/branch",
+      "location": "广州",
+      "category": [
+        "券商基金"
+      ],
+      "source": "manual-seed",
+      "foundAt": "2026-08-27",
+      "note": "走中信证券统一网申（华南分支机构，原广州证券）"
+    },
+    {
+      "id": "citic-jk",
+      "name": "中信金控",
+      "officialLink": "https://job.citic.com/",
+      "location": "北京",
+      "category": [
+        "央企国企"
+      ],
+      "source": "manual-seed",
+      "foundAt": "2026-08-27",
+      "note": "走中信集团人才招聘系统（集团唯一官方渠道），按批次放岗"
+    },
+    {
+      "id": "dicastal",
+      "name": "中信戴卡",
+      "officialLink": "https://dicastal.zhiye.com/Campus",
+      "location": "秦皇岛/长春/宁波/广州",
+      "category": [
+        "制造"
+      ],
+      "source": "manual-seed",
+      "foundAt": "2026-08-27",
+      "note": "北森承办独立网申（部分批次改用 Moka）"
+    },
+    {
+      "id": "citicconstruction",
+      "name": "中信建设",
+      "officialLink": "https://www.construction.citic/recruit/campus",
+      "location": "北京/海外",
+      "category": [
+        "央企国企"
+      ],
+      "source": "manual-seed",
+      "foundAt": "2026-08-27",
+      "note": "官网校招栏目（网申智联承办 citicconstruction.zhaopin.com）"
+    },
+    {
+      "id": "zxtftg",
+      "name": "中信泰富特钢",
+      "officialLink": "https://zxtftg.zhaopin.com/",
+      "location": "江阴/黄石/青岛/天津",
+      "category": [
+        "制造"
+      ],
+      "source": "manual-seed",
+      "foundAt": "2026-08-27",
+      "note": "智联承办校招官网，按届更新"
+    },
+    {
+      "id": "ciccwm",
+      "name": "中金财富",
+      "officialLink": "https://ciccwm.zhiye.com",
+      "location": "深圳/全国",
+      "category": [
+        "券商基金"
+      ],
+      "source": "manual-seed",
+      "foundAt": "2026-08-27",
+      "note": "北森承办（早年 hotjob 入口已失效）"
+    },
+    {
+      "id": "huatai-pb",
+      "name": "华泰柏瑞基金",
+      "officialLink": "https://www.huatai-pb.com/aboutUs/joinUs/index.html",
+      "location": "上海",
+      "category": [
+        "券商基金"
+      ],
+      "source": "manual-seed",
+      "foundAt": "2026-08-27",
+      "note": "官网加入我们栏目，另随华泰证券统一校招放岗"
+    },
+    {
+      "id": "famc",
+      "name": "中信金融资产",
+      "officialLink": "https://www.famc.citic/rczp/",
+      "location": "北京/全国",
+      "category": [
+        "央企国企"
+      ],
+      "source": "manual-seed",
+      "foundAt": "2026-08-27",
+      "note": "央企 AMC（原中国华融），51job 承办页按年换"
     }
   ]
 }
