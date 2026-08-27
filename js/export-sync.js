@@ -30,7 +30,7 @@ function exportJSON() {
   const data = {
     exportDate: new Date().toISOString(),
     dataVersion: DATA_VERSION,
-    stateVersion: 2,
+    stateVersion: 3,
     companies: COMPANIES,
     userState: userState
   };
@@ -46,13 +46,15 @@ function exportJSON() {
 
 // 合并外部状态（导入/同步共用）：只覆盖已知公司，未知 id 忽略
 // v7.2 修复：之前只保留 status/starred/note，岗位级 jobs/lastUpdate/history 在导入时丢失
+// v7.4 修复：不再整包覆盖——与本机状态按公司级合并（复用 mergeCloudState：lastUpdate 较新侧为基准，
+// jobs/history/starred 并集），避免扫旧二维码/导旧备份把本机新进度冲掉
 function mergeIncoming(incoming) {
   if (!incoming || typeof incoming !== "object") return 0;
   let merged = 0;
   Object.keys(incoming).forEach(id => {
     if (!COMPANY_IDS.has(id)) return;
     const st = incoming[id] || {};
-    userState.companies[id] = {
+    const norm = {
       status: st.status || "未投递",
       starred: !!st.starred,
       note: st.note || "",
@@ -60,6 +62,10 @@ function mergeIncoming(incoming) {
       jobs: st.jobs && typeof st.jobs === "object" ? st.jobs : {},
       history: Array.isArray(st.history) ? st.history : []
     };
+    userState.companies[id] = mergeCloudState(
+      { companies: { [id]: userState.companies[id] } },
+      { companies: { [id]: norm } }
+    ).companies[id];
     merged++;
   });
   if (merged > 0) {
@@ -72,15 +78,17 @@ function mergeIncoming(incoming) {
 
 function importJSON(event) {
   const file = event.target.files[0];
+  event.target.value = "";  // v7.4: 重置 input，允许连续两次导入同一文件（change 只在值变化时触发）
   if (!file) return;
+  if (!confirm("导入将与本机状态按公司合并（冲突时取较新一侧）。继续导入？")) return;
   const reader = new FileReader();
   reader.onload = function(e) {
     try {
       const data = JSON.parse(e.target.result);
-      // 兼容两种备份格式：{userState:{companies}} 或 {version:2,companies}
+      // 兼容备份格式：{userState:{companies}} 或顶层 {version:2|3, companies}
       const incoming = (data && data.userState && data.userState.companies)
         ? data.userState.companies
-        : (data && data.version === 2 && data.companies) ? data.companies : null;
+        : (data && (data.version === 2 || data.version === 3) && data.companies) ? data.companies : null;
       if (incoming && mergeIncoming(incoming) > 0) {
         showToast("✅ 状态导入成功");
       } else {
@@ -320,9 +328,25 @@ async function testCloud() {
   }
 }
 
+// v7.4: 二维码瘦身（纯函数可测）：剔除全默认状态的公司（未投递+无收藏+无备注+无岗位+无历史）。
+// 否则 76 家全量状态 base64 ≈10KB，远超单张 QR 容量（M 级纠错 ≈2.3KB）必生成失败；
+// 默认态在导入端本来就是初值，无需传输。
+function buildSlimCompanies(companies) {
+  const slim = {};
+  Object.keys(companies || {}).forEach(id => {
+    const s = companies[id] || {};
+    const isDefault = (!s.status || s.status === "未投递") && !s.starred && !s.note
+      && (!s.jobs || Object.keys(s.jobs).length === 0)
+      && (!s.history || s.history.length === 0);
+    if (!isDefault) slim[id] = s;
+  });
+  return slim;
+}
+
 function encodeSyncCode() {
   // v6: 同步码升级到 v3（含岗位级 jobs 映射）；兼容 v2 老码解码
-  const payload = { v: 3, c: userState.companies };
+  // v7.4: 只编码非默认公司（buildSlimCompanies 瘦身）
+  const payload = { v: 3, c: buildSlimCompanies(userState.companies) };
   const json = JSON.stringify(payload);
   // UTF-8 安全 base64
   return btoa(unescape(encodeURIComponent(json)));
@@ -358,11 +382,12 @@ function openSyncModal(mode) {
       <button class="btn btn-primary" onclick="copySyncText()">复制同步码</button>
     `;
     try {
+      if (code.length > 2200) throw new Error("too-long");  // v7.4: 超单张 QR 容量（M 级 ≈2.3KB）直接走文本码
       const qr = new QRCode(document.getElementById("qrBox"), {
         text: code, width: 200, height: 200, correctLevel: QRCode.CorrectLevel.M
       });
     } catch(e) {
-      document.getElementById("qrBox").innerHTML = '<span style="color:#888;font-size:12px">二维码库加载失败，请用文本码同步</span>';
+      document.getElementById("qrBox").innerHTML = '<span style="color:#888;font-size:12px">数据量较大，二维码放不下，请用下方文本码同步</span>';
     }
   } else {
     title.textContent = "📥 扫描/粘贴导入";

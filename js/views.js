@@ -225,6 +225,7 @@ function applyFilters() {
   // 无结果提示带搜索词（避免用户困惑"怎么没反应"）
   const noRes = document.getElementById("noResults");
   if (noRes) {
+    if (currentView === "todo") noRes.style.display = "none";  // v7.4: 待办视图有自己的空态
     noRes.querySelector("p").textContent = filtered.length === 0 && filters.keyword
       ? `没有找到与"${filters.keyword}"匹配的企业 😕`
       : "没有找到匹配的企业 😕";
@@ -253,7 +254,6 @@ function buildTodoItems(companies, getSt, dynAll, doneIds, ignoredIds, now) {
   };
   (dynAll || []).forEach(it => {
     if (!["offer", "written", "interview", "deadline"].includes(it.type)) return;
-    if (ignored.has(it.id)) return;
     let when = null;
     if (it.eventTime) { const t = new Date(it.eventTime); if (!isNaN(t)) when = t; }
     else if (it.dueDate) { const t = parseLocalDate(it.dueDate); if (t) { t.setHours(23, 59, 0, 0); when = t; } }
@@ -266,10 +266,11 @@ function buildTodoItems(companies, getSt, dynAll, doneIds, ignoredIds, now) {
       summary: it.summary || it.title || "",
       actionUrl: it.actionUrl || it.link || "",
       eventTime: it.eventTime || null, dueDate: it.dueDate || null,
-      done: done.has(it.id)
+      done: done.has(it.id),
+      ignored: ignored.has(it.id)   // v7.4: 忽略项保留进列表（待办视图底部回收站分组），不再直接剔除
     };
     addTimeInfo(obj, when);
-    mailKeys.add((it.companyId || it.company) + "|" + it.type);
+    if (!obj.done && !obj.ignored) mailKeys.add((it.companyId || it.company) + "|" + it.type);  // v7.4: done/ignored 不占去重键
     items.push(obj);
   });
   (companies || []).forEach(c => {
@@ -290,8 +291,8 @@ function buildTodoItems(companies, getSt, dynAll, doneIds, ignoredIds, now) {
     }
     if (s.status === "笔试中" || s.status === "面试中") {
       const type = s.status === "笔试中" ? "written" : "interview";
-      if (mailKeys.has(c.id + "|" + type)) return;  // 邮件已覆盖，避免重复
-      const obj = { source: "status", companyId: c.id, company: c.name, jobName: "", kind: "event", type, label: s.status + "", summary: "", actionUrl: "", eventTime: null, dueDate: null, done: false };
+      if (mailKeys.has(c.id + "|" + type) || mailKeys.has(c.name + "|" + type)) return;  // 邮件已覆盖（id 或公司名兜底），避免重复
+      const obj = { source: "status", companyId: c.id, company: c.name, jobName: "", kind: "event", type, label: s.status + "", summary: "", actionUrl: "", eventTime: null, dueDate: null, done: false, ignored: false };
       addTimeInfo(obj, null);
       items.push(obj);
     }
@@ -311,21 +312,22 @@ function fmtTodoWhen(it) {
   return `${it.days}天后`;
 }
 
-// 分组（纯函数可测）：已完成沉底，其余按紧急度
+// 分组（纯函数可测）：已忽略/已完成沉底，其余按紧急度
 const TODO_GROUPS = [
   { key: "overdue", label: "⚠️ 已逾期" }, { key: "today", label: "🔴 今天" },
   { key: "soon", label: "🟠 3天内" }, { key: "week", label: "🟡 本周" },
   { key: "later", label: "🟢 更晚" }, { key: "none", label: "⚪ 无明确时间" },
-  { key: "done", label: "✅ 已完成" }
+  { key: "done", label: "✅ 已完成" }, { key: "ignored", label: "🗑 已忽略（可恢复）" }
 ];
 function groupTodos(items) {
   const map = {};
   TODO_GROUPS.forEach(g => { map[g.key] = []; });
-  (items || []).forEach(it => map[it.done ? "done" : (it.urgency || "none")].push(it));
+  (items || []).forEach(it => map[it.ignored ? "ignored" : it.done ? "done" : (it.urgency || "none")].push(it));
   return TODO_GROUPS.filter(g => map[g.key].length).map(g => ({ ...g, items: map[g.key] }));
 }
 
-let todoItemsCache = [];  // 供视图按钮按索引取回待办对象（展平后的展示顺序）
+let todoItemsCache = [];  // 全量待办（排序序），供横带统计
+let todoViewOrder = [];   // v7.4: 待办视图渲染展平顺序（分组重排后），供 todoAction 按索引取回对象
 
 function refreshTodos() {
   todoItemsCache = buildTodoItems(COMPANIES, getState, window.__dynAll || [], getDynDone(), getDynIgnored(), new Date());
@@ -336,7 +338,7 @@ function refreshTodos() {
 // 顶部横带：2天内紧急项摘要 + 入口按钮（点击跳 ✅待办 视图）
 function renderTodo() {
   const bar = document.getElementById("todoBar");
-  const active = todoItemsCache.filter(t => !t.done);
+  const active = todoItemsCache.filter(t => !t.done && !t.ignored);
   if (active.length === 0) { bar.classList.add("hidden"); bar.innerHTML = ""; return; }
   bar.classList.remove("hidden");
   const urgent = active.filter(t => t.days !== null && t.days <= 2);  // 已逾期/今天/明天/后天
@@ -353,16 +355,16 @@ function renderTodoView() {
   const view = document.getElementById("todoView");
   if (!view) return;
   const groups = groupTodos(todoItemsCache);
+  todoViewOrder = [];  // v7.4: 展平顺序与渲染严格一致，按钮索引不会错位
   if (groups.length === 0) {
     view.innerHTML = `<div class="todo-empty">🎉 暂无待办事项</div>`;
     return;
   }
-  let idx = 0;  // 展平索引，供 todoAction(i, ...) 取回对象
   view.innerHTML = groups.map(g => `
     <div class="todo-group">
       <div class="todo-group-head">${g.label} <span class="todo-group-count">${g.items.length}</span></div>
-      ${g.items.map(t => { const i = idx++; return `
-        <div class="todo-row urgency-${t.done ? "done" : t.urgency}">
+      ${g.items.map(t => { const i = todoViewOrder.push(t) - 1; return `
+        <div class="todo-row urgency-${t.ignored ? "ignored" : t.done ? "done" : t.urgency}">
           <span class="todo-kind">${t.kind === "event" ? "🗓" : "✋"}</span>
           <div class="todo-main">
             <div><strong>${escapeHtml(t.company)}</strong>${t.jobName ? ` · ${escapeHtml(t.jobName)}` : ""} · ${escapeHtml(t.label)}
@@ -370,11 +372,12 @@ function renderTodoView() {
             ${t.summary ? `<div class="todo-sum">${escapeHtml(t.summary)}</div>` : ""}
           </div>
           <div class="todo-acts">
-            ${t.actionUrl && safeLink(t.actionUrl) !== "#" ? `<a class="link-btn" href="${safeLink(t.actionUrl)}" target="_blank" rel="noopener">🔗 打开</a>` : ""}
-            ${!t.done && (t.eventTime || t.dueDate) ? `<button class="copy-mini" onclick="todoAction(${i},'ics')" title="导出日历 (.ics)" aria-label="导出日历">📅</button>` : ""}
-            ${t.dynId && !t.done ? `<button class="btn btn-primary dyn-apply" onclick="todoAction(${i},'done')">✓ 完成</button>` : ""}
-            ${t.dynId && t.done ? `<button class="btn" onclick="todoAction(${i},'undo')">↩ 恢复</button>` : ""}
-            ${t.dynId && !t.done ? `<button class="job-row-del" onclick="todoAction(${i},'ignore')" aria-label="忽略">✕</button>` : ""}
+            ${t.ignored ? `<button class="btn" onclick="todoAction(${i},'unignore')">↩ 恢复</button>` : ""}
+            ${!t.ignored && t.actionUrl && escapeHtml(safeLink(t.actionUrl)) !== "#" ? `<a class="link-btn" href="${escapeHtml(safeLink(t.actionUrl))}" target="_blank" rel="noopener">🔗 打开</a>` : ""}
+            ${!t.ignored && !t.done && (t.eventTime || t.dueDate) ? `<button class="copy-mini" onclick="todoAction(${i},'ics')" title="导出日历 (.ics)" aria-label="导出日历">📅</button>` : ""}
+            ${!t.ignored && t.dynId && !t.done ? `<button class="btn btn-primary dyn-apply" onclick="todoAction(${i},'done')">✓ 完成</button>` : ""}
+            ${!t.ignored && t.dynId && t.done ? `<button class="btn" onclick="todoAction(${i},'undo')">↩ 恢复</button>` : ""}
+            ${!t.ignored && t.dynId && !t.done ? `<button class="job-row-del" onclick="todoAction(${i},'ignore')" aria-label="忽略">✕</button>` : ""}
           </div>
         </div>`; }).join("")}
     </div>`).join("");

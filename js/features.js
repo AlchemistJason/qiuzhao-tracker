@@ -16,7 +16,8 @@ function checkDeadlineAlert() {
   try {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    const todayStr = today.toISOString().slice(0, 10);
+    // v7.4: 本地日期拼接（toISOString 是 UTC，本地午夜后会被算成前一天导致重复提醒）
+    const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
     const last = localStorage.getItem(ALERT_KEY);
     if (!shouldAlertToday(last, todayStr)) return;
 
@@ -186,7 +187,7 @@ function renderFilterSummary() {
   const count = countFiltered(filters);
   const groupHTML = groups.map(g =>
     g.items.map(it =>
-      `<span class="fs-item" data-dim="${it.dim}">${escapeHtml(it.text)}<button class="fs-x" onclick="removeFilterItem('${it.dim}','${escapeHtml(it.val)}')" aria-label="移除 ${escapeHtml(it.text)}">✕</button></span>`
+      `<span class="fs-item" data-dim="${it.dim}">${escapeHtml(it.text)}<button class="fs-x" onclick="removeFilterItem('${jsArg(it.dim)}','${jsArg(it.val)}')" aria-label="移除 ${escapeHtml(it.text)}">✕</button></span>`
     ).join("<span class='fs-or'>或</span>")
   ).join("<span class='fs-plus'>+</span>");
   bar.innerHTML = `已选：${groupHTML} <span class="fs-count">共 ${count} 家 / ${COMPANIES.length}</span> <button class="fs-clear" onclick="clearFilters()">清除全部</button>`;
@@ -415,6 +416,7 @@ function setStatus(id, status, el) {
     const c = COMPANIES.find(x => x.id === id);
     showToast(`${c ? c.name : id}：${prev} → ${status}`);
   }
+  applyFilters();  // v7.4: 状态筛选/排序下及时重排（此前只刷新横带，列表不更新）
 }
 
 // ============================================================
@@ -477,6 +479,10 @@ function markDynIgnored(id) {
   if (!s.includes(id)) { s.push(id); try { localStorage.setItem(DYN_IGNORED_KEY, JSON.stringify(s)); } catch(e) {} }
   markDynSeen(id);  // 忽略即出动态条
 }
+function unmarkDynIgnored(id) {  // v7.4: 忽略回收站的恢复入口
+  const s = getDynIgnored().filter(x => x !== id);
+  try { localStorage.setItem(DYN_IGNORED_KEY, JSON.stringify(s)); } catch(e) {}
+}
 
 async function loadDynamics() {
   let data;
@@ -499,35 +505,46 @@ function renderDynamicsBar(items) {
   if (!items.length) { bar.classList.add("hidden"); refreshTodos(); return; }
   bar.classList.remove("hidden");
   document.getElementById("dynCount").textContent = items.length;
-  document.getElementById("dynList").innerHTML = items.map(it =>
-    `<div class="dyn-item">
-      <span class="dyn-type dyn-type-${it.type}">${DYN_TYPE_LABEL[it.type] || it.type}</span>
+  document.getElementById("dynList").innerHTML = items.map(it => {
+    const safeType = DYN_TYPE_LABEL[it.type] ? it.type : "other";  // v7.4: type 白名单，防 class 属性注入
+    return `<div class="dyn-item">
+      <span class="dyn-type dyn-type-${safeType}">${DYN_TYPE_LABEL[safeType]}</span>
       <div class="dyn-main">
         <strong>${escapeHtml(it.company)}</strong>${it.jobName ? ` · ${escapeHtml(it.jobName)}` : ""}
         <div class="dyn-sum">${escapeHtml(it.summary || it.title)}</div>
       </div>
-      ${it.suggestStatus ? `<button class="btn btn-primary dyn-apply" onclick="applyDynamic('${it.id}','${escapeHtml(it.companyId || "")}','${escapeHtml(it.company)}','${escapeHtml(it.jobName || it.title)}','${escapeHtml(it.suggestStatus)}')">采纳</button>` : ""}
-      <button class="job-row-del" onclick="ignoreDynamic('${it.id}')" aria-label="忽略该动态">✕</button>
-    </div>`
-  ).join("");
+      ${it.suggestStatus ? `<button class="btn btn-primary dyn-apply" onclick="applyDynamic('${jsArg(it.id)}')">采纳</button>` : ""}
+      <button class="job-row-del" onclick="ignoreDynamic('${jsArg(it.id)}')" aria-label="忽略该动态">✕</button>
+    </div>`;
+  }).join("");
   refreshTodos();  // 动态变化后重算待办（横带+待办视图）
 }
 
-// 采纳动态：匹配到系统公司 → 岗位级状态更新；新公司 → 提示去表格添加
-function applyDynamic(id, companyId, company, jobName, status) {
+// 采纳动态：按 id 从 __dynAll 取回对象；匹配到系统公司 → 岗位级状态更新；新公司 → 提示去表格添加
+function applyDynamic(id) {
+  const it = (window.__dynAll || []).find(x => x.id === id);
+  if (!it || !it.suggestStatus) return;
   markDynSeen(id);
+  const companyId = it.companyId;
   if (companyId && COMPANIES.some(x => x.id === companyId)) {
+    const status = it.suggestStatus;
+    const jobName = (it.jobName || "").trim().slice(0, 30) || "默认岗位";  // v7.4: 不再拿邮件标题当岗位名污染 jobs
     const s = getState(companyId);
     const prev = s.jobs[jobName] || null;
+    if (!shouldAdoptStatus(prev, status)) {  // v7.4: 进度只前进不回退（晚到的旧邮件不覆盖新状态）
+      showToast(`⏭️ ${it.company} · ${jobName} 已是「${prev}」，不回退为「${status}」`);
+      loadDynamics();
+      return;
+    }
     s.jobs[jobName] = status;
     s.status = deriveCompanyStatus(s.jobs, s.status);
     if (prev !== status) recordHistory(companyId, { job: jobName, from: prev, to: status });  // v7.2 进度历史
     touchState(companyId);
     saveState();
     refreshAll();
-    showToast(`✅ 已采纳：${company} · ${jobName} → ${status}`);
+    showToast(`✅ 已采纳：${it.company} · ${jobName} → ${status}`);
   } else {
-    showToast(`📌 新公司「${company}」不在系统中，请加入腾讯文档总表后对我说"同步"`);
+    showToast(`📌 新公司「${it.company}」不在系统中，请加入腾讯文档总表后对我说"同步"`);
   }
   loadDynamics();
 }
@@ -540,14 +557,15 @@ function ignoreDynamic(id) {
 // ============================================================
 // v7.3: 待办视图交互 + 日历导出（.ics）
 // ============================================================
-// 视图按钮统一入口：按索引从 todoItemsCache 取回待办对象
+// 视图按钮统一入口：按索引从 todoViewOrder（渲染展平顺序）取回待办对象
 function todoAction(i, act) {
-  const it = todoItemsCache[i];
+  const it = todoViewOrder[i];  // v7.4: 分组渲染会重排（done/ignored 沉底），不能用 todoItemsCache 的排序序
   if (!it) return;
   if (act === "ics") { downloadICS(it); return; }
   if (act === "done") { markDynDone(it.dynId); showToast("✅ 已完成：" + it.company + " · " + it.label); }
   else if (act === "undo") { unmarkDynDone(it.dynId); }
-  else if (act === "ignore") { markDynIgnored(it.dynId); }
+  else if (act === "ignore") { markDynIgnored(it.dynId); showToast("🗑 已忽略，可在待办视图底部「已忽略」分组恢复"); }
+  else if (act === "unignore") { unmarkDynIgnored(it.dynId); }
   else return;
   renderDynamicsBar(filterNewDynamics(window.__dynAll || [], getDynSeen()));  // 内部调 refreshTodos() 重算待办
 }
@@ -558,16 +576,19 @@ function icsEscape(s) {
 }
 
 // 生成 .ics 日历文件内容（纯函数可测）
-// ev: { company, jobName, label, summary, actionUrl, eventTime?, dueDate? }
+// ev: { company, jobName, label, summary, actionUrl, eventTime?, dueDate?, dynId? }
 function buildICS(ev) {
   const p2 = n => String(n).padStart(2, "0");
-  const fmtDT = d => `${d.getFullYear()}${p2(d.getMonth() + 1)}${p2(d.getDate())}T${p2(d.getHours())}${p2(d.getMinutes())}00`;
+  // v7.4: 时间统一 UTC（RFC 5545 要求 DTSTAMP 用 UTC），跨时区导入日历不漂移
+  const fmtUTC = d => `${d.getUTCFullYear()}${p2(d.getUTCMonth() + 1)}${p2(d.getUTCDate())}T${p2(d.getUTCHours())}${p2(d.getUTCMinutes())}00Z`;
   const fmtD = d => `${d.getFullYear()}${p2(d.getMonth() + 1)}${p2(d.getDate())}`;
+  // v7.4: 稳定 UID（同一事项重复导入日历不产生重复事件；此前用 Date.now() 每次生成新事件）
+  const uidSrc = ev.dynId || `${ev.company}|${ev.jobName || ""}|${ev.label}|${ev.eventTime || ev.dueDate || ""}`;
   const lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//qiuzhao-tracker//CN", "BEGIN:VEVENT",
-    "UID:" + Date.now() + "@qiuzhao-tracker", "DTSTAMP:" + fmtDT(new Date())];
+    "UID:" + icsEscape(uidSrc) + "@qiuzhao-tracker", "DTSTAMP:" + fmtUTC(new Date())];
   if (ev.eventTime) {
     const s = new Date(ev.eventTime);
-    lines.push("DTSTART:" + fmtDT(s), "DTEND:" + fmtDT(new Date(s.getTime() + 3600000)));  // 默认 1 小时
+    lines.push("DTSTART:" + fmtUTC(s), "DTEND:" + fmtUTC(new Date(s.getTime() + 3600000)));  // 默认 1 小时
   } else if (ev.dueDate) {
     const d = parseLocalDate(ev.dueDate);  // 全天事件
     if (d) lines.push("DTSTART;VALUE=DATE:" + fmtD(d));
@@ -671,10 +692,10 @@ function renderJobModal(id) {
   const rows = Object.keys(s.jobs).map(name =>
     `<div class="job-row">
       <span class="job-row-name">${escapeHtml(name)}</span>
-      <select class="status-select" aria-label="岗位 ${escapeHtml(name)} 状态" onchange="setJobStatus('${id}','${escapeHtml(name)}',this.value)">
+      <select class="status-select" aria-label="岗位 ${escapeHtml(name)} 状态" onchange="setJobStatus('${jsArg(id)}','${jsArg(name)}',this.value)">
         ${STATUS_OPTIONS.map(o => `<option value="${o}" ${s.jobs[name] === o ? "selected" : ""}>${o}</option>`).join("")}
       </select>
-      <button class="job-row-del" onclick="removeAppliedJob('${id}','${escapeHtml(name)}')" aria-label="删除岗位 ${escapeHtml(name)}">✕</button>
+      <button class="job-row-del" onclick="removeAppliedJob('${jsArg(id)}','${jsArg(name)}')" aria-label="删除岗位 ${escapeHtml(name)}">✕</button>
     </div>`
   ).join("");
   document.getElementById("jobModalList").innerHTML = rows || `<div class="job-empty">还没记录投递岗位，输入岗位名添加 👇</div>`;

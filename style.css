@@ -209,13 +209,12 @@
   .toast {
     position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #333; color: #fff;
     padding: 10px 24px; border-radius: var(--radius); font-size: 13px; z-index: 999;
-    animation: toastIn 2s ease; box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    animation: toastFadeIn 0.25s ease; box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    pointer-events: none;  /* v7.4: 不再拦截下方点击（此前 2s 动画结束后透明占位仍挡点击） */
   }
-  @keyframes toastIn {
-    0% { opacity: 0; transform: translateX(-50%) translateY(10px); }
-    15% { opacity: 1; transform: translateX(-50%) translateY(0); }
-    85% { opacity: 1; }
-    100% { opacity: 0; transform: translateX(-50%) translateY(0); }
+  @keyframes toastFadeIn {
+    from { opacity: 0; transform: translateX(-50%) translateY(10px); }
+    to { opacity: 1; transform: translateX(-50%) translateY(0); }
   }
 
   /* ====== 响应式 ====== */
@@ -389,7 +388,8 @@
   /* —— 表格 —— */
   .table-wrapper {
     border-radius: 16px; border: 1px solid var(--border);
-    box-shadow: var(--shadow-lg); overflow: hidden;
+    box-shadow: var(--shadow-lg);
+    overflow-x: auto; overflow-y: hidden;  /* v7.4: 恢复窄屏横向滚动（此前 overflow:hidden 把表格裁掉了） */
   }
   thead th {
     background: linear-gradient(180deg, var(--bg-secondary), var(--card));
@@ -1233,4 +1233,6 @@ mark.hl {
 .todo-row.urgency-none { border-left: 3px solid var(--border); padding-left: 9px; }
 .todo-row.urgency-done { opacity: 0.5; }
 .todo-row.urgency-done .todo-main strong { text-decoration: line-through; }
+.todo-row.urgency-ignored { opacity: 0.45; }
+.todo-row.urgency-ignored .todo-main strong { text-decoration: line-through; color: var(--text-muted); }
 .todo-empty { text-align: center; color: var(--text-muted); padding: 48px 0; font-size: 14px; }

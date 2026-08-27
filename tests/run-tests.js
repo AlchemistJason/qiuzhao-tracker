@@ -127,7 +127,7 @@ const groupTodos = extractFn("groupTodos", { ...DEP, TODO_GROUPS: [
   { key: "overdue", label: "⚠️ 已逾期" }, { key: "today", label: "🔴 今天" },
   { key: "soon", label: "🟠 3天内" }, { key: "week", label: "🟡 本周" },
   { key: "later", label: "🟢 更晚" }, { key: "none", label: "⚪ 无明确时间" },
-  { key: "done", label: "✅ 已完成" }
+  { key: "done", label: "✅ 已完成" }, { key: "ignored", label: "🗑 已忽略（可恢复）" }
 ] });
 const getWeeklyStats = extractFn("getWeeklyStats", DEP);
 const shouldAlertToday = extractFn("shouldAlertToday", DEP);
@@ -164,6 +164,10 @@ const icsEscape = extractFn("icsEscape", DEP);
 const buildICS = extractFn("buildICS", { ...DEP, icsEscape });
 const buildTodoItems = extractFn("buildTodoItems", { ...DEP, DYN_TYPE_LABEL: { interview: "面试", written: "笔试", offer: "Offer", deadline: "截止" } });
 const fmtTodoWhen = extractFn("fmtTodoWhen", DEP);
+// v7.4 新增纯函数
+const jsArg = extractFn("jsArg", { escapeHtml });
+const shouldAdoptStatus = extractFn("shouldAdoptStatus", { JOB_STATUS_RANK: { "Offer": 6, "面试中": 5, "笔试中": 4, "已投递": 3, "已拒绝": 2, "未投递": 1 } });
+const buildSlimCompanies = extractFn("buildSlimCompanies");
 
 t("groupTodos 已提取", typeof groupTodos === "function");
 t("getWeeklyStats 已提取", typeof getWeeklyStats === "function");
@@ -305,7 +309,8 @@ if (buildTodoItems && fmtTodoWhen) {
   const doneT = buildTodoItems(comps, id => st[id] || { status: "未投递" }, dyn, ["m1"], [], now);
   t("待办: 完成标记生效(仍在列表)", doneT.find(x => x.dynId === "m1").done === true);
   const ignT = buildTodoItems(comps, id => st[id] || { status: "未投递" }, dyn, [], ["m2"], now);
-  t("待办: 忽略项彻底不进列表", !ignT.some(x => x.dynId === "m2"));
+  t("待办: 忽略项保留并带标记(回收站)", ignT.find(x => x.dynId === "m2") && ignT.find(x => x.dynId === "m2").ignored === true);
+  t("待办: done/ignored 不占去重键(status 待办回归)", doneT.some(x => x.company === "乙公司" && x.source === "status"));
   const farT = buildTodoItems([], id => ({ status: "未投递" }),
     [{ id: "m9", type: "written", company: "远期公司", eventTime: "2026-09-25T10:00:00+08:00" }], [], [], now);  // 30天后
   t("待办: 远期邮件也进列表(later 组)", farT.length === 1 && farT[0].urgency === "later");
@@ -317,6 +322,11 @@ if (buildTodoItems && fmtTodoWhen) {
     ]);
     t("待办分组: 已完成沉底", gs[gs.length - 1].key === "done" && gs[0].key === "today");
     t("待办分组: 空组不出现", !gs.some(g => g.key === "overdue"));
+    const gs2 = groupTodos([
+      { urgency: "today", done: false, company: "A" },
+      { urgency: "today", done: false, ignored: true, company: "B" }
+    ]);
+    t("待办分组: 已忽略沉到最底", gs2[gs2.length - 1].key === "ignored");
   }
 }
 
@@ -574,6 +584,69 @@ section("快照去重逻辑");
   pushSnapshot("{\"v\":1}"); pushSnapshot("{\"v\":1}"); pushSnapshot("{\"v\":2}"); pushSnapshot("{\"v\":2}"); pushSnapshot("{\"v\":3}");
   t("连续相同状态只存一份", snapshots.length === 3);
   t("保留最新 3 份", snapshots[0].raw === "{\"v\":1}" && snapshots[2].raw === "{\"v\":3}");
+})();
+
+// ---------- v7.4 修复回归（jsArg 转义 / 采纳防回退 / 二维码瘦身） ----------
+section("v7.4 安全与合并修复");
+
+t("jsArg 已提取", typeof jsArg === "function");
+t("shouldAdoptStatus 已提取", typeof shouldAdoptStatus === "function");
+t("buildSlimCompanies 已提取", typeof buildSlimCompanies === "function");
+
+if (jsArg) {
+  // 关键性质：HTML 属性解码后必须是合法 JS 字符串字面量（\' 保留、\\ 保留、换行变 \n）
+  t("jsArg: 单引号 → \\&#39; (解码后为 \\')", jsArg("it's") === "it\\&#39;s");
+  t("jsArg: 反斜杠加倍", jsArg("a\\b") === "a\\\\b");
+  t("jsArg: 换行转义", jsArg("a\nb") === "a\\nb");
+  t("jsArg: 中文/常规字符不变", jsArg("百度-算法岗") === "百度-算法岗");
+}
+
+if (shouldAdoptStatus) {
+  t("采纳: 无旧状态允许", shouldAdoptStatus(null, "笔试中") === true);
+  t("采纳: 前进允许", shouldAdoptStatus("笔试中", "面试中") === true);
+  t("采纳: 同级允许(刷新时间戳)", shouldAdoptStatus("面试中", "面试中") === true);
+  t("采纳: 回退拒绝", shouldAdoptStatus("面试中", "笔试中") === false);
+  t("采纳: Offer 不被覆盖", shouldAdoptStatus("Offer", "面试中") === false);
+}
+
+if (buildSlimCompanies) {
+  const full = {
+    a: { status: "未投递", starred: false, note: "", jobs: {}, history: [] },
+    b: { status: "面试中", starred: false, note: "", jobs: { "算法岗": "面试中" }, history: [], lastUpdate: 1 },
+    c: { status: "未投递", starred: true, note: "", jobs: {}, history: [] },
+    d: { status: "未投递", starred: false, note: "留意", jobs: {}, history: [] }
+  };
+  const slim = buildSlimCompanies(full);
+  t("瘦身: 全默认公司被剔除", !slim.a);
+  t("瘦身: 有进度/收藏/备注的保留", !!(slim.b && slim.c && slim.d));
+  t("瘦身: 空输入不炸", Object.keys(buildSlimCompanies(null)).length === 0);
+}
+
+// ---------- dynamics.json schema + 隐私规则（CI 门禁，防外部工具写入违规字段） ----------
+section("dynamics.json 邮件动态校验");
+(function() {
+  let dyn;
+  try { dyn = JSON.parse(fs.readFileSync(path.join(ROOT, "dynamics.json"), "utf8")); }
+  catch(e) { t("dynamics.json 可解析", false, e.message); return; }
+  const items = dyn.items || [];
+  const TYPES = ["offer", "written", "interview", "deadline", "reject", "evaluation", "other"];
+  const SS = ["未投递", "已投递", "笔试中", "面试中", "Offer", "已拒绝"];
+  const knownIds = new Set(COMPANIES.map(c => c.id));
+  t("dynamics: items 为数组且非空", Array.isArray(items) && items.length > 0);
+  t("dynamics: id 唯一", new Set(items.map(i => i.id)).size === items.length);
+  t("dynamics: 必填字段齐全(id/type/company/time)", items.every(i => i.id && i.type && i.company && i.time));
+  t("dynamics: type 在白名单", items.every(i => TYPES.includes(i.type)),
+    items.filter(i => !TYPES.includes(i.type)).map(i => i.id).join(","));
+  t("dynamics: companyId 为 null 或存在于 data.js", items.every(i => !i.companyId || knownIds.has(i.companyId)),
+    items.filter(i => i.companyId && !knownIds.has(i.companyId)).map(i => i.companyId).join(","));
+  t("dynamics: time 可解析", items.every(i => !isNaN(new Date(i.time))));
+  t("dynamics: dueDate 格式合法(如有)", items.every(i => !i.dueDate || /^\d{4}-\d{2}-\d{2}$/.test(i.dueDate)));
+  t("dynamics: eventTime 可解析(如有)", items.every(i => !i.eventTime || !isNaN(new Date(i.eventTime))));
+  t("dynamics: suggestStatus 合法(如有)", items.every(i => !i.suggestStatus || SS.includes(i.suggestStatus)));
+  // 隐私规则（README 明文约定，仓库公开部署）：链接/附件一律不入库
+  t("隐私: link 一律为空", items.every(i => !i.link), items.filter(i => i.link).map(i => i.id).join(","));
+  t("隐私: actionUrl 一律为空", items.every(i => !i.actionUrl), items.filter(i => i.actionUrl).map(i => i.id).join(","));
+  t("隐私: 无附件字段", items.every(i => !i.attachment && !i.attachments));
 })();
 
 // ---------- 6. 缓存戳一致性（防止发版忘改 ?v= 导致用户拿到旧缓存） ----------

@@ -79,11 +79,21 @@ function escapeHtml(str) {
     .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 }
 
+// inline onclick 字符串参数专用（v7.4）：先做 JS 字符串字面量转义（\' \\ \n），再做 HTML 属性转义。
+// 只用 escapeHtml 的话，&#39; 会在属性解码时还原为 '，提前闭合 onclick 里的 JS 字符串。
+function jsArg(s) {
+  const js = String(s == null ? "" : s)
+    .replace(/\\/g, "\\\\").replace(/'/g, "\\'").replace(/\r/g, "").replace(/\n/g, "\\n");
+  return escapeHtml(js);
+}
+
 function showToast(msg, duration = 2000) {
   const old = document.querySelector(".toast");
   if (old) old.remove();
   const t = document.createElement("div");
   t.className = "toast";
+  t.setAttribute("role", "status");
+  t.setAttribute("aria-live", "polite");
   t.textContent = msg;
   document.body.appendChild(t);
   setTimeout(() => t.remove(), duration);
@@ -205,6 +215,12 @@ function deriveCompanyStatus(jobsMap, fallback) {
     if ((JOB_STATUS_RANK[v] || 0) > (JOB_STATUS_RANK[best] || 0)) best = v;
   });
   return best;
+}
+
+// v7.4: 采纳邮件状态时的回退防护（纯函数可测）：进度只前进/同级更新，不回退
+function shouldAdoptStatus(prev, next) {
+  if (!prev) return true;
+  return (JOB_STATUS_RANK[next] || 0) >= (JOB_STATUS_RANK[prev] || 0);
 }
 
 // v2 → v3 无损迁移（纯函数可测）：老状态保留，补 jobs 空映射
