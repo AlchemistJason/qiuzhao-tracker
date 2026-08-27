@@ -194,7 +194,7 @@ function discoveredToCompany(it) {
     name: it.name,
     type: "秋招",
     program: it.program || "",
-    category: ["新发现"],
+    category: ["新发现"].concat(Array.isArray(it.category) ? it.category : []),
     jobs: jobs.slice(0, 8),
     location: it.location || "",
     refCode: null,
