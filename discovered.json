@@ -414,7 +414,7 @@
       ],
       "source": "manual-seed",
       "foundAt": "2026-08-27",
-      "note": "集团统一招聘平台（唯一官方渠道，含广东电网）"
+      "note": "南网统一平台（唯一官方渠道，含广东电网/南网储能/南网科研院/南网数字）。规则：每人最多申报 3 家二级单位，各单位限额见公告（如南网科研院限 1 志愿）"
     },
     {
       "id": "cmcc-gd",
@@ -438,7 +438,7 @@
       ],
       "source": "manual-seed",
       "foundAt": "2026-08-27",
-      "note": "集团统一平台，含各省分公司校招"
+      "note": "电信统一平台（含各省分公司/研究院/天翼安全等）。规则：每人最多 2 个志愿，填报后不能修改"
     },
     {
       "id": "chinaunicom-gd",
@@ -486,7 +486,7 @@
       ],
       "source": "manual-seed",
       "foundAt": "2026-08-27",
-      "note": "集团统一 ATS 校招专区"
+      "note": "集团统一 ATS 校招专区（招商港口/招商轮船等在此点选）。各成员单位限额自定：招商轮船限 2 岗、中国外运独立系统限 5 岗"
     },
     {
       "id": "oct",
@@ -810,7 +810,7 @@
       ],
       "source": "manual-seed",
       "foundAt": "2026-08-27",
-      "note": "集团校招页（wintalent 承办）"
+      "note": "集团校招页（wintalent 承办，华润置地/电力/万家/医药等在此）。规则：按业务单元每人 2~3 个志愿，第一志愿优先，淘汰后流转"
     },
     {
       "id": "xiaohongshu",
@@ -1398,7 +1398,7 @@
       ],
       "source": "manual-seed",
       "foundAt": "2026-08-27",
-      "note": "国网人力资源招聘平台，唯一官方报名渠道"
+      "note": "国网统一平台（唯一官方渠道）。规则：每批次最多 3 个二级单位志愿 × 每个下 2 个三四级单位（三志愿六意向），第一志愿优先"
     },
     {
       "id": "sgitg",
@@ -1422,7 +1422,7 @@
       ],
       "source": "manual-seed",
       "foundAt": "2026-08-27",
-      "note": "国聘承办集团校招页；各研究所另有 hotjob 子页"
+      "note": "国聘承办集团聚合页；各研究所各自为政（自有公众号/邮箱/网申），无统一限额，可同时投多个研究所"
     },
     {
       "id": "cudt",
@@ -1950,6 +1950,106 @@
       "source": "manual-seed",
       "foundAt": "2026-08-27",
       "note": "有道自有校招站（独立招聘池）"
+    },
+    {
+      "id": "cmiot",
+      "name": "中移物联网",
+      "officialLink": "https://iot.zhaopin.com",
+      "location": "重庆",
+      "category": [
+        "央企国企"
+      ],
+      "source": "manual-seed",
+      "foundAt": "2026-08-27",
+      "note": "独立入口（智联承办）。规则：每人只能投递 1 个岗位",
+      "quota": 1
+    },
+    {
+      "id": "cmnet-gd",
+      "name": "中移互联网",
+      "officialLink": "https://zyhlw.hotjob.cn",
+      "location": "广州",
+      "category": [
+        "央企国企"
+      ],
+      "source": "manual-seed",
+      "foundAt": "2026-08-27",
+      "note": "中国移动专业公司，独立入口（hotjob 承办）；移动各公司相互独立、不限投递公司数"
+    },
+    {
+      "id": "cmsk",
+      "name": "招商蛇口",
+      "officialLink": "https://cmsk1979.zhiye.com/campus/jobs",
+      "location": "深圳",
+      "category": [
+        "央企国企"
+      ],
+      "source": "manual-seed",
+      "foundAt": "2026-08-27",
+      "note": "招商局旗下地产板块，独立入口（北森承办）",
+      "parent": "cmhk"
+    },
+    {
+      "id": "sinotrans",
+      "name": "中国外运",
+      "officialLink": "https://sinotrans.zhiye.com",
+      "location": "北京/深圳",
+      "category": [
+        "央企国企"
+      ],
+      "source": "manual-seed",
+      "foundAt": "2026-08-27",
+      "note": "招商局旗下物流板块，独立入口。规则：每人可选 5 个职位，申请后无法更改",
+      "parent": "cmhk",
+      "quota": 5
+    },
+    {
+      "id": "pcitc",
+      "name": "石化盈科",
+      "officialLink": "https://www.pcitc.com",
+      "location": "北京",
+      "category": [
+        "央企国企"
+      ],
+      "source": "manual-seed",
+      "foundAt": "2026-08-27",
+      "note": "中石化×电讯盈科合资科技公司，官网招贤纳士-校园招聘；中石化集团其他单位走 job.sinopec.com（限 2 岗）"
+    },
+    {
+      "id": "poly",
+      "name": "保利发展",
+      "officialLink": "https://polycareer.zhiye.com/campus",
+      "location": "广州/全国",
+      "category": [
+        "央企国企"
+      ],
+      "source": "manual-seed",
+      "foundAt": "2026-08-27",
+      "note": "独立入口（北森承办，保利和伙人计划）"
+    },
+    {
+      "id": "jinmao",
+      "name": "中国金茂",
+      "officialLink": "https://jinmao.hotjob.cn",
+      "location": "北京/全国",
+      "category": [
+        "央企国企"
+      ],
+      "source": "manual-seed",
+      "foundAt": "2026-08-27",
+      "note": "中化旗下地产，独立入口（与中化信息不同体系）"
+    },
+    {
+      "id": "yuexiu",
+      "name": "越秀集团",
+      "officialLink": "https://recruit.yuexiu.com",
+      "location": "广州",
+      "category": [
+        "央企国企"
+      ],
+      "source": "manual-seed",
+      "foundAt": "2026-08-27",
+      "note": "广州市属国企集团统一入口；越秀资本独立网申限 2 志愿，越秀地产用年度智联子域"
     }
   ]
 }
