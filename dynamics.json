@@ -1,6 +1,18 @@
 {
-  "updatedAt": "2026-08-27T06:30:00+08:00",
+  "updatedAt": "2026-08-27T12:00:00+08:00",
   "items": [
+    {
+      "id": "mail-ebscn-campus-20260827",
+      "type": "other",
+      "company": "光大证券",
+      "companyId": null,
+      "jobName": "2027校园招聘·自营投资类岗位",
+      "title": "光大证券2027校园招聘自营投资类岗位正式启动",
+      "summary": "总部、子公司、分支机构多类岗位开放投递，投递入口 ebscn.zhiye.com",
+      "time": "2026-08-27T01:16:15Z",
+      "link": "https://ebscn.zhiye.com/campus/detail?jobAdId=d3b73ad6-6b72-4723-bccf-148e0eca094e",
+      "suggestStatus": null
+    },
     {
       "id": "mail-gf-offer-20260826",
       "type": "offer",
@@ -77,7 +89,8 @@
     "evaluation": [],
     "clue": [
       { "id": "mail-anker-campus-20260826", "company": "安克创新", "jobName": "2027届全球校招", "receivedAt": "2026-08-26T05:01:23Z" },
-      { "id": "mail-longcheer-campaign-20260825", "company": "龙旗科技", "jobName": "2027届秋招", "receivedAt": "2026-08-25T10:04:10Z" }
+      { "id": "mail-longcheer-campaign-20260825", "company": "龙旗科技", "jobName": "2027届秋招", "receivedAt": "2026-08-25T10:04:10Z" },
+      { "id": "mail-ebscn-campus-20260827", "company": "光大证券", "jobName": "2027校园招聘·自营投资类岗位", "receivedAt": "2026-08-27T01:16:15Z" }
     ]
   }
 }
