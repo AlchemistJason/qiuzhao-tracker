@@ -734,6 +734,7 @@ if (filterBySource) {
   // v7.3 结构检查
   t("待办视图入口存在", html.includes('id="todoViewBtn"') && html.includes('id="todoView"'));
   t("来源分页 tab 存在", html.includes('id="tabReferral"') && html.includes('id="tabPool"') && html.includes('id="listViewToggle"'));
+  t("筛选面板分区默认收起", (html.match(/class="fp-sec collapsed"/g) || []).length === 3);
   t("待办横带容器存在", html.includes('id="todoBar"'));
   t("看板已移除", !html.includes("kanban"));
   t("隐藏已截止开关存在", html.includes('id="hideExpiredCb"'));

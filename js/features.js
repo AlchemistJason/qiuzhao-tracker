@@ -124,6 +124,11 @@ function refreshFilterUI() {
     const dim = cb.dataset.dim;
     cb.checked = !!filters[dim] && filters[dim].has(cb.dataset.value);
   });
+  // v7.8: 有选中项的分区/分组自动展开（面板默认收起，但要让已选条件可见）
+  document.querySelectorAll(".fp-opt input[data-dim]:checked").forEach(cb => {
+    const g = cb.closest(".fp-group"); if (g) g.classList.remove("collapsed");
+    const s = cb.closest(".fp-sec"); if (s) s.classList.remove("collapsed");
+  });
   // 仪表盘卡片高亮（概览查看语义）
   document.querySelectorAll(".dash-card[data-filter]").forEach(c => {
     const f = c.dataset.filter;
