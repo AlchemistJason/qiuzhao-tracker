@@ -103,10 +103,14 @@ function buildCommonHTML(c) {
   ).join("");
   const jobTags = c.jobs.map(j => `<span class="job-tag">${highlightText(j, filters.keyword)}</span>`).join("");
   const programTag = c.program ? `<span class="program-tag">${escapeHtml(c.program)}</span>` : "";
+  // v8.2: 企业性质 + 行业标签（"新发现"/"活动"是标记值，不展示）
+  const natureTag = c.nature ? `<span class="nature-tag nature-${escapeHtml(c.nature)}">${escapeHtml(c.nature)}</span>` : "";
+  const catTags = c.category.filter(x => x !== "新发现" && x !== "活动")
+    .map(x => `<span class="cat-tag">${highlightText(x, filters.keyword)}</span>`).join("");
   const refHTML = c.refCode
     ? `<span class="ref-code" onclick="copyCode(this,'${c.id}')" title="点击复制">${escapeHtml(c.refCode)}</span>`
     : `<span class="ref-none">${c.discovered ? "官网投递" : "链接即内推"}</span>`;
-  return { s, statusOptions, jobTags, programTag, refHTML };
+  return { s, statusOptions, jobTags, programTag, natureTag, catTags, refHTML };
 }
 
 // ============================================================
@@ -136,7 +140,7 @@ function renderTable(data) {
   noResults.style.display = "none";
 
   tbody.innerHTML = data.map(c => {
-    const { s, statusOptions, jobTags, programTag, refHTML } = buildCommonHTML(c);
+    const { s, statusOptions, jobTags, programTag, natureTag, catTags, refHTML } = buildCommonHTML(c);
     const starredClass = s.starred ? "favorited" : "";
     const starIcon = s.starred ? "⭐" : "☆";
 
@@ -144,7 +148,7 @@ function renderTable(data) {
     <tr class="${starredClass}">
       <td><button class="star-btn ${s.starred ? "active" : ""}" onclick="toggleStar('${c.id}')" data-star-id="${c.id}" aria-pressed="${s.starred}" aria-label="收藏 ${escapeHtml(c.name)}">${starIcon}</button></td>
       <td><strong>${nameWithSite(c, filters.keyword)}</strong></td>
-      <td><span class="type-tag ${escapeHtml(c.type)}">${escapeHtml(c.type)}</span>${programTag}</td>
+      <td><span class="type-tag ${escapeHtml(c.type)}">${escapeHtml(c.type)}</span>${programTag}${natureTag}</td>
       <td><div class="job-tags">${jobTags}</div></td>
       <td class="location">${highlightText(c.location, filters.keyword) || "—"}</td>
       <td>${deadlineHTML(c.deadline)}</td>
@@ -180,7 +184,7 @@ function renderCards(data) {
   noResults.style.display = "none";
 
   container.innerHTML = data.map(c => {
-    const { s, statusOptions, jobTags, programTag, refHTML } = buildCommonHTML(c);
+    const { s, statusOptions, jobTags, programTag, natureTag, catTags, refHTML } = buildCommonHTML(c);
     const starredClass = s.starred ? "favorited" : "";
     const starIcon = s.starred ? "⭐" : "☆";
 
@@ -191,7 +195,7 @@ function renderCards(data) {
         <button class="star-btn ${s.starred ? "active" : ""}" onclick="toggleStar('${c.id}')" data-star-id="${c.id}" aria-pressed="${s.starred}" aria-label="收藏 ${escapeHtml(c.name)}">${starIcon}</button>
       </div>
       <div class="card-body">
-        <span class="type-tag ${escapeHtml(c.type)}">${escapeHtml(c.type)}</span>${programTag}
+        <span class="type-tag ${escapeHtml(c.type)}">${escapeHtml(c.type)}</span>${programTag}${natureTag}${catTags}
         ${c.location ? `<span style="margin-left:6px;font-size:12px;color:var(--text-secondary)">📍 ${highlightText(c.location, filters.keyword)}</span>` : ""}
         <span style="margin-left:6px">${deadlineHTML(c.deadline)}</span>
       </div>

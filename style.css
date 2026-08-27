@@ -1244,6 +1244,15 @@ mark.hl {
 /* v7.6: 集团分部投递名额标签 */
 .quota-tag { font-size: 11px; color: var(--accent, #4f6ef7); background: rgba(79,110,247,0.10); border: 1px solid rgba(79,110,247,0.25); border-radius: 4px; padding: 0 4px; margin-left: 5px; white-space: nowrap; }
 
+/* ====== v8.2: 企业性质 / 行业标签 ====== */
+.nature-tag { display: inline-block; font-size: 10px; padding: 1px 6px; border-radius: 4px; margin: 3px 0 0 4px; border: 1px solid transparent; white-space: nowrap; }
+.nature-央企 { color: #d64541; background: rgba(214,69,65,0.10); border-color: rgba(214,69,65,0.25); }
+.nature-国企 { color: #e08a00; background: rgba(224,138,0,0.10); border-color: rgba(224,138,0,0.25); }
+.nature-民企 { color: var(--accent, #4f6ef7); background: rgba(79,110,247,0.08); border-color: rgba(79,110,247,0.22); }
+.nature-外企 { color: #8b5cf6; background: rgba(139,92,246,0.10); border-color: rgba(139,92,246,0.25); }
+.nature-合资 { color: #0e9f8a; background: rgba(14,159,138,0.10); border-color: rgba(14,159,138,0.25); }
+.cat-tag { display: inline-block; font-size: 10px; padding: 1px 6px; border-radius: 4px; margin: 3px 0 0 4px; background: var(--bg-secondary); color: var(--text-secondary); border: 1px solid var(--border); white-space: nowrap; }
+
 /* ====== v7.8: 导航行——来源 tab 用下划线式导航（不再是 pill），视图切换保持分段控件 ====== */
 .nav-row { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; margin-bottom: 12px; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
 .source-tabs { display: flex; gap: 2px; overflow-x: auto; }

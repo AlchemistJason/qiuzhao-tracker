@@ -61,6 +61,7 @@ const filters = {
   starred: false,          // 收藏开关
   locations: new Set(),    // 城市多选
   industries: new Set(),   // 行业多选
+  natures: new Set(),      // v8.2: 企业性质多选（央企/国企/民企/外企/合资）
   jobs: new Set(),         // 岗位多选
   keyword: "",             // 搜索词（空格分词 AND）
   hideExpired: true        // v7.2: 隐藏已截止且未投递的公司（默认开）
@@ -156,6 +157,7 @@ function matchFilters(c, f, getSt) {
   }
   if (f.locations.size && !(c.location || "").split("/").some(l => f.locations.has(l.trim()))) return false;
   if (f.industries.size && !c.category.some(cat => f.industries.has(cat))) return false;
+  if (f.natures && f.natures.size && !f.natures.has(c.nature)) return false;  // v8.2: 企业性质筛选
   // v6: 岗位筛选匹配 公司招聘岗位 OR 已投递岗位
   if (f.jobs.size) {
     const applied = Object.keys(s.jobs || {});
@@ -165,7 +167,7 @@ function matchFilters(c, f, getSt) {
   }
   if (f.keyword) {
     const words = splitKeywords(f.keyword);
-    const haystack = `${c.name} ${c.jobs.join(" ")} ${c.location} ${c.category.join(" ")} ${c.note} ${c.refCode || ""} ${c.program || ""} ${Object.keys(s.jobs || {}).join(" ")}`.toLowerCase();
+    const haystack = `${c.name} ${c.jobs.join(" ")} ${c.location} ${c.category.join(" ")} ${c.nature || ""} ${c.note} ${c.refCode || ""} ${c.program || ""} ${Object.keys(s.jobs || {}).join(" ")}`.toLowerCase();
     if (!words.every(w => haystack.includes(w))) return false;  // 空格分词 AND
   }
   return true;
@@ -210,6 +212,7 @@ function discoveredToCompany(it) {
     type: "秋招",
     program: it.program || "",
     category: ["新发现"].concat(Array.isArray(it.category) ? it.category : []),
+    nature: it.nature || "",
     jobs: jobs.slice(0, 8),
     location: it.location || "",
     refCode: null,
@@ -451,7 +454,7 @@ function serializeUIPrefs(f, sort, view) {
     v: 1, view, sort,
     f: {
       status: [...f.status], starred: !!f.starred,
-      locations: [...f.locations], industries: [...f.industries], jobs: [...f.jobs],
+      locations: [...f.locations], industries: [...f.industries], natures: [...(f.natures || [])], jobs: [...f.jobs],
       keyword: f.keyword || "", hideExpired: f.hideExpired !== false
     }
   });
@@ -470,6 +473,7 @@ function deserializeUIPrefs(json) {
         starred: !!p.f.starred,
         locations: Array.isArray(p.f.locations) ? p.f.locations : [],
         industries: Array.isArray(p.f.industries) ? p.f.industries : [],
+        natures: Array.isArray(p.f.natures) ? p.f.natures : [],
         jobs: Array.isArray(p.f.jobs) ? p.f.jobs : [],
         keyword: typeof p.f.keyword === "string" ? p.f.keyword : "",
         hideExpired: p.f.hideExpired !== false
@@ -491,6 +495,7 @@ function loadUIPrefs() {
   filters.starred = p.f.starred;
   filters.locations = new Set(p.f.locations);
   filters.industries = new Set(p.f.industries);
+  filters.natures = new Set(p.f.natures || []);
   filters.jobs = new Set(p.f.jobs);
   filters.keyword = p.f.keyword;
   filters.hideExpired = p.f.hideExpired;

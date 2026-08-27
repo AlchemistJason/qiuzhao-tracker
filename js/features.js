@@ -110,6 +110,7 @@ function clearFilters() {
   filters.starred = false;
   filters.locations.clear();
   filters.industries.clear();
+  filters.natures.clear();
   filters.jobs.clear();
   filters.keyword = "";
   const input = document.getElementById("searchInput");
@@ -120,7 +121,7 @@ function clearFilters() {
 
 // 刷新所有筛选 UI 的选中态 + 筛选按钮角标 + 已选条件条
 function refreshFilterUI() {
-  // 筛选面板 checkbox 选中态（地点/行业/岗位；状态由顶部仪表盘承担）
+  // 筛选面板 checkbox 选中态（地点/行业/性质/岗位；状态由顶部仪表盘承担）
   document.querySelectorAll(".fp-opt input[data-dim]").forEach(cb => {
     const dim = cb.dataset.dim;
     cb.checked = !!filters[dim] && filters[dim].has(cb.dataset.value);
@@ -142,7 +143,7 @@ function refreshFilterUI() {
   // 筛选按钮角标（已选条件数）
   const badge = document.getElementById("filterBadge");
   if (badge) {
-    const n = filters.locations.size + filters.industries.size + filters.jobs.size;
+    const n = filters.locations.size + filters.industries.size + (filters.natures ? filters.natures.size : 0) + filters.jobs.size;
     badge.textContent = n;
     badge.classList.toggle("hidden", n === 0);
   }
@@ -159,6 +160,7 @@ function formatFilterParts(f) {
   if (f.status.size) groups.push({ dim: "status", items: [...f.status].map(v => ({ text: v, dim: "status", val: v })) });
   if (f.locations.size) groups.push({ dim: "locations", items: [...f.locations].map(v => ({ text: v, dim: "locations", val: v })) });
   if (f.industries.size) groups.push({ dim: "industries", items: [...f.industries].map(v => ({ text: v, dim: "industries", val: v })) });
+  if (f.natures && f.natures.size) groups.push({ dim: "natures", items: [...f.natures].map(v => ({ text: v, dim: "natures", val: v })) });
   if (f.jobs.size) groups.push({ dim: "jobs", items: [...f.jobs].map(v => ({ text: v, dim: "jobs", val: v })) });
   if (f.keyword) groups.push({ dim: "keyword", items: [{ text: `搜索“${f.keyword}”`, dim: "keyword", val: f.keyword }] });
   return groups;
@@ -273,10 +275,10 @@ function treeHTML(groups, dim, keyField) {
   return groups.map(g =>
     `<div class="fp-group collapsed">
       <button type="button" class="fp-group-head" onclick="this.parentNode.classList.toggle('collapsed')">
-        <span class="fp-caret">▾</span>${escapeHtml(g[keyField])}<span class="fp-group-count">${(g.cities || g.jobs).length}</span>
+        <span class="fp-caret">▾</span>${escapeHtml(g[keyField])}<span class="fp-group-count">${(g.cities || g.jobs || g.values).length}</span>
       </button>
       <div class="fp-group-body">
-        ${(g.cities || g.jobs).map(v =>
+        ${(g.cities || g.jobs || g.values).map(v =>
           `<label class="fp-opt"><input type="checkbox" data-dim="${dim}" data-value="${escapeHtml(v)}" onchange="toggleFilter('${dim}','${jsArg(v)}')"> <span>${escapeHtml(v)}</span></label>`
         ).join("")}
       </div>
@@ -284,16 +286,41 @@ function treeHTML(groups, dim, keyField) {
   ).join("");
 }
 
-// v5.6: 筛选下拉面板（分级目录：地点按省份、岗位按方向，行业纵向平铺）
+// v8.2: 行业按 INDUSTRY_GROUPS 分组（纯函数可测）：只保留实际出现的行业，未入组的归入"其他"
+function groupIndustries(values) {
+  const present = new Set(values);
+  const grouped = new Set();
+  const groups = [];
+  Object.entries(window.INDUSTRY_GROUPS || {}).forEach(([group, inds]) => {
+    const vals = inds.filter(i => present.has(i));
+    vals.forEach(i => grouped.add(i));
+    if (vals.length) groups.push({ group, values: vals });
+  });
+  const rest = values.filter(v => !grouped.has(v));
+  if (rest.length) groups.push({ group: "其他", values: rest });
+  return groups;
+}
+
+// v8.2: 当前来源实际出现的行业（剔除"活动"/"新发现"等标记值）与企业性质
+function scopedIndustries(scoped) {
+  return [...new Set(scoped.flatMap(c => c.category))].filter(c => c !== "活动" && c !== "新发现");
+}
+function scopedNatures(scoped) {
+  const order = window.NATURES || [];
+  const present = new Set(scoped.map(c => c.nature).filter(Boolean));
+  return order.filter(n => present.has(n)).concat([...present].filter(n => !order.includes(n)));
+}
+
+// v5.6: 筛选下拉面板（分级目录：地点按省份、行业按行业组、岗位按方向，性质平铺）
 function renderFilterPanel() {
   const optsHTML = (values, dim) => values.map(v =>
     `<label class="fp-opt"><input type="checkbox" data-dim="${dim}" data-value="${escapeHtml(v)}" onchange="toggleFilter('${dim}','${jsArg(v)}')"> <span>${escapeHtml(v)}</span></label>`
   ).join("");
   const scoped = filterBySource(COMPANIES, currentSource);  // v7.7: 选项只取自当前来源
   document.getElementById("fpLoc").innerHTML = treeHTML(groupCitiesByProvince(extractCities(scoped)), "locations", "province");
-  document.getElementById("fpInd").innerHTML = optsHTML(
-    [...new Set(scoped.flatMap(c => c.category))].filter(c => c !== "活动"), "industries"
-  );
+  document.getElementById("fpInd").innerHTML = treeHTML(groupIndustries(scopedIndustries(scoped)), "industries", "group");
+  const natEl = document.getElementById("fpNat");
+  if (natEl) natEl.innerHTML = optsHTML(scopedNatures(scoped), "natures");
   document.getElementById("fpJob").innerHTML = treeHTML(groupJobsByDirection(extractStandardJobs(scoped, 2)), "jobs", "dir");
 }
 
@@ -392,11 +419,12 @@ function switchTab(tab) {
     const scoped = filterBySource(COMPANIES, tab);
     const valid = {
       locations: new Set(extractCities(scoped)),
-      industries: new Set([...new Set(scoped.flatMap(c => c.category))].filter(c => c !== "活动")),
+      industries: new Set(scopedIndustries(scoped)),
+      natures: new Set(scopedNatures(scoped)),
       jobs: new Set(extractStandardJobs(scoped, 2))
     };
     let removed = 0;
-    ["locations", "industries", "jobs"].forEach(dim => {
+    ["locations", "industries", "natures", "jobs"].forEach(dim => {
       [...filters[dim]].forEach(v => {
         if (!valid[dim].has(v)) { filters[dim].delete(v); removed++; }
       });

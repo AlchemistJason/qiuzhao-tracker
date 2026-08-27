@@ -154,6 +154,10 @@ const groupJobsByDirection = extractFn("groupJobsByDirection", { ...DEP,
     { dir: "市场/职能", keys: ["市场", "设计", "美术"] }
   ]
 });
+// v8.2: 行业分组 / 性质提取（依赖 data.js 的 taxonomy 常量）
+const groupIndustries = extractFn("groupIndustries", { window: { INDUSTRY_GROUPS: window.INDUSTRY_GROUPS } });
+const scopedIndustries = extractFn("scopedIndustries");
+const scopedNatures = extractFn("scopedNatures", { window: { NATURES: window.NATURES } });
 const mergeCloudState = extractFn("mergeCloudState", { ...DEP, deriveCompanyStatus });
 const classifyMail = extractFn("classifyMail", DEP);
 const filterNewDynamics = extractFn("filterNewDynamics", DEP);
@@ -442,6 +446,7 @@ if (matchFilters) {
   const mkF = (o) => ({
     status: new Set(o.status || []), starred: !!o.starred,
     locations: new Set(o.locations || []), industries: new Set(o.industries || []),
+    natures: new Set(o.natures || []),
     jobs: new Set(o.jobs || []), keyword: o.keyword || ""
   });
   const shopee = COMPANIES.find(c => c.id === "shopee");   // 已投递/星标/AI/深圳
@@ -454,6 +459,8 @@ if (matchFilters) {
   t("岗位包含: 岗位词命中", matchFilters(shopee, mkF({ jobs: ["算法"] }), st));
   t("关键词分词 AND: 双词都需命中", matchFilters(shopee, mkF({ keyword: "虾皮 深圳" }), st) && !matchFilters(baidu, mkF({ keyword: "百度 深圳" }), st));
   t("收藏开关", matchFilters(shopee, mkF({ starred: true }), st) && !matchFilters(baidu, mkF({ starred: true }), st));
+  t("性质筛选: 外企中虾皮 不中百度", matchFilters(shopee, mkF({ natures: ["外企"] }), st) && !matchFilters(baidu, mkF({ natures: ["外企"] }), st));
+  t("性质+行业跨维 AND", matchFilters(shopee, mkF({ natures: ["外企"], industries: ["互联网"] }), st) && !matchFilters(shopee, mkF({ natures: ["央企"], industries: ["互联网"] }), st));
   t("空条件: 全部通过", matchFilters(baidu, mkF({}), st));
 }
 if (formatFilterParts) {
@@ -467,6 +474,9 @@ if (formatFilterParts) {
   t("条件条: 同维多值合并为一项", groups.find(g => g.dim === "locations").items.length === 2);
   t("条件条: 关键词组", groups[groups.length - 1].dim === "keyword" && groups[groups.length - 1].items[0].val === "算法");
   t("条件条: 空条件返回空数组", formatFilterParts({ status: new Set(), starred: false, locations: new Set(), industries: new Set(), jobs: new Set(), keyword: "" }).length === 0);
+  const fN = { status: new Set(), starred: false, locations: new Set(), industries: new Set(), natures: new Set(["央企", "国企"]), jobs: new Set(), keyword: "" };
+  const groupsN = formatFilterParts(fN);
+  t("条件条: 性质维度分组", groupsN.length === 1 && groupsN[0].dim === "natures" && groupsN[0].items.length === 2);
 }
 if (countFiltered) {
   const f = { status: new Set(["未投递"]), starred: false, locations: new Set(), industries: new Set(), jobs: new Set(), keyword: "" };
@@ -492,26 +502,47 @@ if (groupJobsByDirection) {
   const allJobs = groups.flatMap(g => g.jobs);
   t("方向分组: 无重复词", new Set(allJobs).size === allJobs.length);
 }
+if (groupIndustries) {
+  const gs = groupIndustries(["互联网", "银行", "券商/基金/期货", "未知行业"]);
+  t("行业分组: 金融组含银行+券商基金", gs.find(g => g.group === "金融").values.join(",") === "银行,券商/基金/期货");
+  t("行业分组: 只保留实际出现的行业", !gs.some(g => g.values.includes("游戏")));
+  t("行业分组: 未入组归其他", gs.find(g => g.group === "其他").values.includes("未知行业"));
+  t("行业分组: 组顺序按词表", gs[0].group === "金融");
+}
+if (scopedIndustries) {
+  const inds = scopedIndustries([{ category: ["新发现", "互联网"] }, { category: ["活动"] }, { category: ["游戏"] }]);
+  t("行业提取: 剔除新发现/活动", !inds.includes("新发现") && !inds.includes("活动") && inds.includes("互联网") && inds.includes("游戏"));
+}
+if (scopedNatures) {
+  const ns = scopedNatures([{ nature: "民企" }, { nature: "央企" }, { nature: "民企" }, {}]);
+  t("性质提取: 去重+按词表序+容错空值", ns.join(",") === "央企,民企");
+}
 
-// ---------- 2e. v5.6 行业完整性（8 类重划分） ----------
-section("行业完整性 (v5.6)");
+// ---------- 2e. v8.2 行业/性质 taxonomy 完整性 ----------
+section("行业/性质 taxonomy (v8.2)");
 (function() {
-  const VALID = ["游戏", "智能驾驶", "AI/机器人", "互联网", "科技/硬件", "工业/制造", "安全", "教育", "活动"];
+  const GROUPS = window.INDUSTRY_GROUPS || {};
+  const NATURES = window.NATURES || [];
+  const VALID = Object.values(GROUPS).flat().concat(["活动"]);
+  t("INDUSTRY_GROUPS 已定义且 5 组", Object.keys(GROUPS).length === 5);
+  t("NATURES 已定义且 5 值", NATURES.length === 5 && ["央企", "国企", "民企", "外企", "合资"].every(n => NATURES.includes(n)));
+  t("行业组内无重复值", new Set(Object.values(GROUPS).flat()).size === Object.values(GROUPS).flat().length);
   const allValid = COMPANIES.every(c => c.category.every(cat => VALID.includes(cat)));
   t("分类全部在合法集内", allValid);
   t("每家公司至少 1 分类", COMPANIES.every(c => c.category.length >= 1));
-  // 归属抽查：Shopee→互联网、大疆→科技/硬件、百度→互联网、讯飞→AI/机器人
+  t("每家公司性质合法", COMPANIES.every(c => NATURES.includes(c.nature)),
+    COMPANIES.filter(c => !NATURES.includes(c.nature)).map(c => c.id).join(","));
+  // 归属抽查：Shopee→互联网、大疆→智能硬件、百度→互联网、讯飞→AI/机器人
   const cat = id => COMPANIES.find(c => c.id === id).category[0];
   t("归属: Shopee=互联网", cat("shopee") === "互联网");
-  t("归属: 大疆=科技/硬件", cat("dji") === "科技/硬件");
+  t("归属: 大疆=智能硬件", cat("dji") === "智能硬件");
   t("归属: 百度=互联网", cat("baidu") === "互联网");
   t("归属: 讯飞=AI/机器人", cat("iflytek") === "AI/机器人");
-  t("归属: 汇川=工业/制造", cat("inovance") === "工业/制造");
-  // 碎片化检测：非"活动"分类至少 2 家
-  const freq = {};
-  COMPANIES.forEach(c => c.category.forEach(cat => { freq[cat] = (freq[cat] || 0) + 1; }));
-  const noFragment = Object.keys(freq).every(cat => cat === "活动" || freq[cat] >= 2);
-  t("无碎片化分类(单家分类仅活动)", noFragment);
+  t("归属: 汇川=工业/制造/能源", cat("inovance") === "工业/制造/能源");
+  t("归属: 招银网络=金融科技", COMPANIES.find(c => c.id === "cmbnt").category.includes("金融科技"));
+  t("性质抽查: 招银网络=央企", COMPANIES.find(c => c.id === "cmbnt").nature === "央企");
+  t("性质抽查: Shopee=外企", COMPANIES.find(c => c.id === "shopee").nature === "外企");
+  t("性质抽查: 百度=民企", COMPANIES.find(c => c.id === "baidu").nature === "民企");
 })();
 
 
@@ -680,7 +711,7 @@ if (OFFICIAL_SITES) {
   let disc;
   try { disc = JSON.parse(fs.readFileSync(path.join(ROOT, "discovered.json"), "utf8")); }
   catch(e) { t("discovered.json 可解析", false, e.message); return; }
-  t("discovered: schemaVersion = 1", disc.schemaVersion === 1);
+  t("discovered: schemaVersion = 2", disc.schemaVersion === 2);
   const items = disc.items || [];
   t("discovered: items 为数组", Array.isArray(items));
   if (!items.length) return;
@@ -701,6 +732,18 @@ if (OFFICIAL_SITES) {
       items.filter(i => i.officialLink && siteUrls.has(i.officialLink)).map(i => i.id).join(","));
   }
   t("discovered: deadline 格式合法(如有)", items.every(i => !i.deadline || /^\d{4}-\d{2}-\d{2}$/.test(i.deadline)));
+  // v8.2: taxonomy 合法性——行业在 INDUSTRY_GROUPS 词表内，性质在 NATURES 内
+  const VALID_IND = new Set(Object.values(window.INDUSTRY_GROUPS || {}).flat());
+  const VALID_NAT = new Set(window.NATURES || []);
+  t("discovered: 行业全部在词表内", items.every(i => Array.isArray(i.category) && i.category.length >= 1 && i.category.every(k => VALID_IND.has(k))),
+    items.filter(i => !Array.isArray(i.category) || !i.category.every(k => VALID_IND.has(k))).map(i => i.id).join(","));
+  t("discovered: 性质全部合法", items.every(i => VALID_NAT.has(i.nature)),
+    items.filter(i => !VALID_NAT.has(i.nature)).map(i => i.id).join(","));
+  // v8.2: 跨来源碎片化检测——同一行业值在内推+校招池合计至少 2 家（防一次性发明分类）
+  const freqAll = {};
+  COMPANIES.forEach(c => c.category.forEach(k => { if (k !== "活动") freqAll[k] = (freqAll[k] || 0) + 1; }));
+  items.forEach(i => (i.category || []).forEach(k => { freqAll[k] = (freqAll[k] || 0) + 1; }));
+  t("跨来源无碎片化行业(合计≥2家)", Object.keys(freqAll).every(k => freqAll[k] >= 2), JSON.stringify(freqAll));
   t("discovered: quota 为正整数(如有)", items.every(i => !i.quota || (Number.isInteger(i.quota) && i.quota > 0)),
     items.filter(i => i.quota && !(Number.isInteger(i.quota) && i.quota > 0)).map(i => i.id).join(","));
   t("discovered: parent 指向已存在的条目(如有)", items.every(i => !i.parent || items.some(p => p.id === i.parent)),
@@ -720,6 +763,7 @@ if (discoveredToCompany) {
   t("候选映射: jobs 文本拆分数组", Array.isArray(dc.jobs) && dc.jobs.length === 2);
   t("候选映射: 缺省字段兜底", discoveredToCompany({ id: "y", name: "y" }).jobs.length === 0 && discoveredToCompany({ id: "y", name: "y" }).deadline === null);
   t("候选映射: parent/quota 透传", (() => { const g = discoveredToCompany({ id: "z", name: "z", parent: "alibaba", quota: 2 }); return g.parent === "alibaba" && g.quota === 2; })());
+  t("候选映射: nature 透传/缺省兜底", (() => { const g = discoveredToCompany({ id: "w", name: "w", nature: "央企" }); const h = discoveredToCompany({ id: "v", name: "v" }); return g.nature === "央企" && h.nature === ""; })());
 }
 
 // v7.7: 来源分页（内推 / 校招池）
@@ -745,7 +789,7 @@ section("index.html 缓存戳一致性");
   // v7.3 结构检查
   t("待办视图入口存在", html.includes('id="todoViewBtn"') && html.includes('id="todoView"'));
   t("来源分页 tab 存在", html.includes('id="tabReferral"') && html.includes('id="tabPool"') && html.includes('id="listViewToggle"'));
-  t("筛选面板分区默认收起", (html.match(/class="fp-sec collapsed"/g) || []).length === 3);
+  t("筛选面板分区默认收起", (html.match(/class="fp-sec collapsed"/g) || []).length === 4 && html.includes('id="fpNat"'));
   t("导航行结构存在", html.includes('class="nav-row"'));
   // v8.0: 安全——脚本全部本地化，禁止任何第三方脚本源（防 CDN 劫持跳转赌博站）
   t("无第三方脚本源", !/<script[^>]+src="https?:/i.test(html),
