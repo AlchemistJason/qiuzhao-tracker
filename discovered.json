@@ -1375,6 +1375,246 @@
       "source": "manual-seed",
       "foundAt": "2026-08-27",
       "note": "官网招聘页（医疗大模型方向）"
+    },
+    {
+      "id": "csg-digital",
+      "name": "南网数字集团",
+      "officialLink": "https://zhaopin.csg.cn",
+      "location": "广州/深圳",
+      "category": [
+        "央企国企"
+      ],
+      "source": "manual-seed",
+      "foundAt": "2026-08-27",
+      "note": "南方电网数字化子公司，走南网统一招聘平台（与南方电网同入口）"
+    },
+    {
+      "id": "sgcc",
+      "name": "国家电网",
+      "officialLink": "https://zhaopin.sgcc.com.cn",
+      "location": "北京/全国",
+      "category": [
+        "央企国企"
+      ],
+      "source": "manual-seed",
+      "foundAt": "2026-08-27",
+      "note": "国网人力资源招聘平台，唯一官方报名渠道"
+    },
+    {
+      "id": "sgitg",
+      "name": "国网信通产业集团",
+      "officialLink": "http://sgitg.zhaopin.com",
+      "location": "北京",
+      "category": [
+        "央企国企"
+      ],
+      "source": "manual-seed",
+      "foundAt": "2026-08-27",
+      "note": "智联承办校招专题，正式报名需回国网统一平台"
+    },
+    {
+      "id": "cetc",
+      "name": "中国电科",
+      "officialLink": "https://cetc.iguopin.com/job-campus",
+      "location": "北京/全国",
+      "category": [
+        "央企国企"
+      ],
+      "source": "manual-seed",
+      "foundAt": "2026-08-27",
+      "note": "国聘承办集团校招页；各研究所另有 hotjob 子页"
+    },
+    {
+      "id": "cudt",
+      "name": "联通数科",
+      "officialLink": "https://cudt.iguopin.com",
+      "location": "北京/杭州",
+      "category": [
+        "央企国企"
+      ],
+      "source": "manual-seed",
+      "foundAt": "2026-08-27",
+      "note": "国聘承办的独立招聘官网（中国联通数字科技）"
+    },
+    {
+      "id": "cmss",
+      "name": "中移云能力中心",
+      "officialLink": "https://campus.51job.com/cmss",
+      "location": "苏州",
+      "category": [
+        "央企国企"
+      ],
+      "source": "manual-seed",
+      "foundAt": "2026-08-27",
+      "note": "51job 承办独立校招页（中移苏州软件）"
+    },
+    {
+      "id": "cscn",
+      "name": "中国星网",
+      "officialLink": "https://cscnrczp.zhiye.com/campus/jobs",
+      "location": "雄安/北京/上海/西安",
+      "category": [
+        "央企国企"
+      ],
+      "source": "manual-seed",
+      "foundAt": "2026-08-27",
+      "note": "北森承办统一网申，承办方按年换过需每年复核"
+    },
+    {
+      "id": "cestc",
+      "name": "中国系统",
+      "officialLink": "https://campus.cestc.cn",
+      "location": "北京",
+      "category": [
+        "央企国企"
+      ],
+      "source": "manual-seed",
+      "foundAt": "2026-08-27",
+      "note": "自有独立校招域名（中国电子子公司，与 CEC 区分）"
+    },
+    {
+      "id": "cetctj",
+      "name": "中电太极",
+      "officialLink": "https://cetctj.zhiye.com/Campus",
+      "location": "北京",
+      "category": [
+        "央企国企"
+      ],
+      "source": "manual-seed",
+      "foundAt": "2026-08-27",
+      "note": "北森承办（中电太极集团/15所，含太极股份岗位）"
+    },
+    {
+      "id": "kunlun",
+      "name": "昆仑数智",
+      "officialLink": "https://zhaopin.cnpc.com.cn",
+      "location": "北京",
+      "category": [
+        "央企国企"
+      ],
+      "source": "manual-seed",
+      "foundAt": "2026-08-27",
+      "note": "中石油数字化子公司，走中石油高校毕业生统一平台"
+    },
+    {
+      "id": "crc-digital",
+      "name": "华润数科",
+      "officialLink": "https://runjob.crc.com.cn",
+      "location": "深圳",
+      "category": [
+        "央企国企"
+      ],
+      "source": "manual-seed",
+      "foundAt": "2026-08-27",
+      "note": "华润集团统一招聘平台（含各业务板块）"
+    },
+    {
+      "id": "sinochem-it",
+      "name": "中化信息",
+      "officialLink": "https://job.sinochem.com",
+      "location": "北京",
+      "category": [
+        "央企国企"
+      ],
+      "source": "manual-seed",
+      "foundAt": "2026-08-27",
+      "note": "中国中化数字化子公司，走集团统一招聘网"
+    },
+    {
+      "id": "casic",
+      "name": "航天科工",
+      "officialLink": "https://casicjob.iguopin.com/job",
+      "location": "北京/全国",
+      "category": [
+        "央企国企"
+      ],
+      "source": "manual-seed",
+      "foundAt": "2026-08-27",
+      "note": "国聘承办集团统一入口"
+    },
+    {
+      "id": "spacechina",
+      "name": "航天科技",
+      "officialLink": "https://spacechina.iguopin.com/job-campus",
+      "location": "北京/上海/西安",
+      "category": [
+        "央企国企"
+      ],
+      "source": "manual-seed",
+      "foundAt": "2026-08-27",
+      "note": "国聘承办，已挂 2027 届岗位"
+    },
+    {
+      "id": "nhrdc",
+      "name": "中国兵器工业",
+      "officialLink": "https://zhaopin.nhrdc.cn",
+      "location": "北京/全国",
+      "category": [
+        "央企国企"
+      ],
+      "source": "manual-seed",
+      "foundAt": "2026-08-27",
+      "note": "中国兵器人才招聘平台，官方唯一网申"
+    },
+    {
+      "id": "cssc",
+      "name": "中国船舶",
+      "officialLink": "http://cssc.zhiye.com",
+      "location": "上海/北京/全国",
+      "category": [
+        "央企国企"
+      ],
+      "source": "manual-seed",
+      "foundAt": "2026-08-27",
+      "note": "北森承办统一网申"
+    },
+    {
+      "id": "travelsky",
+      "name": "中国航信",
+      "officialLink": "https://travelsky.hotjob.cn",
+      "location": "北京",
+      "category": [
+        "央企国企"
+      ],
+      "source": "manual-seed",
+      "foundAt": "2026-08-27",
+      "note": "民航信息央企，官方校招应聘网址"
+    },
+    {
+      "id": "dianxinshuzhi",
+      "name": "中电信数智",
+      "officialLink": "http://campus.51job.com/dianxinshuzhi",
+      "location": "北京",
+      "category": [
+        "央企国企"
+      ],
+      "source": "manual-seed",
+      "foundAt": "2026-08-27",
+      "note": "中国电信数字化子公司，51job 承办独立校招页"
+    },
+    {
+      "id": "cscec",
+      "name": "中国建筑",
+      "officialLink": "https://recruit.cscec.com",
+      "location": "全国",
+      "category": [
+        "央企国企"
+      ],
+      "source": "manual-seed",
+      "foundAt": "2026-08-27",
+      "note": "自有校招官网，各工程局统一网申门户"
+    },
+    {
+      "id": "crrc",
+      "name": "中国中车",
+      "officialLink": "https://crrc.hotjob.cn",
+      "location": "株洲/青岛/长春",
+      "category": [
+        "央企国企"
+      ],
+      "source": "manual-seed",
+      "foundAt": "2026-08-27",
+      "note": "官方校招官网（高端装备）"
     }
   ]
 }
