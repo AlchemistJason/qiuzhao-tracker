@@ -132,7 +132,7 @@ const groupTodos = extractFn("groupTodos", { ...DEP, TODO_GROUPS: [
 const getWeeklyStats = extractFn("getWeeklyStats", DEP);
 const shouldAlertToday = extractFn("shouldAlertToday", DEP);
 const buildCompanyInfoText = extractFn("buildCompanyInfoText", DEP);
-const extractCities = extractFn("extractCities", DEP);
+const extractCities = extractFn("extractCities", { ...DEP, CITY_TOKEN_EXCLUDE: new Set(["全国多地", "全国", "线上", "海外", "广东"]) });
 const fmtNames = extractFn("fmtNames", DEP);
 const splitKeywords = extractFn("splitKeywords", DEP);
 const highlightText = extractFn("highlightText", DEP);
@@ -188,7 +188,7 @@ t("filterNewDynamics 已提取", typeof filterNewDynamics === "function");
 section("v6.0 邮件动态追踪");
 if (classifyMail) {
   t("分类: 百度面试评价邀请 → interview", classifyMail("邀请您对本次面试进行评价", "talentsystem@baidu.com") === "interview");
-  t("分类: 广发录取报到须知 → offer", classifyMail("校园招聘实习生报到须知（收到邮件请回复）", "wxhuangdanhua@gf.com.cn") === "offer");
+  t("分类: 广发录取报到须知 → offer", classifyMail("校园招聘实习生报到须知（收到邮件请回复）", "campus@gf.com.cn") === "offer");
   t("分类: 笔试通知 → written", classifyMail("XX公司笔试通知", "hr@corp.com") === "written");
   t("分类: 面试提醒 → interview", classifyMail("面试提醒", "hr@corp.com") === "interview");
   t("分类: 拒信遗憾 → reject", classifyMail("很遗憾未能通过本轮筛选", "hr@corp.com") === "reject");
@@ -607,6 +607,7 @@ if (shouldAdoptStatus) {
   t("采纳: 同级允许(刷新时间戳)", shouldAdoptStatus("面试中", "面试中") === true);
   t("采纳: 回退拒绝", shouldAdoptStatus("面试中", "笔试中") === false);
   t("采纳: Offer 不被覆盖", shouldAdoptStatus("Offer", "面试中") === false);
+  t("采纳: 拒信终态放行(非回退)", shouldAdoptStatus("已投递", "已拒绝") === true && shouldAdoptStatus("面试中", "已拒绝") === true);
 }
 
 if (buildSlimCompanies) {
@@ -693,6 +694,12 @@ if (OFFICIAL_SITES) {
   t("discovered: 与 data.js 无公司名撞车(归一化)", items.every(i => !knownNames.has(normalizeCompanyName(i.name))),
     items.filter(i => knownNames.has(normalizeCompanyName(i.name))).map(i => i.name).join(","));
   t("discovered: officialLink 为 http/https(如有)", items.every(i => !i.officialLink || /^https?:\/\//i.test(i.officialLink)));
+  // v8.1: 跨文件查重——校招池入口不得与内推清单官网重复（防灵犀互娱式同公司两份跟踪）
+  if (OFFICIAL_SITES) {
+    const siteUrls = new Set(Object.values(OFFICIAL_SITES));
+    t("discovered: 官网入口不与内推清单重复", items.every(i => !i.officialLink || !siteUrls.has(i.officialLink)),
+      items.filter(i => i.officialLink && siteUrls.has(i.officialLink)).map(i => i.id).join(","));
+  }
   t("discovered: deadline 格式合法(如有)", items.every(i => !i.deadline || /^\d{4}-\d{2}-\d{2}$/.test(i.deadline)));
   t("discovered: quota 为正整数(如有)", items.every(i => !i.quota || (Number.isInteger(i.quota) && i.quota > 0)),
     items.filter(i => i.quota && !(Number.isInteger(i.quota) && i.quota > 0)).map(i => i.id).join(","));
@@ -724,7 +731,11 @@ if (filterBySource) {
   t("来源过滤: 全集无 discovered 时校招池为空", filterBySource([{ id: "x" }], "pool").length === 0);
 }
 
-// ---------- 6. 缓存戳一致性（防止发版忘改 ?v= 导致用户拿到旧缓存） ----------section("index.html 缓存戳一致性");
+// v8.1: debounce 必须透传事件参数（丢参曾导致搜索框输入必抛 TypeError）
+t("debounce: 事件参数透传", /function\s+debounce[\s\S]*?fn\.apply\(this,\s*args\)/.test(appJs));
+
+// ---------- 6. 缓存戳一致性（防止发版忘改 ?v= 导致用户拿到旧缓存） ----------
+section("index.html 缓存戳一致性");
 (function() {
   const html = fs.readFileSync(path.join(ROOT, "index.html"), "utf8");
   const refs = [...html.matchAll(/(?:src|href)="(style\.css|data\.js|official-sites\.js|js\/[\w-]+\.js)\?v=([\w.]+)"/g)];

@@ -167,7 +167,7 @@
     {
       "id": "yonyou",
       "name": "用友",
-      "officialLink": "http://career.yonyou.com",
+      "officialLink": "https://career.yonyou.com",
       "location": "北京",
       "category": [
         "互联网大厂"
@@ -263,7 +263,7 @@
     {
       "id": "swhy-sec",
       "name": "申万宏源",
-      "officialLink": "http://www.swhysc.com",
+      "officialLink": "https://www.swhysc.com",
       "location": "上海",
       "category": [
         "券商基金"
@@ -311,7 +311,7 @@
     {
       "id": "jsfund",
       "name": "嘉实基金",
-      "officialLink": "http://www.jsfund.cn/jobs/",
+      "officialLink": "https://www.jsfund.cn/jobs/",
       "location": "北京",
       "category": [
         "券商基金"
@@ -335,7 +335,7 @@
     {
       "id": "gffunds",
       "name": "广发基金",
-      "officialLink": "http://www.gffunds.com.cn/recruitment",
+      "officialLink": "https://www.gffunds.com.cn/recruitment",
       "location": "广州/珠海",
       "category": [
         "券商基金"
@@ -503,7 +503,7 @@
     {
       "id": "sinopec-gd",
       "name": "中国石化广东石油",
-      "officialLink": "http://job.sinopec.com",
+      "officialLink": "https://job.sinopec.com",
       "location": "广东",
       "category": [
         "央企国企"
@@ -611,7 +611,7 @@
     {
       "id": "gree",
       "name": "格力电器",
-      "officialLink": "http://www.gree.com",
+      "officialLink": "https://www.gree.com",
       "location": "珠海",
       "category": [
         "制造"
@@ -1403,7 +1403,7 @@
     {
       "id": "sgitg",
       "name": "国网信通产业集团",
-      "officialLink": "http://sgitg.zhaopin.com",
+      "officialLink": "https://sgitg.zhaopin.com",
       "location": "北京",
       "category": [
         "央企国企"
@@ -1559,7 +1559,7 @@
     {
       "id": "cssc",
       "name": "中国船舶",
-      "officialLink": "http://cssc.zhiye.com",
+      "officialLink": "https://cssc.zhiye.com",
       "location": "上海/北京/全国",
       "category": [
         "央企国企"
@@ -1583,7 +1583,7 @@
     {
       "id": "dianxinshuzhi",
       "name": "中电信数智",
-      "officialLink": "http://campus.51job.com/dianxinshuzhi",
+      "officialLink": "https://campus.51job.com/dianxinshuzhi",
       "location": "北京",
       "category": [
         "央企国企"
@@ -1894,20 +1894,6 @@
       "source": "manual-seed",
       "foundAt": "2026-08-27",
       "note": "阿里系规则：本集团 1 次投递机会、最多 2 个意向（国际数字商业）",
-      "quota": 2
-    },
-    {
-      "id": "alibaba-lingxi",
-      "name": "阿里巴巴·灵犀互娱",
-      "officialLink": "https://talent.lingxigames.com/campus/home",
-      "location": "广州/上海",
-      "category": [
-        "互联网大厂"
-      ],
-      "parent": "alibaba",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "每人最多 2 个岗位（游戏，27 届已开启）",
       "quota": 2
     },
     {

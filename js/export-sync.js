@@ -48,18 +48,30 @@ function exportJSON() {
 // v7.2 修复：之前只保留 status/starred/note，岗位级 jobs/lastUpdate/history 在导入时丢失
 // v7.4 修复：不再整包覆盖——与本机状态按公司级合并（复用 mergeCloudState：lastUpdate 较新侧为基准，
 // jobs/history/starred 并集），避免扫旧二维码/导旧备份把本机新进度冲掉
+// v8.1: status 白名单归一——不在 STATUS_OPTIONS 内的值归为「未投递」（防脏数据/恶意同步码）
+function normalizeStatus(v) {
+  return STATUS_OPTIONS.includes(v) ? v : "未投递";
+}
+
 function mergeIncoming(incoming) {
   if (!incoming || typeof incoming !== "object") return 0;
   let merged = 0;
   Object.keys(incoming).forEach(id => {
     if (!COMPANY_IDS.has(id)) return;
     const st = incoming[id] || {};
+    const jobs = {};
+    if (st.jobs && typeof st.jobs === "object") {
+      Object.keys(st.jobs).forEach(k => {
+        if (k === "__proto__" || k === "constructor" || k === "prototype") return;
+        jobs[k] = normalizeStatus(st.jobs[k]);
+      });
+    }
     const norm = {
-      status: st.status || "未投递",
+      status: normalizeStatus(st.status),
       starred: !!st.starred,
       note: st.note || "",
       lastUpdate: st.lastUpdate === undefined ? null : st.lastUpdate,
-      jobs: st.jobs && typeof st.jobs === "object" ? st.jobs : {},
+      jobs,
       history: Array.isArray(st.history) ? st.history : []
     };
     userState.companies[id] = mergeCloudState(
@@ -132,11 +144,20 @@ function mergeCloudState(local, remote) {
   const out = {};
   const allIds = new Set([...Object.keys(local.companies || {}), ...Object.keys(remote.companies || {})]);
   allIds.forEach(id => {
+    // v8.1 原型链防护：计算键赋值跳过危险键，防止恶意同步码注入 __proto__ 等
+    if (id === "__proto__" || id === "constructor" || id === "prototype") return;
     const l = local.companies[id];
     const r = remote.companies[id];
     if (!l) { out[id] = r; return; }
     if (!r) { out[id] = l; return; }
-    const base = (l.lastUpdate || 0) >= (r.lastUpdate || 0) ? l : r;
+    // v8.1 修复：双侧 lastUpdate 均空（如二维码不含时间戳）时不再无脑平局取本地——
+    // 本地仍是默认「未投递」而外来侧已有进度时，取外来侧为基准，避免导入静默丢状态
+    let base = (l.lastUpdate || 0) >= (r.lastUpdate || 0) ? l : r;
+    if (!l.lastUpdate && !r.lastUpdate
+      && (!l.status || l.status === "未投递")
+      && r.status && r.status !== "未投递") {
+      base = r;
+    }
     const other = base === l ? r : l;
     const jobs = { ...(other.jobs || {}), ...(base.jobs || {}) };  // 展开顺序保证较新侧覆盖同 key
     // 历史记录取双侧并集：按 (time,job,from,to) 去重、按时间排序、封顶 50 条
@@ -165,22 +186,50 @@ function mergeCloudState(local, remote) {
 async function cloudFetch(path, opts = {}) {
   const cfg = getCloudConfig();
   if (!cfg.appId || !cfg.appKey) throw new Error("未配置云同步");
-  const res = await fetch(cfg.serverURL + path, {
-    ...opts,
-    headers: {
-      "X-LC-Id": cfg.appId,
-      "X-LC-Key": cfg.appKey,
-      "Content-Type": "application/json",
-      ...(opts.headers || {})
+  // v8.1: 15s 超时，弱网挂起时不再永久卡「同步中」
+  // 兼容：AbortSignal.timeout 不可用时手动 AbortController + setTimeout
+  let signal;
+  let timer = null;
+  if (typeof AbortSignal !== "undefined" && typeof AbortSignal.timeout === "function") {
+    signal = AbortSignal.timeout(15000);
+  } else {
+    const controller = new AbortController();
+    signal = controller.signal;
+    timer = setTimeout(() => controller.abort(), 15000);
+  }
+  let res;
+  try {
+    res = await fetch(cfg.serverURL + path, {
+      ...opts,
+      signal,
+      headers: {
+        "X-LC-Id": cfg.appId,
+        "X-LC-Key": cfg.appKey,
+        "Content-Type": "application/json",
+        ...(opts.headers || {})
+      }
+    });
+  } catch(e) {
+    if (e && (e.name === "AbortError" || e.name === "TimeoutError")) {
+      setCloudStatus("error");
+      showToast("云同步超时，请检查网络");
     }
-  });
+    throw e;
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
   if (!res.ok) throw new Error("云同步 HTTP " + res.status);
   return res.json();
 }
 
 async function cloudGetObject() {
-  const list = await cloudFetch(`/1.1/classes/${CLOUD_CLASS}?limit=1&order=-updatedAt`);
+  // v8.1: 多取几条以检测多云对象分叉（同账号多设备各建一个对象时会分叉且无收敛）；
+  // 仍只使用最新一条，检测到分叉仅 console.warn 提示，不做自动合并删除（太危险）
+  const list = await cloudFetch(`/1.1/classes/${CLOUD_CLASS}?limit=5&order=-updatedAt`);
   if (list.results && list.results.length > 0 && list.results[0].state) {
+    if (list.results.length > 1) {
+      console.warn(`检测到 ${list.results.length} 个云端状态对象（多设备分叉），仅使用最新一条，请到 LeanCloud 控制台手动清理多余对象`);
+    }
     return { id: list.results[0].objectId, state: JSON.parse(list.results[0].state) };
   }
   return null;
@@ -452,6 +501,8 @@ function importSyncFromText() {
   try {
     const payload = decodeSyncCode(ta.value);
     if (!payload || (payload.v !== 2 && payload.v !== 3) || !payload.c) throw new Error("格式错误");
+    // v8.1: 合并前确认预览，避免误粘贴覆盖本机状态
+    if (!confirm(`将合并 ${Object.keys(payload.c).length} 家公司的状态，继续？`)) return;
     // v6: 兼容 v2 老码，统一升级到 v3 后合并
     mergeSync(upgradeToV3({ version: payload.v, companies: payload.c }).companies);
     showToast("✅ 状态同步完成");
@@ -503,9 +554,14 @@ async function startQrScanner() {
       { facingMode: "environment" },
       { fps: 10, qrbox: { width: 220, height: 220 } },
       function(decodedText) {
+        // v8.1 一次性守卫：stopQrScanner 先同步置空 qrScanner 再异步 stop，
+        // 停止完成前同码多次回调直接忽略，防止重复触发 mergeSync
+        if (!qrScanner) return;
         try {
           const payload = decodeSyncCode(decodedText);
           if (payload && (payload.v === 2 || payload.v === 3) && payload.c) {
+            // v8.1: 合并前确认预览，避免误扫覆盖本机状态
+            if (!confirm(`将合并 ${Object.keys(payload.c).length} 家公司的状态，继续？`)) return;
             // v6: 兼容 v2 老码，统一升级到 v3 后合并
             mergeSync(upgradeToV3({ version: payload.v, companies: payload.c }).companies);
             showToast("✅ 扫码同步成功");

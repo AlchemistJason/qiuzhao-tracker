@@ -7,7 +7,8 @@
 // ============================================================
 function renderDashboard() {
   const stats = { total: 0, applied: 0, test: 0, interview: 0, offer: 0, rejected: 0, starred: 0, pending: 0 };
-  COMPANIES.forEach(c => {
+  // v7.8: 数字按当前来源 tab 统计，保证卡片数字与点击筛选结果口径一致
+  filterBySource(COMPANIES, currentSource).forEach(c => {
     const s = getState(c.id);
     stats.total++;
     if (s.starred) stats.starred++;
@@ -40,7 +41,13 @@ function renderDashboard() {
 }
 
 // v5.3: 概览查看——状态单选切换（再点同状态 = 取消回全部）
+// v7.8: 待办视图下点击卡片先切回当前来源的列表视图，再应用筛选（口径与卡片数字一致）
+function ensureListView() {
+  if (currentView === "todo") switchView(preferredListView || "table");
+}
+
 function viewByStatus(status) {
+  ensureListView();
   if (filters.status.has(status)) filters.status.delete(status);
   else { filters.status.clear(); filters.status.add(status); }
   refreshFilterUI();
@@ -48,12 +55,14 @@ function viewByStatus(status) {
 }
 
 function viewStarred() {
+  ensureListView();
   filters.starred = !filters.starred;
   refreshFilterUI();
   applyFilters();
 }
 
 function viewAll() {
+  ensureListView();
   filters.status.clear();
   filters.starred = false;
   refreshFilterUI();
@@ -96,7 +105,7 @@ function buildCommonHTML(c) {
   const programTag = c.program ? `<span class="program-tag">${escapeHtml(c.program)}</span>` : "";
   const refHTML = c.refCode
     ? `<span class="ref-code" onclick="copyCode(this,'${c.id}')" title="点击复制">${escapeHtml(c.refCode)}</span>`
-    : `<span class="ref-none">链接即内推</span>`;
+    : `<span class="ref-none">${c.discovered ? "官网投递" : "链接即内推"}</span>`;
   return { s, statusOptions, jobTags, programTag, refHTML };
 }
 
@@ -107,7 +116,7 @@ function buildCommonHTML(c) {
 function nameWithSite(c, keyword) {
   const inner = highlightText(c.name, keyword);
   const badge = c.discovered ? `<span class="disc-badge" title="爬虫新发现，设状态即开始跟踪">🆕</span> ` : "";
-  const quota = c.quota ? `<span class="quota-tag" title="该集团/批次可投递的岗位数上限">可投${c.quota}岗</span>` : "";
+  const quota = Number.isInteger(c.quota) ? `<span class="quota-tag" title="该集团/批次可投递的岗位数上限">可投${c.quota}岗</span>` : "";
   const url = (window.OFFICIAL_SITES || {})[c.id] || (c.discovered ? c.link : "");
   const safe = url ? escapeHtml(safeLink(url)) : "";
   const nameHtml = (safe && safe !== "#")
@@ -142,7 +151,7 @@ function renderTable(data) {
       <td>${refHTML}</td>
       <td>
         <div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap">
-          ${c.link ? `<a href="${safeLink(c.link)}" target="_blank" rel="noopener" class="link-btn">投递</a>` : ""}
+          ${c.link ? `<a href="${escapeHtml(safeLink(c.link))}" target="_blank" rel="noopener" class="link-btn">投递</a>` : ""}
           <button class="copy-mini" onclick="copyCompany(this,'${c.id}')" title="复制整条投递信息" aria-label="复制整条信息">📋</button>
         </div>
       </td>
@@ -191,7 +200,7 @@ function renderCards(data) {
       <div class="card-info">${escapeHtml(c.note)}</div>
       <div class="card-footer">
         ${refHTML}
-        ${c.link ? `<a href="${safeLink(c.link)}" target="_blank" rel="noopener" class="link-btn">投递</a>` : ""}
+        ${c.link ? `<a href="${escapeHtml(safeLink(c.link))}" target="_blank" rel="noopener" class="link-btn">投递</a>` : ""}
         <button class="copy-mini" onclick="copyCompany(this,'${c.id}')" title="复制整条投递信息" aria-label="复制整条信息">📋</button>
         <button class="job-mini" onclick="openJobModal('${c.id}')" title="管理投递岗位" aria-label="管理投递岗位">📎<span class="job-count">${Object.keys(s.jobs).length || ""}</span></button>
         <select class="status-select" data-status="${escapeHtml(s.status)}" aria-label="投递状态" onchange="setStatus('${c.id}', this.value, this)">${statusOptions}</select>
@@ -445,11 +454,11 @@ function renderWeekly() {
   const stats = getWeeklyStats(userState);
   if (stats.touched === 0) { bar.classList.add("hidden"); bar.innerHTML = ""; return; }
   bar.classList.remove("hidden");
-  // v4.5: 带上公司名，避免"只有数字不知道是哪几家"的无效信息
+  // v4.5: 带上公司名，避免"只有数字不知道是哪几家"的无效信息（公司名过 escapeHtml 防注入）
   const parts = [];
-  if (stats.newApplied) parts.push(`新投递 ${fmtNames(stats.byStatus["已投递"])}`);
-  if (stats.newTest) parts.push(`进笔试 ${fmtNames(stats.byStatus["笔试中"])}`);
-  if (stats.newInterview) parts.push(`进面试 ${fmtNames(stats.byStatus["面试中"])}`);
-  if (stats.newOffer) parts.push(`Offer ${fmtNames(stats.byStatus["Offer"])}`);
+  if (stats.newApplied) parts.push(`新投递 ${escapeHtml(fmtNames(stats.byStatus["已投递"]))}`);
+  if (stats.newTest) parts.push(`进笔试 ${escapeHtml(fmtNames(stats.byStatus["笔试中"]))}`);
+  if (stats.newInterview) parts.push(`进面试 ${escapeHtml(fmtNames(stats.byStatus["面试中"]))}`);
+  if (stats.newOffer) parts.push(`Offer ${escapeHtml(fmtNames(stats.byStatus["Offer"]))}`);
   bar.innerHTML = `📊 <strong>本周动态</strong>（${stats.touched} 家）：${parts.join(" · ")}`;
 }

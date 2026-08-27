@@ -241,7 +241,7 @@
     --border-light: #3d4a70;
     --text: #e9edf9;
     --text-secondary: #9aa5c4;
-    --text-muted: #67718f;
+    --text-muted: #8b94ad;
     --accent: #7c9cff;
     --accent2: #a78bfa;
     --accent3: #5eead4;
@@ -268,7 +268,7 @@
     --border-light: #c3cfe6;
     --text: #1b2337;
     --text-secondary: #5c6880;
-    --text-muted: #8d97ad;
+    --text-muted: #69708a;
     --accent: #4c6ef5;
     --accent2: #8b5cf6;
     --accent3: #0d9488;
@@ -538,7 +538,7 @@
 }
 
 /* P0-4: iOS 聚焦自动放大（input <16px 时 Safari 强制缩放） */
-.search-box input, .note-input, .sync-code-text, #syncCodeInput {
+.search-box input, .note-input, .sync-code-text, #syncCodeInput, .job-input {
   font-size: 16px;
 }
 
@@ -697,7 +697,7 @@ mark.hl {
 @media (max-width: 768px) {
   .star-btn, .copy-mini, .link-btn, .chip, .icon-btn,
   .view-toggle button, .modal-close, .fs-clear, .filter-sec-label,
-  .ref-code, .job-tag {
+  .ref-code, .job-tag, .source-tabs button, .todo-more, .fp-sec-head {
     min-width: 44px;
     min-height: 44px;
     display: inline-flex;

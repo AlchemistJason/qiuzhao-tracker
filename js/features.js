@@ -83,11 +83,12 @@ function copyCompany(el, id) {
 // ============================================================
 
 // 城市提取：按出现频次排序（纯函数可测）
+const CITY_TOKEN_EXCLUDE = new Set(["全国多地", "全国", "线上", "海外", "广东"]);  // 非城市词元（省份/泛称），不进城市筛选
 function extractCities(companies) {
   const freq = {};
   companies.forEach(c => (c.location || "").split("/").forEach(l => {
     l = l.trim();
-    if (l && l !== "全国多地" && l !== "线上") freq[l] = (freq[l] || 0) + 1;
+    if (l && !CITY_TOKEN_EXCLUDE.has(l)) freq[l] = (freq[l] || 0) + 1;
   }));
   return Object.keys(freq).sort((a, b) => (freq[b] || 0) - (freq[a] || 0) || a.localeCompare(b, "zh-CN"));
 }
@@ -195,7 +196,7 @@ function renderFilterSummary() {
       `<span class="fs-item" data-dim="${it.dim}">${escapeHtml(it.text)}<button class="fs-x" onclick="removeFilterItem('${jsArg(it.dim)}','${jsArg(it.val)}')" aria-label="移除 ${escapeHtml(it.text)}">✕</button></span>`
     ).join("<span class='fs-or'>或</span>")
   ).join("<span class='fs-plus'>+</span>");
-  bar.innerHTML = `已选：${groupHTML} <span class="fs-count">共 ${count} 家 / ${COMPANIES.length}</span> <button class="fs-clear" onclick="clearFilters()">清除全部</button>`;
+  bar.innerHTML = `已选：${groupHTML} <span class="fs-count">共 ${count} 家 / ${filterBySource(COMPANIES, currentSource).length}</span> <button class="fs-clear" onclick="clearFilters()">清除全部</button>`;
 }
 
 // ============================================================
@@ -204,12 +205,14 @@ function renderFilterSummary() {
 
 // 城市 → 省份 映射（公开常识，用户要求按省份分级）
 const CITY_PROVINCE = {
-  "深圳": "广东", "广州": "广东", "东莞": "广东",
-  "苏州": "江苏", "无锡": "江苏", "南京": "江苏",
-  "杭州": "浙江", "合肥": "安徽",
+  "深圳": "广东", "广州": "广东", "东莞": "广东", "珠海": "广东", "潮州": "广东", "佛山": "广东", "惠州": "广东",
+  "苏州": "江苏", "无锡": "江苏", "南京": "江苏", "常州": "江苏", "江阴": "江苏", "溧阳": "江苏",
+  "杭州": "浙江", "宁波": "浙江", "合肥": "安徽",
   "上海": "上海", "北京": "北京",
   "成都": "四川", "郑州": "河南", "西安": "陕西", "重庆": "重庆",
-  "武汉": "湖北", "长沙": "湖南",
+  "武汉": "湖北", "黄石": "湖北", "长沙": "湖南", "株洲": "湖南",
+  "青岛": "山东", "济南": "山东", "福州": "福建", "厦门": "福建", "宁德": "福建",
+  "雄安": "河北", "秦皇岛": "河北", "天津": "天津", "长春": "吉林", "香港": "香港",
   "全国多地": "全国", "线上": "线上"
 };
 
@@ -236,7 +239,7 @@ function groupCitiesByProvince(cities) {
     if (!map[province]) map[province] = [];
     map[province].push(city);
   });
-  const order = ["广东", "江苏", "浙江", "上海", "北京", "安徽", "四川", "河南", "陕西", "重庆", "湖北", "湖南", "全国", "线上", "其他"];
+  const order = ["广东", "江苏", "浙江", "上海", "北京", "安徽", "四川", "河南", "陕西", "重庆", "湖北", "湖南", "山东", "福建", "河北", "天津", "吉林", "香港", "全国", "线上", "其他"];
   return order.filter(p => map[p]).map(p => ({ province: p, cities: map[p] }));
 }
 
@@ -274,7 +277,7 @@ function treeHTML(groups, dim, keyField) {
       </button>
       <div class="fp-group-body">
         ${(g.cities || g.jobs).map(v =>
-          `<label class="fp-opt"><input type="checkbox" data-dim="${dim}" data-value="${escapeHtml(v)}" onchange="toggleFilter('${dim}','${escapeHtml(v)}')"> <span>${escapeHtml(v)}</span></label>`
+          `<label class="fp-opt"><input type="checkbox" data-dim="${dim}" data-value="${escapeHtml(v)}" onchange="toggleFilter('${dim}','${jsArg(v)}')"> <span>${escapeHtml(v)}</span></label>`
         ).join("")}
       </div>
     </div>`
@@ -284,7 +287,7 @@ function treeHTML(groups, dim, keyField) {
 // v5.6: 筛选下拉面板（分级目录：地点按省份、岗位按方向，行业纵向平铺）
 function renderFilterPanel() {
   const optsHTML = (values, dim) => values.map(v =>
-    `<label class="fp-opt"><input type="checkbox" data-dim="${dim}" data-value="${escapeHtml(v)}" onchange="toggleFilter('${dim}','${escapeHtml(v)}')"> <span>${escapeHtml(v)}</span></label>`
+    `<label class="fp-opt"><input type="checkbox" data-dim="${dim}" data-value="${escapeHtml(v)}" onchange="toggleFilter('${dim}','${jsArg(v)}')"> <span>${escapeHtml(v)}</span></label>`
   ).join("");
   const scoped = filterBySource(COMPANIES, currentSource);  // v7.7: 选项只取自当前来源
   document.getElementById("fpLoc").innerHTML = treeHTML(groupCitiesByProvince(extractCities(scoped)), "locations", "province");
@@ -347,14 +350,22 @@ document.getElementById("searchInput").addEventListener("keydown", function(e) {
 });
 
 document.querySelectorAll("thead th[data-sort]").forEach(th => {
-  th.addEventListener("click", function() {
-    const field = this.dataset.sort;
+  const doSort = function() {
+    const field = th.dataset.sort;
     if (currentSort.field === field) currentSort.asc = !currentSort.asc;
     else { currentSort.field = field; currentSort.asc = true; }
-    document.querySelectorAll("thead th").forEach(h => h.classList.remove("sorted"));
-    this.classList.add("sorted");
-    this.querySelector(".sort-icon").textContent = currentSort.asc ? "↑" : "↓";
+    document.querySelectorAll("thead th").forEach(h => { h.classList.remove("sorted"); h.removeAttribute("aria-sort"); });
+    th.classList.add("sorted");
+    th.setAttribute("aria-sort", currentSort.asc ? "ascending" : "descending");
+    th.querySelector(".sort-icon").textContent = currentSort.asc ? "↑" : "↓";
     applyFilters();
+  };
+  th.addEventListener("click", doSort);
+  // 键盘可达：Enter/Space 触发与点击相同的排序逻辑
+  th.addEventListener("keydown", function(e) {
+    if (e.key !== "Enter" && e.key !== " ") return;
+    e.preventDefault();
+    doSort();
   });
 });
 
@@ -376,12 +387,29 @@ function switchTab(tab) {
   if (tab === "todo") { switchView("todo"); return; }
   const changed = currentSource !== tab;
   currentSource = tab;
-  if (changed) { renderFilterPanel(); refreshFilterUI(); }  // 筛选面板选项按来源重建
+  if (changed) {
+    // 剔除在新来源选项集中不存在的已选筛选值（口径与 renderFilterPanel 一致），避免残留不可见条件
+    const scoped = filterBySource(COMPANIES, tab);
+    const valid = {
+      locations: new Set(extractCities(scoped)),
+      industries: new Set([...new Set(scoped.flatMap(c => c.category))].filter(c => c !== "活动")),
+      jobs: new Set(extractStandardJobs(scoped, 2))
+    };
+    let removed = 0;
+    ["locations", "industries", "jobs"].forEach(dim => {
+      [...filters[dim]].forEach(v => {
+        if (!valid[dim].has(v)) { filters[dim].delete(v); removed++; }
+      });
+    });
+    if (removed > 0) showToast(`已移除 ${removed} 个当前来源没有的筛选条件`);
+    renderFilterPanel(); refreshFilterUI();  // 筛选面板选项按来源重建
+  }
   if (currentView === "todo") switchView(preferredListView || "table");
   else { updateNavUI(); applyFilters(); }
 }
 
 // v7.7: 导航态统一刷新——tab 高亮/数量角标 + 列表视图切换显隐 + URL hash
+let isRestoringHash = false;  // popstate 还原期间置 true，避免还原动作再次 pushState 污染历史
 function updateNavUI() {
   const todo = currentView === "todo";
   const tabR = document.getElementById("tabReferral");
@@ -389,6 +417,10 @@ function updateNavUI() {
   tabR.classList.toggle("active", !todo && currentSource === "referral");
   document.getElementById("tabPool").classList.toggle("active", !todo && currentSource === "pool");
   document.getElementById("todoViewBtn").classList.toggle("active", todo);
+  // tab aria 语义同步
+  tabR.setAttribute("aria-selected", String(!todo && currentSource === "referral"));
+  document.getElementById("tabPool").setAttribute("aria-selected", String(!todo && currentSource === "pool"));
+  document.getElementById("todoViewBtn").setAttribute("aria-selected", String(todo));
   const lv = document.getElementById("listViewToggle");
   if (lv) lv.classList.toggle("hidden", todo);
   // 数量角标
@@ -397,10 +429,10 @@ function updateNavUI() {
   const urgentN = todoItemsCache.filter(t => !t.done && !t.ignored && t.days !== null && t.days <= 2).length;
   const tc = document.getElementById("tabTodoCount");
   if (tc) { tc.textContent = urgentN; tc.classList.toggle("hidden", urgentN === 0); }
-  // URL hash（replaceState 不污染历史记录）
+  // URL hash（用户操作时 pushState 以支持前进/后退；hash 没变或正在还原时不写入）
   try {
     const h = todo ? "todo" : currentSource;
-    if (location.hash !== "#" + h) history.replaceState(null, "", "#" + h);
+    if (!isRestoringHash && location.hash !== "#" + h) history.pushState(null, "", "#" + h);
   } catch(e) {}
 }
 
@@ -542,8 +574,13 @@ async function loadDiscovered() {
   let data;
   try {
     const res = await fetch("discovered.json?t=" + Date.now());
-    if (!res.ok) return;  // 404 属正常（爬虫还没产出过）
-    data = await res.json();
+    if (!res.ok) return;  // 404 属正常（爬虫还没产出过），保持静默
+    try {
+      data = await res.json();
+    } catch(e) {
+      console.warn("discovered.json 解析失败，已忽略本次爬虫产物:", e);  // JSON 损坏要打日志，不能静默吞掉
+      return;
+    }
   } catch(e) { return; }
   const items = Array.isArray(data && data.items) ? data.items : [];
   if (!items.length) return;
@@ -552,8 +589,13 @@ async function loadDiscovered() {
   let added = 0;
   items.forEach(it => {
     if (!it || !it.id || !it.name) return;
+    // 爬虫产物零校验的兜底：id 只允许小写字母/数字/连字符（会进 DOM/存储/导出，非法直接跳过）
+    if (!/^[a-z0-9-]+$/.test(it.id)) { console.warn("discovered.json 非法 id，已跳过:", it.id); return; }
     // 双保险去重（WorkBuddy 入库前已去重，这里再挡一次）：id 撞车 / 名归一化撞车都跳过
     if (knownIds.has(it.id) || knownNames.has(normalizeCompanyName(it.name))) return;
+    // quota 收敛：非正整数一律置 null
+    const quota = Number(it.quota);
+    it.quota = (Number.isInteger(quota) && quota > 0) ? quota : null;
     const c = discoveredToCompany(it);
     COMPANIES.push(c);
     knownIds.add(c.id);
@@ -569,6 +611,7 @@ async function loadDiscovered() {
     updateNavUI();         // v7.7: 刷新 tab 数量角标
     applyFilters();
     showToast(`🆕 新发现 ${added} 家公司，已加入「校招池」标签页，设状态即开始跟踪`);
+    checkDeadlineAlert();  // 校招池新公司若临近截止，也要进开机提醒
   }
 }
 
@@ -601,7 +644,6 @@ function renderDynamicsBar(items) {
 function applyDynamic(id) {
   const it = (window.__dynAll || []).find(x => x.id === id);
   if (!it || !it.suggestStatus) return;
-  markDynSeen(id);
   const companyId = it.companyId;
   if (companyId && COMPANIES.some(x => x.id === companyId)) {
     const status = it.suggestStatus;
@@ -609,10 +651,11 @@ function applyDynamic(id) {
     const s = getState(companyId);
     const prev = s.jobs[jobName] || null;
     if (!shouldAdoptStatus(prev, status)) {  // v7.4: 进度只前进不回退（晚到的旧邮件不覆盖新状态）
-      showToast(`⏭️ ${it.company} · ${jobName} 已是「${prev}」，不回退为「${status}」`);
-      loadDynamics();
+      // 不 markDynSeen：动态保留在动态条里，用户可去 📎 弹窗手动处理
+      showToast(`⏭️ ${it.company} · ${jobName} 已是「${prev}」，不回退为「${status}」（可去 📎 弹窗手动处理）`, 4000);
       return;
     }
+    markDynSeen(id);
     s.jobs[jobName] = status;
     s.status = deriveCompanyStatus(s.jobs, s.status);
     if (prev !== status) recordHistory(companyId, { job: jobName, from: prev, to: status });  // v7.2 进度历史
@@ -621,9 +664,12 @@ function applyDynamic(id) {
     refreshAll();
     showToast(`✅ 已采纳：${it.company} · ${jobName} → ${status}`);
   } else {
+    markDynSeen(id);
     showToast(`📌 新公司「${it.company}」不在系统中，请加入腾讯文档总表后对我说"同步"`);
   }
-  loadDynamics();
+  // 本地缓存重渲染，不再 loadDynamics() 全量重拉（与 ignoreDynamic 一致）
+  renderDynamicsBar(filterNewDynamics(window.__dynAll, getDynSeen()));
+  refreshTodos();
 }
 
 function ignoreDynamic(id) {
@@ -640,9 +686,9 @@ function todoAction(i, act) {
   if (!it) return;
   if (act === "ics") { downloadICS(it); return; }
   if (act === "done") { markDynDone(it.dynId); showToast("✅ 已完成：" + it.company + " · " + it.label); }
-  else if (act === "undo") { unmarkDynDone(it.dynId); }
+  else if (act === "undo") { unmarkDynDone(it.dynId); showToast("已恢复到待办"); }
   else if (act === "ignore") { markDynIgnored(it.dynId); showToast("🗑 已忽略，可在待办视图底部「已忽略」分组恢复"); }
-  else if (act === "unignore") { unmarkDynIgnored(it.dynId); }
+  else if (act === "unignore") { unmarkDynIgnored(it.dynId); showToast("已恢复到待办"); }
   else return;
   renderDynamicsBar(filterNewDynamics(window.__dynAll || [], getDynSeen()));  // 内部调 refreshTodos() 重算待办
 }
@@ -672,7 +718,7 @@ function buildICS(ev) {
   }
   lines.push("SUMMARY:" + icsEscape(`【秋招】${ev.company}${ev.jobName ? "·" + ev.jobName : ""} ${ev.label}`));
   if (ev.summary) lines.push("DESCRIPTION:" + icsEscape(ev.summary));
-  if (ev.actionUrl && /^https?:\/\//i.test(ev.actionUrl)) lines.push("URL:" + ev.actionUrl);
+  if (ev.actionUrl && /^https?:\/\//i.test(ev.actionUrl)) lines.push("URL:" + icsEscape(ev.actionUrl));
   lines.push("END:VEVENT", "END:VCALENDAR");
   return lines.join("\r\n");
 }
@@ -839,3 +885,28 @@ function toggleTheme() {
   const saved = document.documentElement.getAttribute("data-theme");
   document.getElementById("themeBtn").textContent = saved === "dark" ? "🌙" : "☀️";
 })();
+
+// ============================================================
+// 浏览器前进/后退：按 URL hash 还原来源 tab / 待办视图
+// （updateNavUI 里 isRestoringHash 保证还原动作不会再次 pushState）
+// ============================================================
+window.addEventListener("popstate", function() {
+  const h = String(location.hash || "").replace(/^#/, "");
+  if (h !== "referral" && h !== "pool" && h !== "todo") return;
+  isRestoringHash = true;
+  try {
+    if (h === "todo") {
+      if (currentView !== "todo") switchView("todo");
+      return;
+    }
+    if (currentSource !== h) {
+      currentSource = h;
+      renderFilterPanel();
+      refreshFilterUI();
+    }
+    if (currentView === "todo") switchView(preferredListView || "table");
+    else { updateNavUI(); applyFilters(); }
+  } finally {
+    isRestoringHash = false;
+  }
+});

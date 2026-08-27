@@ -22,9 +22,9 @@
   } catch(e) {}
 })();
 </script>
-<script src="vendor/qrcode.min.js?v=8.0" defer></script>
+<script src="vendor/qrcode.min.js?v=8.1" defer></script>
 <!-- html5-qrcode 改为按需动态加载（见 js/export-sync.js startQrScanner），避免 ~300KB 全量下载 -->
-<link rel="stylesheet" href="style.css?v=8.0">
+<link rel="stylesheet" href="style.css?v=8.1">
 </head>
 <body>
 
@@ -100,8 +100,8 @@
   <!-- v7.8: 导航行——来源 tab（下划线式导航）居左，表格/卡片分段控件居右，与工具栏分离 -->
   <div class="nav-row">
     <div class="source-tabs" role="tablist">
-      <button id="tabReferral" class="active" role="tab" onclick="switchTab('referral')">🏠 内推 <span class="tab-count" id="tabReferralCount"></span></button>
-      <button id="tabPool" role="tab" onclick="switchTab('pool')">🆕 校招池 <span class="tab-count" id="tabPoolCount"></span></button>
+      <button id="tabReferral" class="active" role="tab" onclick="switchTab('referral')" title="76 家精选内推码清单，点公司名直达官网">🏠 内推 <span class="tab-count" id="tabReferralCount"></span></button>
+      <button id="tabPool" role="tab" onclick="switchTab('pool')" title="爬虫聚合的 168 家官方校招入口，设状态即开始跟踪">🆕 校招池 <span class="tab-count" id="tabPoolCount"></span></button>
       <button id="todoViewBtn" role="tab" onclick="switchTab('todo')" title="全部待办事项">✅ 待办 <span class="tab-count tab-urgent hidden" id="tabTodoCount"></span></button>
     </div>
     <div class="view-toggle" id="listViewToggle">
@@ -110,19 +110,19 @@
     </div>
   </div>
 
-  <div class="table-wrapper" id="tableView">
+  <div class="table-wrapper" id="tableView" role="tabpanel">
     <table aria-label="2027届秋招企业信息与投递状态表">
       <thead>
         <tr>
           <th style="width:32px"></th>
-          <th style="width:130px" data-sort="company">公司 <span class="sort-icon">⇅</span></th>
-          <th style="width:90px" data-sort="type">类型 <span class="sort-icon">⇅</span></th>
+          <th style="width:130px" data-sort="company" tabindex="0">公司 <span class="sort-icon">⇅</span></th>
+          <th style="width:90px" data-sort="type" tabindex="0">类型 <span class="sort-icon">⇅</span></th>
           <th style="min-width:180px">招聘岗位</th>
-          <th style="width:90px" data-sort="location">地点 <span class="sort-icon">⇅</span></th>
-          <th style="width:70px" data-sort="deadline">截止 <span class="sort-icon">⇅</span></th>
+          <th style="width:90px" data-sort="location" tabindex="0">地点 <span class="sort-icon">⇅</span></th>
+          <th style="width:70px" data-sort="deadline" tabindex="0">截止 <span class="sort-icon">⇅</span></th>
           <th style="width:80px">内推码</th>
           <th style="width:120px">投递</th>
-          <th style="width:95px" data-sort="status">状态 <span class="sort-icon">⇅</span></th>
+          <th style="width:95px" data-sort="status" tabindex="0">状态 <span class="sort-icon">⇅</span></th>
           <th style="width:110px">个人备注</th>
         </tr>
       </thead>
@@ -133,10 +133,10 @@
   <!-- v7.4: 空结果提示移出表格容器，卡片/待办视图下也可见 -->
   <div class="no-results" id="noResults" style="display:none"><p>没有找到匹配的企业 😕</p></div>
 
-  <div class="card-grid hidden" id="cardView"></div>
+  <div class="card-grid hidden" id="cardView" role="tabpanel"></div>
 
   <!-- 待办视图（全部事项：逾期/今天/近期/远期/已完成） -->
-  <div class="todo-view hidden" id="todoView"></div>
+  <div class="todo-view hidden" id="todoView" role="tabpanel"></div>
 
   <footer>
     <p>📋 全量秋招个人内推文档（含笔试题库、就业资料包）：
@@ -201,14 +201,14 @@
   </div>
 </div>
 
-<script src="data.js?v=8.0"></script>
-<script src="official-sites.js?v=8.0"></script>  <!-- v7.5: 官方校招门户固定清单 -->
+<script src="data.js?v=8.1"></script>
+<script src="official-sites.js?v=8.1"></script>  <!-- v7.5: 官方校招门户固定清单 -->
 <!-- 求职Agent · 模块化加载（顺序敏感：core 基础层 → views 视图 → features 交互 → export-sync 导出同步 → main 入口） -->
-<script src="js/core.js?v=8.0"></script>
-<script src="js/views.js?v=8.0"></script>
-<script src="js/features.js?v=8.0"></script>
-<script src="js/export-sync.js?v=8.0"></script>
-<script src="js/main.js?v=8.0"></script>
+<script src="js/core.js?v=8.1"></script>
+<script src="js/views.js?v=8.1"></script>
+<script src="js/features.js?v=8.1"></script>
+<script src="js/export-sync.js?v=8.1"></script>
+<script src="js/main.js?v=8.1"></script>
 
 </body>
 </html>

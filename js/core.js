@@ -89,23 +89,36 @@ function jsArg(s) {
   return escapeHtml(js);
 }
 
+// toast 队列制（v7.8）：有 toast 在播时新消息入队，前一个播完再播下一个，
+// 避免每天一次的截止提醒被云同步 toast 秒覆盖。队列封顶 5 条防内存泄漏，超出丢弃最早的。
+const TOAST_QUEUE_MAX = 5;
+const toastQueue = [];
+let toastShowing = false;
 function showToast(msg, duration = 2000) {
-  const old = document.querySelector(".toast");
-  if (old) old.remove();
+  if (toastShowing) {
+    toastQueue.push([msg, duration]);
+    if (toastQueue.length > TOAST_QUEUE_MAX) toastQueue.shift();
+    return;
+  }
+  toastShowing = true;
   const t = document.createElement("div");
   t.className = "toast";
   t.setAttribute("role", "status");
   t.setAttribute("aria-live", "polite");
   t.textContent = msg;
   document.body.appendChild(t);
-  setTimeout(() => t.remove(), duration);
+  setTimeout(() => {
+    t.remove();
+    toastShowing = false;
+    if (toastQueue.length) showToast.apply(null, toastQueue.shift());
+  }, duration);
 }
 
 function debounce(fn, ms) {
   let timer;
-  return function() {
+  return function(...args) {
     clearTimeout(timer);
-    timer = setTimeout(fn, ms);
+    timer = setTimeout(() => fn.apply(this, args), ms);
   };
 }
 
@@ -260,6 +273,8 @@ function deriveCompanyStatus(jobsMap, fallback) {
 // v7.4: 采纳邮件状态时的回退防护（纯函数可测）：进度只前进/同级更新，不回退
 function shouldAdoptStatus(prev, next) {
   if (!prev) return true;
+  // 拒信是终态前进不是回退：已投递→已拒绝 属正向流转，不能被低位 rank 拦截
+  if (next === "已拒绝") return true;
   return (JOB_STATUS_RANK[next] || 0) >= (JOB_STATUS_RANK[prev] || 0);
 }
 
@@ -267,6 +282,8 @@ function shouldAdoptStatus(prev, next) {
 function upgradeToV3(state) {
   const v = { version: 3, companies: {} };
   Object.keys(state.companies || {}).forEach(id => {
+    // 原型链防护：跳过计算键中的危险属性名，防 __proto__ 等污染
+    if (id === "__proto__" || id === "constructor" || id === "prototype") return;
     const st = state.companies[id] || {};
     v.companies[id] = {
       status: st.status || "未投递",
@@ -312,9 +329,15 @@ function loadState() {
   const snapshots = readSnapshots();
   if (snapshots.length > 0) {
     const newest = snapshots[snapshots.length - 1];
-    if (newest && newest.data && newest.data.companies) {
-      showToast("⚠️ 状态已从最近备份自动恢复");
-      return upgradeToV3(newest.data);
+    // 快照瘦身（v7.8）：只存 {time, raw}，回滚时现场 JSON.parse(raw)
+    if (newest && newest.raw) {
+      try {
+        const data = JSON.parse(newest.raw);
+        if (data && data.companies) {
+          showToast("⚠️ 状态已从最近备份自动恢复");
+          return upgradeToV3(data);
+        }
+      } catch(e) { /* 快照本身损坏则跳过，落回默认状态 */ }
     }
   }
   return defaultState();
@@ -368,7 +391,7 @@ function readSnapshots() {
 }
 
 function saveSnapshots(arr) {
-  try { localStorage.setItem(SNAPSHOT_KEY, JSON.stringify(arr.slice(-MAX_SNAPSHOTS))); } catch(e) {}
+  try { localStorage.setItem(SNAPSHOT_KEY, JSON.stringify(arr.slice(-MAX_SNAPSHOTS))); } catch(e) { console.warn("快照写入失败", e); }
 }
 
 // 每次保存前自动备份旧状态（与上一份相同的快照跳过，避免连续操作刷屏）
@@ -379,7 +402,7 @@ function saveState() {
       const snapshots = readSnapshots();
       const last = snapshots[snapshots.length - 1];
       if (!last || last.raw !== current) {
-        snapshots.push({ time: Date.now(), raw: current, data: JSON.parse(current) });
+        snapshots.push({ time: Date.now(), raw: current });
         saveSnapshots(snapshots);
       }
     }
