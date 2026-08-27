@@ -4,10 +4,13 @@
 push 到 `main` → GitHub Actions 跑语法检查 + `node tests/run-tests.js`（271 项）→ 全绿自动部署 Pages。
 **任何改动以 CI 全绿 + 线上 curl 验证为完成标准。**
 
+三个数据文件全部由 WorkBuddy 维护：`data.js`（内推清单，腾讯文档同步+人工补充）、`discovered.json`（爬虫候选池）、`dynamics.json`（邮件动态解析）。契约如下。
+
 ## 数据文件契约
 
-### `data.js` — 内推清单（人工维护）
+### `data.js` — 内推清单（WorkBuddy 维护，来源：腾讯文档同步 + 人工补充）
 - `id` 是稳定唯一标识，**已发布条目的 id 禁止修改**（用户状态按 id 关联，改 id = 丢用户进度）。
+- 腾讯文档同步只更新内推码/链接/岗位/截止等业务字段；**不得覆盖 `official-sites.js`**，不得改动与本条无关的格式。
 - `category`（行业）合法值 = `window.INDUSTRY_GROUPS` 展开的 17 个值 + 特殊值 `"活动"`；1~2 个值。
 - `nature`（企业性质）必填，合法值仅 `"央企"|"国企"|"民企"|"外企"|"合资"`。
 - 两个维度正交：行业描述主业，性质描述所有制，禁止互相混入、禁止发明词表外新值。新值必须先改 `INDUSTRY_GROUPS`/`NATURES` 常量并同步测试。
