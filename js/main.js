@@ -15,6 +15,12 @@ renderFilterPanel();   // v5.4: 筛选下拉面板（地点/行业/岗位 checkb
 refreshFilterUI();     // v5: 同步所有筛选选中态 + 已选条件条
 refreshTodos();        // v7.3: 待办横带（含待办视图数据初始化）
 renderWeekly();        // 本周动态统计
+// v7.7: URL hash 路由（#pool / #todo / #referral），刷新保持所在 tab
+(function() {
+  const h = (location.hash || "").replace("#", "");
+  if (h === "pool" || h === "referral") currentSource = h;
+  if (h === "todo") currentView = "todo";
+})();
 switchView(currentView); // 同步初始视图（修复移动端首屏显示空表格的问题）
 checkDeadlineAlert();  // 页面打开时的截止提醒（每天一次）
 updateCloudBadge();

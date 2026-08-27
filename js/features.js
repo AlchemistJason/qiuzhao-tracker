@@ -160,7 +160,7 @@ function formatFilterParts(f) {
 
 // 结果计数：当前条件下命中多少家（纯函数可测）
 function countFiltered(f) {
-  return COMPANIES.filter(c => matchFilters(c, f, getState)).length;
+  return filterBySource(COMPANIES, currentSource).filter(c => matchFilters(c, f, getState)).length;
 }
 
 // 移除单个筛选条件（按维度+值）
@@ -281,11 +281,12 @@ function renderFilterPanel() {
   const optsHTML = (values, dim) => values.map(v =>
     `<label class="fp-opt"><input type="checkbox" data-dim="${dim}" data-value="${escapeHtml(v)}" onchange="toggleFilter('${dim}','${escapeHtml(v)}')"> <span>${escapeHtml(v)}</span></label>`
   ).join("");
-  document.getElementById("fpLoc").innerHTML = treeHTML(groupCitiesByProvince(extractCities(COMPANIES)), "locations", "province");
+  const scoped = filterBySource(COMPANIES, currentSource);  // v7.7: 选项只取自当前来源
+  document.getElementById("fpLoc").innerHTML = treeHTML(groupCitiesByProvince(extractCities(scoped)), "locations", "province");
   document.getElementById("fpInd").innerHTML = optsHTML(
-    [...new Set(COMPANIES.flatMap(c => c.category))].filter(c => c !== "活动"), "industries"
+    [...new Set(scoped.flatMap(c => c.category))].filter(c => c !== "活动"), "industries"
   );
-  document.getElementById("fpJob").innerHTML = treeHTML(groupJobsByDirection(extractStandardJobs(COMPANIES, 2)), "jobs", "dir");
+  document.getElementById("fpJob").innerHTML = treeHTML(groupJobsByDirection(extractStandardJobs(scoped, 2)), "jobs", "dir");
 }
 
 // 开关筛选面板 + 点击外部 / Esc 关闭
@@ -354,15 +355,48 @@ document.querySelectorAll("thead th[data-sort]").forEach(th => {
 
 function switchView(view) {
   currentView = view;
+  if (view === "table" || view === "card") preferredListView = view;  // v7.7: 记住列表视图偏好
   document.getElementById("tableView").classList.toggle("hidden", view !== "table");
   document.getElementById("cardView").classList.toggle("hidden", view !== "card");
   const tv = document.getElementById("todoView");
   if (tv) tv.classList.toggle("hidden", view !== "todo");
   document.getElementById("tableViewBtn").classList.toggle("active", view === "table");
   document.getElementById("cardViewBtn").classList.toggle("active", view === "card");
-  const tvBtn = document.getElementById("todoViewBtn");
-  if (tvBtn) tvBtn.classList.toggle("active", view === "todo");
+  updateNavUI();
   applyFilters();
+}
+
+// v7.7: 来源分页 tab（内推 / 校招池 / 待办）
+function switchTab(tab) {
+  if (tab === "todo") { switchView("todo"); return; }
+  const changed = currentSource !== tab;
+  currentSource = tab;
+  if (changed) { renderFilterPanel(); refreshFilterUI(); }  // 筛选面板选项按来源重建
+  if (currentView === "todo") switchView(preferredListView || "table");
+  else { updateNavUI(); applyFilters(); }
+}
+
+// v7.7: 导航态统一刷新——tab 高亮/数量角标 + 列表视图切换显隐 + URL hash
+function updateNavUI() {
+  const todo = currentView === "todo";
+  const tabR = document.getElementById("tabReferral");
+  if (!tabR) return;
+  tabR.classList.toggle("active", !todo && currentSource === "referral");
+  document.getElementById("tabPool").classList.toggle("active", !todo && currentSource === "pool");
+  document.getElementById("todoViewBtn").classList.toggle("active", todo);
+  const lv = document.getElementById("listViewToggle");
+  if (lv) lv.classList.toggle("hidden", todo);
+  // 数量角标
+  document.getElementById("tabReferralCount").textContent = COMPANIES.filter(c => !c.discovered).length;
+  document.getElementById("tabPoolCount").textContent = COMPANIES.filter(c => !!c.discovered).length;
+  const urgentN = todoItemsCache.filter(t => !t.done && !t.ignored && t.days !== null && t.days <= 2).length;
+  const tc = document.getElementById("tabTodoCount");
+  if (tc) { tc.textContent = urgentN; tc.classList.toggle("hidden", urgentN === 0); }
+  // URL hash（replaceState 不污染历史记录）
+  try {
+    const h = todo ? "todo" : currentSource;
+    if (location.hash !== "#" + h) history.replaceState(null, "", "#" + h);
+  } catch(e) {}
 }
 
 // v7.2: 隐藏已截止（未投递）开关
@@ -524,10 +558,12 @@ async function loadDiscovered() {
   });
   if (added > 0) {
     renderDashboard();
+    renderFilterPanel();   // v7.7: 校招池选项随新公司扩充
     refreshFilterUI();
     refreshTodos();
+    updateNavUI();         // v7.7: 刷新 tab 数量角标
     applyFilters();
-    showToast(`🆕 新发现 ${added} 家公司，已加入列表（行业筛选可选「新发现」）`);
+    showToast(`🆕 新发现 ${added} 家公司，已加入「校招池」标签页，设状态即开始跟踪`);
   }
 }
 

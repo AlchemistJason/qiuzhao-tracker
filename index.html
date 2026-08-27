@@ -24,7 +24,7 @@
 </script>
 <script src="https://cdn.staticfile.org/qrcodejs/1.0.0/qrcode.min.js" defer></script>
 <!-- html5-qrcode 改为按需动态加载（见 js/export-sync.js startQrScanner），避免 ~300KB 全量下载 -->
-<link rel="stylesheet" href="style.css?v=7.6">
+<link rel="stylesheet" href="style.css?v=7.7">
 </head>
 <body>
 
@@ -95,10 +95,15 @@
       </div>
     </div>
     <div class="filter-summary hidden" id="filterSummary"></div>
-    <div class="view-toggle">
+    <!-- v7.7: 来源分页——内推（data.js 内推码清单）/ 校招池（discovered.json 官网池）/ 待办 平级 tab -->
+    <div class="source-tabs" role="tablist">
+      <button id="tabReferral" class="active" role="tab" onclick="switchTab('referral')">🏠 内推 <span class="tab-count" id="tabReferralCount"></span></button>
+      <button id="tabPool" role="tab" onclick="switchTab('pool')">🆕 校招池 <span class="tab-count" id="tabPoolCount"></span></button>
+      <button id="todoViewBtn" role="tab" onclick="switchTab('todo')" title="全部待办事项">✅ 待办 <span class="tab-count tab-urgent hidden" id="tabTodoCount"></span></button>
+    </div>
+    <div class="view-toggle" id="listViewToggle">
       <button id="tableViewBtn" class="active" onclick="switchView('table')">📋 表格</button>
       <button id="cardViewBtn" onclick="switchView('card')">🗂️ 卡片</button>
-      <button id="todoViewBtn" onclick="switchView('todo')" title="全部待办事项">✅ 待办</button>
     </div>
   </div>
 
@@ -193,14 +198,14 @@
   </div>
 </div>
 
-<script src="data.js?v=7.6"></script>
-<script src="official-sites.js?v=7.6"></script>  <!-- v7.5: 官方校招门户固定清单 -->
+<script src="data.js?v=7.7"></script>
+<script src="official-sites.js?v=7.7"></script>  <!-- v7.5: 官方校招门户固定清单 -->
 <!-- 求职Agent · 模块化加载（顺序敏感：core 基础层 → views 视图 → features 交互 → export-sync 导出同步 → main 入口） -->
-<script src="js/core.js?v=7.6"></script>
-<script src="js/views.js?v=7.6"></script>
-<script src="js/features.js?v=7.6"></script>
-<script src="js/export-sync.js?v=7.6"></script>
-<script src="js/main.js?v=7.6"></script>
+<script src="js/core.js?v=7.7"></script>
+<script src="js/views.js?v=7.7"></script>
+<script src="js/features.js?v=7.7"></script>
+<script src="js/export-sync.js?v=7.7"></script>
+<script src="js/main.js?v=7.7"></script>
 
 </body>
 </html>

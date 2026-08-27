@@ -138,7 +138,7 @@ const splitKeywords = extractFn("splitKeywords", DEP);
 const highlightText = extractFn("highlightText", DEP);
 const matchFilters = extractFn("matchFilters", DEP);
 const formatFilterParts = extractFn("formatFilterParts", DEP);
-const countFiltered = extractFn("countFiltered", { ...DEP, matchFilters });
+const countFiltered = extractFn("countFiltered", { ...DEP, matchFilters, filterBySource: extractFn("filterBySource"), currentSource: "referral" });
 const deriveCompanyStatus = extractFn("deriveCompanyStatus", { ...DEP, JOB_STATUS_RANK: { "Offer": 6, "面试中": 5, "笔试中": 4, "已投递": 3, "已拒绝": 2, "未投递": 1 } });
 const upgradeToV3 = extractFn("upgradeToV3", DEP);
 const groupCitiesByProvince = extractFn("groupCitiesByProvince", { ...DEP,
@@ -715,6 +715,15 @@ if (discoveredToCompany) {
   t("候选映射: parent/quota 透传", (() => { const g = discoveredToCompany({ id: "z", name: "z", parent: "alibaba", quota: 2 }); return g.parent === "alibaba" && g.quota === 2; })());
 }
 
+// v7.7: 来源分页（内推 / 校招池）
+const filterBySource = extractFn("filterBySource");
+if (filterBySource) {
+  const list = [{ id: "a" }, { id: "b", discovered: true }, { id: "c", discovered: true }];
+  t("来源过滤: 内推只剩非 discovered", filterBySource(list, "referral").map(c => c.id).join(",") === "a");
+  t("来源过滤: 校招池只剩 discovered", filterBySource(list, "pool").map(c => c.id).join(",") === "b,c");
+  t("来源过滤: 全集无 discovered 时校招池为空", filterBySource([{ id: "x" }], "pool").length === 0);
+}
+
 // ---------- 6. 缓存戳一致性（防止发版忘改 ?v= 导致用户拿到旧缓存） ----------section("index.html 缓存戳一致性");
 (function() {
   const html = fs.readFileSync(path.join(ROOT, "index.html"), "utf8");
@@ -724,6 +733,7 @@ if (discoveredToCompany) {
   t("缓存戳版本号统一", versions.size === 1, versions.size > 1 ? "不一致: " + [...versions].join(", ") : "");
   // v7.3 结构检查
   t("待办视图入口存在", html.includes('id="todoViewBtn"') && html.includes('id="todoView"'));
+  t("来源分页 tab 存在", html.includes('id="tabReferral"') && html.includes('id="tabPool"') && html.includes('id="listViewToggle"'));
   t("待办横带容器存在", html.includes('id="todoBar"'));
   t("看板已移除", !html.includes("kanban"));
   t("隐藏已截止开关存在", html.includes('id="hideExpiredCb"'));

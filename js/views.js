@@ -206,8 +206,8 @@ function renderCards(data) {
 // ============================================================
 function applyFilters() {
   saveUIPrefs();  // v7.2: 所有筛选/排序/视图操作都汇聚到这里，顺带持久化
-  // v5: 多条件筛选（同维 OR / 跨维 AND），纯函数 matchFilters 驱动
-  let filtered = COMPANIES.filter(c => matchFilters(c, filters, getState));
+  // v7.7: 先按来源分页（内推/校招池），再多条件筛选（同维 OR / 跨维 AND），纯函数 matchFilters 驱动
+  let filtered = filterBySource(COMPANIES, currentSource).filter(c => matchFilters(c, filters, getState));
 
   // 排序：字段为主（纯净）；默认收藏优先 → 批次类型（收藏局部更新，无跳行问题）
   if (currentSort.field) {
@@ -225,6 +225,13 @@ function applyFilters() {
       if (typeof valA === "string") cmp = valA.localeCompare(valB, "zh-CN");
       else cmp = valA - valB;
       return currentSort.asc ? cmp : -cmp;
+    });
+  } else if (currentSource === "pool") {
+    // v7.7: 校招池默认按集团分组（阿里系等子集团聚在一起），组内按名称
+    filtered.sort((a, b) => {
+      const ga = a.parent || a.id, gb = b.parent || b.id;
+      if (ga !== gb) return ga.localeCompare(gb, "zh-CN");
+      return (a.parent ? 1 : 0) - (b.parent ? 1 : 0) || a.name.localeCompare(b.name, "zh-CN");
     });
   } else {
     // v5.3: 默认排序按批次类型（稳定可预期；收藏只做标记不参与排序，避免与局部更新矛盾）
@@ -345,6 +352,7 @@ let todoViewOrder = [];   // v7.4: 待办视图渲染展平顺序（分组重排
 function refreshTodos() {
   todoItemsCache = buildTodoItems(COMPANIES, getState, window.__dynAll || [], getDynDone(), getDynIgnored(), new Date());
   renderTodo();
+  if (typeof updateNavUI === "function") updateNavUI();  // v7.7: 待办 tab 紧急角标
   if (currentView === "todo") renderTodoView();
 }
 

@@ -1243,3 +1243,12 @@ mark.hl {
 .disc-badge { font-size: 11px; vertical-align: 2px; }
 /* v7.6: 集团分部投递名额标签 */
 .quota-tag { font-size: 11px; color: var(--accent, #4f6ef7); background: rgba(79,110,247,0.10); border: 1px solid rgba(79,110,247,0.25); border-radius: 4px; padding: 0 4px; margin-left: 5px; white-space: nowrap; }
+
+/* ====== v7.7: 来源分页 tab（内推 / 校招池 / 待办） ====== */
+.source-tabs { display: flex; gap: 6px; margin-bottom: 8px; }
+.source-tabs button { padding: 8px 16px; border: 1.5px solid var(--border); border-radius: 999px; background: var(--card); color: var(--text-secondary); cursor: pointer; font-size: 13px; transition: all 0.2s; white-space: nowrap; }
+.source-tabs button:hover { border-color: var(--accent); color: var(--text); }
+.source-tabs button.active { background: var(--accent); color: #fff; border-color: var(--accent); font-weight: 600; }
+.tab-count { display: inline-block; padding: 0 6px; border-radius: 8px; font-size: 10px; background: rgba(128,128,128,0.18); margin-left: 4px; }
+.source-tabs button.active .tab-count { background: rgba(255,255,255,0.22); }
+.tab-count.tab-urgent { background: rgba(231,76,60,0.85); color: #fff; }

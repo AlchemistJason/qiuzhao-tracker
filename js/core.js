@@ -68,6 +68,8 @@ const filters = {
 
 let currentSort = { field: null, asc: true };
 let currentView = (window.innerWidth <= 768) ? "card" : "table";
+let currentSource = "referral";  // v7.7: 来源分页 referral=内推(data.js) / pool=校招池(discovered.json)
+let preferredListView = currentView;  // v7.7: 从待办切回列表时恢复表格/卡片（初始跟随当前视图）
 let userState = null;
 
 // ============================================================
@@ -205,6 +207,11 @@ function discoveredToCompany(it) {
     quota: it.quota || null,
     discovered: true
   };
+}
+
+// v7.7: 来源分页过滤（纯函数可测）：referral=内推清单 / pool=校招池（discovered 标记驱动）
+function filterBySource(list, source) {
+  return list.filter(c => (source === "pool") === !!c.discovered);
 }
 
 // CSV 公式注入防护：以 = + - @ 开头的字段加前缀，防止 Excel 执行公式
