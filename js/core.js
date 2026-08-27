@@ -174,6 +174,37 @@ function safeLink(url) {
   return /^https?:\/\//i.test(url || "") ? url : "#";
 }
 
+// ============================================================
+// v7.5: 爬虫发现公司候选池（discovered.json）纯函数
+// ============================================================
+// 公司名归一化（纯函数可测）：用于 discovered 与 data.js 的去重比对
+function normalizeCompanyName(name) {
+  return String(name || "").toLowerCase()
+    .replace(/[\s（）()·\-—_]/g, "")
+    .replace(/(股份|有限|公司|集团)+$/g, "");
+}
+
+// 爬虫发现的公司 → 站点公司对象（纯函数可测）：discovered 标记驱动 UI 的 🆕 徽章
+function discoveredToCompany(it) {
+  const jobs = Array.isArray(it.jobs)
+    ? it.jobs
+    : String(it.jobs || "").split(/[、,，/;；]/).map(s => s.trim()).filter(Boolean);
+  return {
+    id: it.id,
+    name: it.name,
+    type: "秋招",
+    program: it.program || "",
+    category: ["新发现"],
+    jobs: jobs.slice(0, 8),
+    location: it.location || "",
+    refCode: null,
+    link: it.officialLink || "",
+    note: it.note || "",
+    deadline: it.deadline || null,
+    discovered: true
+  };
+}
+
 // CSV 公式注入防护：以 = + - @ 开头的字段加前缀，防止 Excel 执行公式
 function csvSafe(f) {
   let s = String(f == null ? "" : f);

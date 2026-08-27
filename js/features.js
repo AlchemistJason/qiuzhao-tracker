@@ -495,6 +495,42 @@ async function loadDynamics() {
   renderDynamicsBar(filterNewDynamics(window.__dynAll, getDynSeen()));
 }
 
+// ============================================================
+// v7.5: 爬虫发现公司候选池（discovered.json → 合并进目录，🆕 徽章）
+// 数据契约见 README：WorkBuddy 定时爬取 → 归一化去重 → 写 discovered.json → 推送
+// ============================================================
+async function loadDiscovered() {
+  let data;
+  try {
+    const res = await fetch("discovered.json?t=" + Date.now());
+    if (!res.ok) return;  // 404 属正常（爬虫还没产出过）
+    data = await res.json();
+  } catch(e) { return; }
+  const items = Array.isArray(data && data.items) ? data.items : [];
+  if (!items.length) return;
+  const knownNames = new Set(COMPANIES.map(c => normalizeCompanyName(c.name)));
+  const knownIds = new Set(COMPANIES.map(c => c.id));
+  let added = 0;
+  items.forEach(it => {
+    if (!it || !it.id || !it.name) return;
+    // 双保险去重（WorkBuddy 入库前已去重，这里再挡一次）：id 撞车 / 名归一化撞车都跳过
+    if (knownIds.has(it.id) || knownNames.has(normalizeCompanyName(it.name))) return;
+    const c = discoveredToCompany(it);
+    COMPANIES.push(c);
+    knownIds.add(c.id);
+    knownNames.add(normalizeCompanyName(c.name));
+    COMPANY_IDS.add(c.id);  // 让导出/导入/云同步认识这些 id
+    added++;
+  });
+  if (added > 0) {
+    renderDashboard();
+    refreshFilterUI();
+    refreshTodos();
+    applyFilters();
+    showToast(`🆕 新发现 ${added} 家公司，已加入列表（行业筛选可选「新发现」）`);
+  }
+}
+
 function toggleDynList() {
   document.getElementById("dynList").classList.toggle("hidden");
 }

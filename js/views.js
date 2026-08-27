@@ -103,6 +103,18 @@ function buildCommonHTML(c) {
 // ============================================================
 // 渲染 —— 表格视图
 // ============================================================
+// v7.5: 公司名渲染——有官网清单则链接化，爬虫发现的公司带 🆕 徽章
+function nameWithSite(c, keyword) {
+  const inner = highlightText(c.name, keyword);
+  const badge = c.discovered ? `<span class="disc-badge" title="爬虫新发现，设状态即开始跟踪">🆕</span> ` : "";
+  const url = (window.OFFICIAL_SITES || {})[c.id] || (c.discovered ? c.link : "");
+  const safe = url ? escapeHtml(safeLink(url)) : "";
+  const nameHtml = (safe && safe !== "#")
+    ? `<a class="company-site" href="${safe}" target="_blank" rel="noopener" title="官网校招页">${inner}</a>`
+    : inner;
+  return badge + nameHtml;
+}
+
 function renderTable(data) {
   const tbody = document.getElementById("tableBody");
   const noResults = document.getElementById("noResults");
@@ -121,7 +133,7 @@ function renderTable(data) {
     return `
     <tr class="${starredClass}">
       <td><button class="star-btn ${s.starred ? "active" : ""}" onclick="toggleStar('${c.id}')" data-star-id="${c.id}" aria-pressed="${s.starred}" aria-label="收藏 ${escapeHtml(c.name)}">${starIcon}</button></td>
-      <td><strong>${highlightText(c.name, filters.keyword)}</strong></td>
+      <td><strong>${nameWithSite(c, filters.keyword)}</strong></td>
       <td><span class="type-tag ${escapeHtml(c.type)}">${escapeHtml(c.type)}</span>${programTag}</td>
       <td><div class="job-tags">${jobTags}</div></td>
       <td class="location">${highlightText(c.location, filters.keyword) || "—"}</td>
@@ -165,7 +177,7 @@ function renderCards(data) {
     return `
     <div class="job-card ${starredClass}">
       <div class="card-header">
-        <h3>${highlightText(c.name, filters.keyword)}</h3>
+        <h3>${nameWithSite(c, filters.keyword)}</h3>
         <button class="star-btn ${s.starred ? "active" : ""}" onclick="toggleStar('${c.id}')" data-star-id="${c.id}" aria-pressed="${s.starred}" aria-label="收藏 ${escapeHtml(c.name)}">${starIcon}</button>
       </div>
       <div class="card-body">

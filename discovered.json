@@ -1,0 +1,6 @@
+{
+  "schemaVersion": 1,
+  "updatedAt": "2026-08-27T00:00:00+08:00",
+  "_readme": "爬虫发现公司候选池。WorkBuddy 定时爬取校招来源（牛客校招日历/应届生求职网/official-sites.js 清单轮询）→ 归一化去重（对照 data.js）→ 追加到 items → 推送。站点加载后合并进目录并打 🆕 标记，用户设状态即开始跟踪；确认有价值的公司由 WorkBuddy 转正进 data.js。字段：id(小写slug) / name / officialLink(官网校招页,可空) / jobs(数组或分隔文本,可空) / location(可空) / deadline(YYYY-MM-DD 或 null) / source(来源标识) / foundAt(ISO 时间) / note(可空)。隐私：只放公开校招信息，禁止写入任何个人邮箱相关内容。",
+  "items": []
+}

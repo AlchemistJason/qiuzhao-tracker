@@ -649,12 +649,72 @@ section("dynamics.json 邮件动态校验");
   t("隐私: 无附件字段", items.every(i => !i.attachment && !i.attachments));
 })();
 
-// ---------- 6. 缓存戳一致性（防止发版忘改 ?v= 导致用户拿到旧缓存） ----------
-section("index.html 缓存戳一致性");
+// ---------- v7.5 官网清单 + 爬虫候选池 ----------
+section("v7.5 official-sites / discovered 候选池");
+
+const normalizeCompanyName = extractFn("normalizeCompanyName");
+const discoveredToCompany = extractFn("discoveredToCompany");
+
+// 官网固定清单（official-sites.js）
+let OFFICIAL_SITES = null;
+try {
+  require(path.join(ROOT, "official-sites.js"));
+  OFFICIAL_SITES = window.OFFICIAL_SITES;
+} catch(e) { /* 下方断言会报 */ }
+t("OFFICIAL_SITES 已加载", OFFICIAL_SITES && typeof OFFICIAL_SITES === "object");
+if (OFFICIAL_SITES) {
+  const entries = Object.entries(OFFICIAL_SITES);
+  const knownIds = new Set(COMPANIES.map(c => c.id));
+  t("官网清单: 覆盖 ≥ 70 家", entries.length >= 70, "当前 " + entries.length);
+  t("官网清单: id 都存在于 data.js", entries.every(([id]) => knownIds.has(id)),
+    entries.filter(([id]) => !knownIds.has(id)).map(([id]) => id).join(","));
+  t("官网清单: URL 均为 http/https", entries.every(([, u]) => /^https?:\/\//i.test(u)));
+  t("官网清单: 不含内推/追踪参数", entries.every(([, u]) =>
+    !/recommendCode|shareId|shareSource|inviter_code|pushCode|referralCode|external_referral_code|campusShareCode|acotycoCode|introduceId/i.test(u)),
+    entries.filter(([, u]) => /recommendCode|shareId|inviter_code|pushCode|referralCode|campusShareCode|acotycoCode/i.test(u)).map(([id]) => id).join(","));
+}
+
+// 爬虫候选池 discovered.json schema
+(function() {
+  let disc;
+  try { disc = JSON.parse(fs.readFileSync(path.join(ROOT, "discovered.json"), "utf8")); }
+  catch(e) { t("discovered.json 可解析", false, e.message); return; }
+  t("discovered: schemaVersion = 1", disc.schemaVersion === 1);
+  const items = disc.items || [];
+  t("discovered: items 为数组", Array.isArray(items));
+  if (!items.length) return;
+  const knownIds = new Set(COMPANIES.map(c => c.id));
+  const knownNames = new Set(COMPANIES.map(c => normalizeCompanyName(c.name)));
+  t("discovered: 必填字段齐全(id/name/source/foundAt)", items.every(i => i.id && i.name && i.source && i.foundAt));
+  t("discovered: id 格式合法", items.every(i => /^[a-z0-9-]+$/.test(i.id)));
+  t("discovered: id 唯一", new Set(items.map(i => i.id)).size === items.length);
+  t("discovered: 与 data.js 无 id 撞车", items.every(i => !knownIds.has(i.id)),
+    items.filter(i => knownIds.has(i.id)).map(i => i.id).join(","));
+  t("discovered: 与 data.js 无公司名撞车(归一化)", items.every(i => !knownNames.has(normalizeCompanyName(i.name))),
+    items.filter(i => knownNames.has(normalizeCompanyName(i.name))).map(i => i.name).join(","));
+  t("discovered: officialLink 为 http/https(如有)", items.every(i => !i.officialLink || /^https?:\/\//i.test(i.officialLink)));
+  t("discovered: deadline 格式合法(如有)", items.every(i => !i.deadline || /^\d{4}-\d{2}-\d{2}$/.test(i.deadline)));
+  t("隐私: 不含邮件相关字段", items.every(i => !i.mailId && !i.email && !i.subject));
+})();
+
+// 纯函数
+if (normalizeCompanyName) {
+  t("名归一化: 大小写/空格/括号不敏感", normalizeCompanyName("字节跳动") === normalizeCompanyName("字节跳动 ")
+    && normalizeCompanyName("Shopee虾皮") === normalizeCompanyName("shopee虾皮"));
+  t("名归一化: 公司后缀剥离", normalizeCompanyName("某某科技有限公司") === normalizeCompanyName("某某科技"));
+}
+if (discoveredToCompany) {
+  const dc = discoveredToCompany({ id: "x-corp", name: "某公司", officialLink: "https://x.com/campus", jobs: "算法、测试", location: "北京", deadline: "2026-10-01", source: "nowcoder" });
+  t("候选映射: 基本字段", dc.id === "x-corp" && dc.discovered === true && dc.link === "https://x.com/campus" && dc.category[0] === "新发现");
+  t("候选映射: jobs 文本拆分数组", Array.isArray(dc.jobs) && dc.jobs.length === 2);
+  t("候选映射: 缺省字段兜底", discoveredToCompany({ id: "y", name: "y" }).jobs.length === 0 && discoveredToCompany({ id: "y", name: "y" }).deadline === null);
+}
+
+// ---------- 6. 缓存戳一致性（防止发版忘改 ?v= 导致用户拿到旧缓存） ----------section("index.html 缓存戳一致性");
 (function() {
   const html = fs.readFileSync(path.join(ROOT, "index.html"), "utf8");
-  const refs = [...html.matchAll(/(?:src|href)="(style\.css|data\.js|js\/[\w-]+\.js)\?v=([\w.]+)"/g)];
-  t("本地资源均带缓存戳", refs.length >= 7, "实际 " + refs.length + " 处");
+  const refs = [...html.matchAll(/(?:src|href)="(style\.css|data\.js|official-sites\.js|js\/[\w-]+\.js)\?v=([\w.]+)"/g)];
+  t("本地资源均带缓存戳", refs.length >= 8, "实际 " + refs.length + " 处");
   const versions = new Set(refs.map(m => m[2]));
   t("缓存戳版本号统一", versions.size === 1, versions.size > 1 ? "不一致: " + [...versions].join(", ") : "");
   // v7.3 结构检查

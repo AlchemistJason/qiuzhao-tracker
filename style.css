@@ -1236,3 +1236,8 @@ mark.hl {
 .todo-row.urgency-ignored { opacity: 0.45; }
 .todo-row.urgency-ignored .todo-main strong { text-decoration: line-through; color: var(--text-muted); }
 .todo-empty { text-align: center; color: var(--text-muted); padding: 48px 0; font-size: 14px; }
+
+/* ====== v7.5: 官网链接化 + 爬虫新发现徽章 ====== */
+.company-site { color: var(--text); text-decoration: none; border-bottom: 1px dashed transparent; transition: all 0.15s; }
+.company-site:hover { color: var(--accent); border-bottom-color: var(--accent); }
+.disc-badge { font-size: 11px; vertical-align: 2px; }

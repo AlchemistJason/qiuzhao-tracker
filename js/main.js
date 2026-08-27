@@ -19,4 +19,5 @@ switchView(currentView); // 同步初始视图（修复移动端首屏显示空�
 checkDeadlineAlert();  // 页面打开时的截止提醒（每天一次）
 updateCloudBadge();
 loadDynamics();  // v6.0: 加载邮件动态条    // v7: 云同步状态徽标
+loadDiscovered();      // v7.5: 爬虫发现公司候选池（合并进目录，🆕 标记）
 cloudPull();           // v7: 页面加载拉取云端并合并

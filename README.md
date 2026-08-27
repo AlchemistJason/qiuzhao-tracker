@@ -8,7 +8,8 @@
 
 ## 功能
 
-- 🏢 38+ 家企业秋招/提前批内推信息（内推码一键复制、直达投递链接）
+- 🏢 76 家企业秋招/提前批内推信息（内推码一键复制、直达投递链接），**公司名直达官方校招官网**（`official-sites.js` 固定清单，逐家核实、剥离内推参数）
+- 🆕 **爬虫候选池**：WorkBuddy 定时爬取校招来源写入 `discovered.json`，站点自动合并进列表（行业筛选「新发现」可单独查看），设状态即开始跟踪
 - 🔍 搜索（公司/岗位/地点/内推码）+ 多条件筛选（状态/地点/行业/岗位方向/收藏）+ 排序，**筛选与视图偏好自动记忆**
 - 📊 投递状态跟踪：未投递 → 已投递 → 笔试中 → 面试中 → Offer / 已拒绝；支持**岗位级进度**（一家公司投多个岗位各自跟踪）与**进度历史时间线**
 - ✅ **待办视图**：邮件动态（笔试/面试/Offer/截止）+ 公司投递截止 + 进行中状态，统一汇总为待办清单，按 已逾期/今天/3天内/本周/更晚 分组；支持 ✓完成（沉底可恢复）、✕忽略（底部「已忽略」分组可恢复）、📅 导出 .ics 日历（UTC 时间 + 稳定 UID，重复导入不产生重复事件）
@@ -25,14 +26,16 @@ qiuzhao-tracker/
 ├── index.html            # 页面骨架
 ├── style.css             # 样式层（明暗双主题）
 ├── data.js               # 数据层：公司列表（维护方更新）
+├── official-sites.js     # 数据层：官方校招门户固定清单（人工核实，爬虫按此轮询）
 ├── dynamics.json         # 数据层：邮件动态（维护方更新，schema 见下）
+├── discovered.json       # 数据层：爬虫发现公司候选池（WorkBuddy 更新，schema 见文件内 _readme）
 ├── js/
 │   ├── core.js           #   状态/筛选/偏好序列化等纯逻辑
 │   ├── views.js          #   渲染层：仪表盘/表格/卡片/待办/周报
 │   ├── features.js       #   交互层：状态操作/邮件动态/待办三态/岗位弹窗
 │   ├── export-sync.js    #   导入导出/二维码同步
 │   └── main.js           #   启动装配
-├── tests/run-tests.js    # 216 项回归测试（node tests/run-tests.js）
+├── tests/run-tests.js    # 228 项回归测试（node tests/run-tests.js）
 └── .github/workflows/    # CI 门禁 + GitHub Pages 部署
 ```
 
@@ -77,7 +80,7 @@ qiuzhao-tracker/
 
 - 本地跑测试：`node tests/run-tests.js`（时区无关，`TZ=UTC` 下也应全过）
 - 数据更新：改 `data.js` / `dynamics.json` → 本地测试 → 发布（CI 会校验 dynamics.json 的 schema 与隐私规则，link/actionUrl 非空直接红）
-- CI：push 后 GitHub Actions 自动执行语法检查 + 216 项回归测试，通过后自动部署 Pages
+- CI：push 后 GitHub Actions 自动执行语法检查 + 228 项回归测试，通过后自动部署 Pages
 
 ## 跨设备同步（手机 ↔ 电脑）
 
