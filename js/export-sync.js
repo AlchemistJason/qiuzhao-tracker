@@ -484,7 +484,7 @@ async function startQrScanner() {
   await stopQrScanner();
   if (typeof Html5Qrcode === "undefined") {
     try {
-      await loadScript("https://cdn.staticfile.org/html5-qrcode/2.3.8/html5-qrcode.min.js");
+      await loadScript("vendor/html5-qrcode.min.js");  // v8.0: 本地化，不再走第三方 CDN（防劫持/防篡改）
     } catch(e) {
       const hint = document.querySelector(".modal-hint");
       if (hint) hint.textContent += "（摄像头组件加载失败，可用文本码同步）";

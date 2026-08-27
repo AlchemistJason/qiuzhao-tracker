@@ -736,6 +736,12 @@ if (filterBySource) {
   t("来源分页 tab 存在", html.includes('id="tabReferral"') && html.includes('id="tabPool"') && html.includes('id="listViewToggle"'));
   t("筛选面板分区默认收起", (html.match(/class="fp-sec collapsed"/g) || []).length === 3);
   t("导航行结构存在", html.includes('class="nav-row"'));
+  // v8.0: 安全——脚本全部本地化，禁止任何第三方脚本源（防 CDN 劫持跳转赌博站）
+  t("无第三方脚本源", !/<script[^>]+src="https?:/i.test(html),
+    (html.match(/<script[^>]+src="https?:[^"]*/gi) || []).join(","));
+  const jsAll = ["js/core.js", "js/views.js", "js/features.js", "js/export-sync.js", "js/main.js"]
+    .map(f => { try { return fs.readFileSync(path.join(ROOT, f), "utf8"); } catch(e) { return ""; } }).join("\n");
+  t("动态加载脚本不走外部 URL", !/loadScript\(\s*["']https?:/.test(jsAll));
   t("待办横带容器存在", html.includes('id="todoBar"'));
   t("看板已移除", !html.includes("kanban"));
   t("隐藏已截止开关存在", html.includes('id="hideExpiredCb"'));
