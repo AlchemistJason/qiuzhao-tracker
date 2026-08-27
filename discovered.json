@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "updatedAt": "2026-08-27",
+  "updatedAt": "2026-08-28",
   "focus": [
     "互联网大厂",
     "头部券商/公募基金",
@@ -72,19 +72,6 @@
       "source": "manual-seed",
       "foundAt": "2026-08-27",
       "note": "网易互联网总入口（云音乐/严选等）；游戏走互娱/雷火，已在主清单（含内推码），三个池互不冲突可分别投递"
-    },
-    {
-      "id": "ctrip",
-      "name": "携程",
-      "officialLink": "https://campus.ctrip.com",
-      "location": "上海/北京",
-      "category": [
-        "互联网"
-      ],
-      "nature": "民企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "校招官网"
     },
     {
       "id": "ke",
@@ -685,19 +672,6 @@
       "note": "独立校招官网"
     },
     {
-      "id": "hisense",
-      "name": "海信",
-      "officialLink": "https://jobs.hisense.com",
-      "location": "青岛",
-      "category": [
-        "智能硬件"
-      ],
-      "nature": "国企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "官方招聘平台（含校招）"
-    },
-    {
       "id": "cmb",
       "name": "招商银行",
       "officialLink": "https://career.cmbchina.com/home",
@@ -880,19 +854,6 @@
       "note": "集团校招页（wintalent 承办，华润置地/电力/万家/医药等在此）。规则：按业务单元每人 2~3 个志愿，第一志愿优先，淘汰后流转"
     },
     {
-      "id": "xiaohongshu",
-      "name": "小红书",
-      "officialLink": "https://campus.xiaohongshu.com",
-      "location": "北京/上海",
-      "category": [
-        "互联网"
-      ],
-      "nature": "民企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "独立校招官网"
-    },
-    {
       "id": "zte",
       "name": "中兴通讯",
       "officialLink": "https://job.zte.com.cn",
@@ -904,19 +865,6 @@
       "source": "manual-seed",
       "foundAt": "2026-08-27",
       "note": "官方招聘平台"
-    },
-    {
-      "id": "honor",
-      "name": "荣耀",
-      "officialLink": "https://www.honor.com/cn/career/",
-      "location": "深圳/北京",
-      "category": [
-        "智能硬件"
-      ],
-      "nature": "国企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "官网招聘页（含校招）"
     },
     {
       "id": "transsion",
@@ -943,32 +891,6 @@
       "source": "manual-seed",
       "foundAt": "2026-08-27",
       "note": "独立校招官网"
-    },
-    {
-      "id": "37games",
-      "name": "三七互娱",
-      "officialLink": "https://zhaopin.37.com/",
-      "location": "广州",
-      "category": [
-        "游戏"
-      ],
-      "nature": "民企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "官方招聘官网（游戏）"
-    },
-    {
-      "id": "kurogame",
-      "name": "库洛游戏",
-      "officialLink": "https://kurogame.jobs.feishu.cn/campus/",
-      "location": "广州/上海",
-      "category": [
-        "游戏"
-      ],
-      "nature": "民企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "飞书招聘承办校招页"
     },
     {
       "id": "huya",
@@ -1372,19 +1294,6 @@
       "source": "manual-seed",
       "foundAt": "2026-08-27",
       "note": "四大，官网校园招聘入口"
-    },
-    {
-      "id": "catl",
-      "name": "宁德时代",
-      "officialLink": "https://talent.catl.com",
-      "location": "宁德/溧阳",
-      "category": [
-        "工业/制造/能源"
-      ],
-      "nature": "民企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "官方唯一网申地址（新能源电池龙头）"
     },
     {
       "id": "boe",
