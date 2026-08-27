@@ -6,7 +6,8 @@ on:
     branches: [main]
     paths:
       - "data.js"
-      - "app.js"
+      - "dynamics.json"
+      - "js/**"
       - "style.css"
       - "index.html"
       - "tests/**"
@@ -29,7 +30,7 @@ jobs:
       - name: 语法检查 (JS)
         run: |
           node --check data.js
-          node --check app.js
+          for f in js/*.js; do node --check "$f"; done
           node --check tests/run-tests.js
 
       - name: 回归测试
@@ -37,7 +38,7 @@ jobs:
 
       - name: 页面完整性检查
         run: |
-          grep -q 'href="style.css"' index.html && echo "style.css 引用 OK"
-          grep -q 'src="app.js"' index.html && echo "app.js 引用 OK"
-          grep -q 'src="data.js"' index.html && echo "data.js 引用 OK"
+          grep -q 'href="style.css' index.html && echo "style.css 引用 OK"
+          grep -q 'src="js/main.js' index.html && echo "js/main.js 引用 OK"
+          grep -q 'src="data.js' index.html && echo "data.js 引用 OK"
           grep -q 'DTEhaVEpHaUJzTGRh' index.html && echo "腾讯文档链接 OK"
