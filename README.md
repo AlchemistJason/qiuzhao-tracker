@@ -96,6 +96,8 @@ qiuzhao-tracker/
 
 数据更新由维护方自动完成（修改 `data.js` / `dynamics.json` 并发布），用户无需任何操作，已保存的状态不会丢失。
 
+维护方（WorkBuddy / agent）请读 **[AGENTS.md](AGENTS.md)**：数据文件契约、taxonomy 词表、隐私红线、缓存戳规则、验收与推送流程。
+
 ## 免责声明
 
 内推码/链接来源于公开渠道，如失效请以官网为准。
