@@ -139,6 +139,9 @@ function refreshFilterUI() {
     badge.textContent = n;
     badge.classList.toggle("hidden", n === 0);
   }
+  // v7.2: 隐藏已截止开关选中态
+  const he = document.getElementById("hideExpiredCb");
+  if (he) he.checked = filters.hideExpired;
   renderFilterSummary();
 }
 
@@ -352,10 +355,18 @@ function switchView(view) {
   currentView = view;
   document.getElementById("tableView").classList.toggle("hidden", view !== "table");
   document.getElementById("cardView").classList.toggle("hidden", view !== "card");
-  const kb = document.getElementById("kanbanView");
-  if (kb) kb.classList.toggle("hidden", view !== "kanban");  // 看板入口已移除（v4.5），代码预留
+  const tv = document.getElementById("todoView");
+  if (tv) tv.classList.toggle("hidden", view !== "todo");
   document.getElementById("tableViewBtn").classList.toggle("active", view === "table");
   document.getElementById("cardViewBtn").classList.toggle("active", view === "card");
+  const tvBtn = document.getElementById("todoViewBtn");
+  if (tvBtn) tvBtn.classList.toggle("active", view === "todo");
+  applyFilters();
+}
+
+// v7.2: 隐藏已截止（未投递）开关
+function toggleHideExpired(v) {
+  filters.hideExpired = !!v;
   applyFilters();
 }
 
@@ -367,7 +378,7 @@ function toggleStar(id) {
   touchState(id);
   saveState();
   renderDashboard();
-  renderTodo();
+  refreshTodos();
   renderWeekly();
   // P1-8: 局部更新星标（不重建列表，保持焦点/滚动位置）
   const st = getState(id);
@@ -392,11 +403,12 @@ function setStatus(id, status, el) {
   }
   const prev = s.status;
   s.status = status;
+  if (prev !== status) recordHistory(id, { from: prev, to: status });  // v7.2 进度历史
   touchState(id);
   el.setAttribute("data-status", status);
   saveState();
   renderDashboard();
-  renderTodo();
+  refreshTodos();
   renderWeekly();
   // P2-3: 状态变更视觉反馈
   if (prev !== status) {
@@ -442,6 +454,30 @@ function markDynSeen(id) {
   if (!s.includes(id)) { s.push(id); try { localStorage.setItem(DYN_SEEN_KEY, JSON.stringify(s)); } catch(e) {} }
 }
 
+// v7.3: 待办三态——seen=已分诊(出动态条) / done=已完成(待办视图沉底) / ignored=彻底隐藏
+const DYN_DONE_KEY = "qiuzhao2027.dynDone";
+const DYN_IGNORED_KEY = "qiuzhao2027.dynIgnored";
+function getDynDone() {
+  try { return JSON.parse(localStorage.getItem(DYN_DONE_KEY)) || []; } catch(e) { return []; }
+}
+function markDynDone(id) {
+  const s = getDynDone();
+  if (!s.includes(id)) { s.push(id); try { localStorage.setItem(DYN_DONE_KEY, JSON.stringify(s)); } catch(e) {} }
+  markDynSeen(id);  // 完成即出动态条
+}
+function unmarkDynDone(id) {
+  const s = getDynDone().filter(x => x !== id);
+  try { localStorage.setItem(DYN_DONE_KEY, JSON.stringify(s)); } catch(e) {}
+}
+function getDynIgnored() {
+  try { return JSON.parse(localStorage.getItem(DYN_IGNORED_KEY)) || []; } catch(e) { return []; }
+}
+function markDynIgnored(id) {
+  const s = getDynIgnored();
+  if (!s.includes(id)) { s.push(id); try { localStorage.setItem(DYN_IGNORED_KEY, JSON.stringify(s)); } catch(e) {} }
+  markDynSeen(id);  // 忽略即出动态条
+}
+
 async function loadDynamics() {
   let data;
   try {
@@ -449,7 +485,8 @@ async function loadDynamics() {
     if (!res.ok) return;
     data = await res.json();
   } catch(e) { return; }
-  renderDynamicsBar(filterNewDynamics(data.items || [], getDynSeen()));
+  window.__dynAll = data.items || [];  // v7.3: 全量保留给待办视图（含远期事项）
+  renderDynamicsBar(filterNewDynamics(window.__dynAll, getDynSeen()));
 }
 
 function toggleDynList() {
@@ -459,8 +496,7 @@ function toggleDynList() {
 function renderDynamicsBar(items) {
   const bar = document.getElementById("dynBar");
   if (!bar) return;
-  window.__dynItems = items;  // 先赋值，保证待办计算可用
-  if (!items.length) { bar.classList.add("hidden"); renderTodo(); return; }
+  if (!items.length) { bar.classList.add("hidden"); refreshTodos(); return; }
   bar.classList.remove("hidden");
   document.getElementById("dynCount").textContent = items.length;
   document.getElementById("dynList").innerHTML = items.map(it =>
@@ -474,7 +510,7 @@ function renderDynamicsBar(items) {
       <button class="job-row-del" onclick="ignoreDynamic('${it.id}')" aria-label="忽略该动态">✕</button>
     </div>`
   ).join("");
-  renderTodo();  // v6.0: 动态进入待办计算后重刷待办条
+  refreshTodos();  // 动态变化后重算待办（横带+待办视图）
 }
 
 // 采纳动态：匹配到系统公司 → 岗位级状态更新；新公司 → 提示去表格添加
@@ -482,8 +518,10 @@ function applyDynamic(id, companyId, company, jobName, status) {
   markDynSeen(id);
   if (companyId && COMPANIES.some(x => x.id === companyId)) {
     const s = getState(companyId);
+    const prev = s.jobs[jobName] || null;
     s.jobs[jobName] = status;
     s.status = deriveCompanyStatus(s.jobs, s.status);
+    if (prev !== status) recordHistory(companyId, { job: jobName, from: prev, to: status });  // v7.2 进度历史
     touchState(companyId);
     saveState();
     refreshAll();
@@ -495,9 +533,61 @@ function applyDynamic(id, companyId, company, jobName, status) {
 }
 
 function ignoreDynamic(id) {
-  markDynSeen(id);
-  const items = filterNewDynamics(window.__dynItems || [], getDynSeen());
-  renderDynamicsBar(items);
+  markDynIgnored(id);  // v7.3: 忽略 = 出动态条 + 不进待办视图
+  renderDynamicsBar(filterNewDynamics(window.__dynAll || [], getDynSeen()));
+}
+
+// ============================================================
+// v7.3: 待办视图交互 + 日历导出（.ics）
+// ============================================================
+// 视图按钮统一入口：按索引从 todoItemsCache 取回待办对象
+function todoAction(i, act) {
+  const it = todoItemsCache[i];
+  if (!it) return;
+  if (act === "ics") { downloadICS(it); return; }
+  if (act === "done") { markDynDone(it.dynId); showToast("✅ 已完成：" + it.company + " · " + it.label); }
+  else if (act === "undo") { unmarkDynDone(it.dynId); }
+  else if (act === "ignore") { markDynIgnored(it.dynId); }
+  else return;
+  renderDynamicsBar(filterNewDynamics(window.__dynAll || [], getDynSeen()));  // 内部调 refreshTodos() 重算待办
+}
+
+// ICS 文本转义（纯函数）
+function icsEscape(s) {
+  return String(s == null ? "" : s).replace(/\\/g, "\\\\").replace(/;/g, "\\;").replace(/,/g, "\\,").replace(/\r?\n/g, "\\n");
+}
+
+// 生成 .ics 日历文件内容（纯函数可测）
+// ev: { company, jobName, label, summary, actionUrl, eventTime?, dueDate? }
+function buildICS(ev) {
+  const p2 = n => String(n).padStart(2, "0");
+  const fmtDT = d => `${d.getFullYear()}${p2(d.getMonth() + 1)}${p2(d.getDate())}T${p2(d.getHours())}${p2(d.getMinutes())}00`;
+  const fmtD = d => `${d.getFullYear()}${p2(d.getMonth() + 1)}${p2(d.getDate())}`;
+  const lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//qiuzhao-tracker//CN", "BEGIN:VEVENT",
+    "UID:" + Date.now() + "@qiuzhao-tracker", "DTSTAMP:" + fmtDT(new Date())];
+  if (ev.eventTime) {
+    const s = new Date(ev.eventTime);
+    lines.push("DTSTART:" + fmtDT(s), "DTEND:" + fmtDT(new Date(s.getTime() + 3600000)));  // 默认 1 小时
+  } else if (ev.dueDate) {
+    const d = parseLocalDate(ev.dueDate);  // 全天事件
+    if (d) lines.push("DTSTART;VALUE=DATE:" + fmtD(d));
+  }
+  lines.push("SUMMARY:" + icsEscape(`【秋招】${ev.company}${ev.jobName ? "·" + ev.jobName : ""} ${ev.label}`));
+  if (ev.summary) lines.push("DESCRIPTION:" + icsEscape(ev.summary));
+  if (ev.actionUrl && /^https?:\/\//i.test(ev.actionUrl)) lines.push("URL:" + ev.actionUrl);
+  lines.push("END:VEVENT", "END:VCALENDAR");
+  return lines.join("\r\n");
+}
+
+function downloadICS(ev) {
+  const blob = new Blob([buildICS(ev)], { type: "text/calendar;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `${ev.company}-${ev.label}.ics`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast("📅 日历文件已下载，导入手机日历即可");
 }
 
 // ============================================================
@@ -507,7 +597,7 @@ let jobModalId = null;
 
 function refreshAll() {
   renderDashboard();
-  renderTodo();
+  refreshTodos();   // 必须先重算待办缓存，applyFilters 在待办视图会读它
   renderWeekly();
   refreshFilterUI();
   applyFilters();
@@ -522,6 +612,7 @@ function addAppliedJob(id) {
   if (s.jobs[name]) { showToast("该岗位已在列表"); return; }
   s.jobs[name] = "已投递";
   s.status = deriveCompanyStatus(s.jobs, s.status);  // 聚合写回
+  recordHistory(id, { job: name, from: null, to: "已投递" });  // v7.2 进度历史
   touchState(id);
   saveState();
   renderJobModal(id);
@@ -532,8 +623,10 @@ function addAppliedJob(id) {
 
 function removeAppliedJob(id, name) {
   const s = getState(id);
+  const prev = s.jobs[name];
   delete s.jobs[name];
   s.status = deriveCompanyStatus(s.jobs, s.status);  // 聚合写回
+  recordHistory(id, { job: name, from: prev || null, to: null });  // v7.2 进度历史
   touchState(id);
   saveState();
   renderJobModal(id);
@@ -542,8 +635,10 @@ function removeAppliedJob(id, name) {
 
 function setJobStatus(id, name, status) {
   const s = getState(id);
+  const prev = s.jobs[name] || null;
   s.jobs[name] = status;
   s.status = deriveCompanyStatus(s.jobs, s.status);  // 聚合写回
+  if (prev !== status) recordHistory(id, { job: name, from: prev, to: status });  // v7.2 进度历史
   touchState(id);
   saveState();
   renderJobModal(id);
@@ -583,6 +678,22 @@ function renderJobModal(id) {
     </div>`
   ).join("");
   document.getElementById("jobModalList").innerHTML = rows || `<div class="job-empty">还没记录投递岗位，输入岗位名添加 👇</div>`;
+  // v7.2: 进度历史时间线（最近 10 条，新→旧）
+  const histEl = document.getElementById("jobModalHistory");
+  if (histEl) {
+    const p2 = n => String(n).padStart(2, "0");
+    const hist = (s.history || []).slice(-10).reverse();
+    histEl.innerHTML = hist.length
+      ? `<div class="tl-head">📜 进度历史</div>` + hist.map(h => {
+          const d = new Date(h.time);
+          const when = `${d.getMonth() + 1}-${p2(d.getDate())} ${p2(d.getHours())}:${p2(d.getMinutes())}`;
+          const text = h.job
+            ? `${h.job}：${h.from || "新建"} → ${h.to || "已删除"}`
+            : `${h.from || "—"} → ${h.to || "—"}`;
+          return `<div class="tl-row"><span class="tl-time">${when}</span><span class="tl-text">${escapeHtml(text)}</span></div>`;
+        }).join("")
+      : "";
+  }
   // 同步输入框回车添加
   const inp = document.getElementById("jobInput");
   if (inp) inp.onkeydown = function(e) {

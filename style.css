@@ -481,97 +481,7 @@
   }
   #themeBtn:hover::after { opacity: 1; }
 
-/* ====== v4.3 新增组件：看板 / 今日待办 / 周报 / 一键复制 ====== */
-
-/* 看板 */
-.kanban {
-  display: flex;
-  gap: 12px;
-  overflow-x: auto;
-  padding-bottom: 8px;
-  align-items: flex-start;
-}
-.kanban-col {
-  flex: 0 0 200px;
-  min-width: 200px;
-  background: var(--bg-secondary);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  overflow: hidden;
-  box-shadow: var(--shadow);
-}
-.kanban-col-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px 12px;
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--text);
-  border-bottom: 1px solid var(--border);
-  background: var(--card);
-}
-.kanban-col-head[data-status="未投递"] { border-top: 3px solid var(--accent); }
-.kanban-col-head[data-status="已投递"] { border-top: 3px solid var(--cyan); }
-.kanban-col-head[data-status="笔试中"] { border-top: 3px solid var(--orange); }
-.kanban-col-head[data-status="面试中"] { border-top: 3px solid var(--purple); }
-.kanban-col-head[data-status="Offer"] { border-top: 3px solid var(--green); }
-.kanban-col-head[data-status="已拒绝"] { border-top: 3px solid var(--red); }
-.kanban-count {
-  background: var(--accent-glow);
-  color: var(--accent);
-  border-radius: 999px;
-  padding: 1px 8px;
-  font-size: 11px;
-  font-family: var(--font-num);
-}
-.kanban-col-body {
-  padding: 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  min-height: 60px;
-}
-.kanban-card {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 10px;
-  transition: all 0.2s;
-}
-.kanban-card:hover { border-color: var(--border-light); transform: translateY(-1px); }
-.kanban-card.favorited { border-color: rgba(252, 211, 77, 0.5); }
-.kanban-card-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 6px;
-}
-.kanban-card-head strong { font-size: 13px; }
-.kanban-card-meta {
-  display: flex;
-  gap: 6px;
-  align-items: center;
-  flex-wrap: wrap;
-  font-size: 11px;
-  color: var(--text-secondary);
-  margin-bottom: 8px;
-}
-.kanban-card-actions {
-  display: flex;
-  gap: 6px;
-  align-items: center;
-  margin-bottom: 8px;
-}
-.kanban-card .status-select { width: 100%; }
-.kanban-empty {
-  text-align: center;
-  color: var(--text-muted);
-  font-size: 11px;
-  padding: 14px 0;
-  border: 1px dashed var(--border);
-  border-radius: 10px;
-}
+/* ====== v4.3 新增组件：今日待办 / 周报 / 一键复制 ====== */
 
 /* 今日待办 / 周报 */
 .todo-bar, .weekly-bar {
@@ -618,12 +528,6 @@
 }
 .copy-mini:hover { border-color: var(--accent); color: var(--accent); }
 .copy-mini.copied { border-color: var(--green); color: var(--green); }
-
-/* 移动端看板适配 */
-@media (max-width: 768px) {
-  .kanban { padding-bottom: 12px; }
-  .kanban-col { flex: 0 0 170px; min-width: 170px; }
-}
 
 /* ====== v4.4 前端专项修复：无障碍 & 移动端性能 ====== */
 
@@ -1268,3 +1172,65 @@ mark.hl {
 .dyn-apply { flex: 0 0 auto; padding: 5px 12px !important; font-size: 12px !important; }
 
 /* 云同步按钮状态（v7 已有，此处占位注释保持区块完整） */
+
+/* ====== v7.2: 待办面板 ====== */
+.todo-more {
+  border: 1px solid var(--border); background: transparent; color: var(--accent);
+  border-radius: 6px; padding: 1px 10px; margin-left: 8px; font-size: 12px; cursor: pointer;
+}
+.todo-more:hover { background: var(--accent-glow); }
+.todo-panel {
+  background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+  margin-bottom: 12px; padding: 6px 12px;
+}
+.todo-row {
+  display: flex; align-items: flex-start; gap: 10px; padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+.todo-row:last-child { border-bottom: none; }
+.todo-row.urgency-overdue, .todo-row.urgency-today { border-left: 3px solid var(--red); padding-left: 9px; }
+.todo-row.urgency-soon { border-left: 3px solid var(--orange); padding-left: 9px; }
+.todo-kind { flex: 0 0 auto; font-size: 14px; margin-top: 1px; }
+.todo-main { flex: 1; min-width: 0; font-size: 13px; }
+.todo-sum { font-size: 12px; color: var(--text-secondary); margin-top: 2px; word-break: break-all; }
+.todo-when { margin-left: 8px; font-size: 12px; color: var(--orange); font-weight: 600; }
+.todo-when.urgent { color: var(--red); }
+.todo-acts { flex: 0 0 auto; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.todo-acts .link-btn { text-decoration: none; }
+
+/* ====== v7.2: 进度历史时间线（岗位弹窗内） ====== */
+.tl { margin-top: 12px; }
+.tl-head { font-size: 12px; font-weight: 700; color: var(--text-secondary); margin-bottom: 6px; }
+.tl-row {
+  display: flex; gap: 10px; font-size: 12px; padding: 4px 0;
+  border-bottom: 1px dashed var(--border);
+}
+.tl-row:last-child { border-bottom: none; }
+.tl-time { flex: 0 0 auto; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+.tl-text { color: var(--text); }
+
+/* ====== v7.2: 筛选面板"隐藏已截止"开关 ====== */
+.fp-hide-expired { font-size: 12px; color: var(--text-secondary); display: flex; align-items: center; gap: 4px; }
+.fp-foot { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+
+/* ====== v7.3: 待办视图（分组列表，替代已删除的看板） ====== */
+.todo-view { max-width: 880px; margin: 0 auto; }
+.todo-group {
+  background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+  margin-bottom: 12px; padding: 2px 12px 6px;
+}
+.todo-group-head {
+  font-size: 13px; font-weight: 700; color: var(--text);
+  padding: 10px 0 8px; border-bottom: 1px solid var(--border); margin-bottom: 2px;
+}
+.todo-group-count {
+  background: var(--accent-glow); color: var(--accent);
+  border-radius: 999px; padding: 1px 8px; font-size: 11px;
+  font-family: var(--font-num); margin-left: 4px;
+}
+.todo-row.urgency-week { border-left: 3px solid #eab308; padding-left: 9px; }
+.todo-row.urgency-later { border-left: 3px solid var(--green); padding-left: 9px; }
+.todo-row.urgency-none { border-left: 3px solid var(--border); padding-left: 9px; }
+.todo-row.urgency-done { opacity: 0.5; }
+.todo-row.urgency-done .todo-main strong { text-decoration: line-through; }
+.todo-empty { text-align: center; color: var(--text-muted); padding: 48px 0; font-size: 14px; }

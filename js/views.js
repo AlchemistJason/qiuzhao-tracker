@@ -192,6 +192,7 @@ function renderCards(data) {
 // 筛选 + 搜索 + 排序
 // ============================================================
 function applyFilters() {
+  saveUIPrefs();  // v7.2: 所有筛选/排序/视图操作都汇聚到这里，顺带持久化
   // v5: 多条件筛选（同维 OR / 跨维 AND），纯函数 matchFilters 驱动
   let filtered = COMPANIES.filter(c => matchFilters(c, filters, getState));
 
@@ -218,7 +219,7 @@ function applyFilters() {
   }
 
   if (currentView === "table") renderTable(filtered);
-  else if (currentView === "kanban") renderKanban(filtered);
+  else if (currentView === "todo") renderTodoView();
   else renderCards(filtered);
 
   // 无结果提示带搜索词（避免用户困惑"怎么没反应"）
@@ -230,132 +231,153 @@ function applyFilters() {
   }
 }
 
-// ============================================================
-// 看板视图（按状态分组，三视图之一）
-// ============================================================
-const KANBAN_COLS = [
-  { status: "未投递", label: "待投递" },
-  { status: "已投递", label: "已投递" },
-  { status: "笔试中", label: "笔试中" },
-  { status: "面试中", label: "面试中" },
-  { status: "Offer", label: "Offer" },
-  { status: "已拒绝", label: "已拒绝" }
-];
 
-// 纯函数：按状态分组（可测试）
-function groupByStatus(data) {
-  const groups = {};
-  KANBAN_COLS.forEach(col => { groups[col.status] = []; });
-  data.forEach(c => {
-    const st = getState(c.id).status;
-    if (!groups[st]) groups[st] = [];
-    groups[st].push(c);
+// ============================================================
+// 待办（v7.3：横带=2天内紧急事项+入口；✅待办 视图承载全部事项含远期）
+// 状态模型：邮件事项在动态条分诊（新到→采纳/忽略出动态条）；待办视图里 活跃↔完成 可往返，忽略彻底隐藏
+// ============================================================
+// 统一待办构建（纯函数可测）
+// 来源：全部邮件动态（忽略的不进）+ 公司全部未来投递截止 + 进行中状态
+function buildTodoItems(companies, getSt, dynAll, doneIds, ignoredIds, now) {
+  const today = new Date(now); today.setHours(0, 0, 0, 0);
+  const done = new Set(doneIds || []);
+  const ignored = new Set(ignoredIds || []);
+  const items = [];
+  const mailKeys = new Set();  // 状态来源去重：同公司同类型已有邮件待办则不重复
+  const addTimeInfo = (obj, when) => {
+    if (!when) { obj.urgency = "none"; obj.days = null; obj.sortKey = Number.MAX_SAFE_INTEGER; return; }
+    const wd = new Date(when); wd.setHours(0, 0, 0, 0);  // days 按日历日差计算（23:59 截止不算多一天）
+    obj.days = Math.round((wd - today) / 86400000);
+    obj.sortKey = when.getTime();
+    obj.urgency = obj.days < 0 ? "overdue" : obj.days === 0 ? "today" : obj.days <= 3 ? "soon" : obj.days <= 7 ? "week" : "later";
+  };
+  (dynAll || []).forEach(it => {
+    if (!["offer", "written", "interview", "deadline"].includes(it.type)) return;
+    if (ignored.has(it.id)) return;
+    let when = null;
+    if (it.eventTime) { const t = new Date(it.eventTime); if (!isNaN(t)) when = t; }
+    else if (it.dueDate) { const t = parseLocalDate(it.dueDate); if (t) { t.setHours(23, 59, 0, 0); when = t; } }
+    const obj = {
+      source: "mail", dynId: it.id, companyId: it.companyId || null,
+      company: it.company, jobName: it.jobName || "",
+      kind: (it.type === "interview" || it.type === "written") ? "event" : "action",
+      type: it.type,
+      label: (DYN_TYPE_LABEL[it.type] || it.type) + (it.round ? "·" + it.round : ""),
+      summary: it.summary || it.title || "",
+      actionUrl: it.actionUrl || it.link || "",
+      eventTime: it.eventTime || null, dueDate: it.dueDate || null,
+      done: done.has(it.id)
+    };
+    addTimeInfo(obj, when);
+    mailKeys.add((it.companyId || it.company) + "|" + it.type);
+    items.push(obj);
   });
-  return groups;
-}
-
-function renderKanban(data) {
-  const container = document.getElementById("kanbanView");
-  const noResults = document.getElementById("noResults");
-  if (data.length === 0) {
-    container.innerHTML = "";
-    noResults.style.display = "block";
-    return;
-  }
-  noResults.style.display = "none";
-
-  const groups = groupByStatus(data);
-  container.innerHTML = KANBAN_COLS.map(col => {
-    const items = groups[col.status] || [];
-    const cards = items.map(c => {
-      const s = getState(c.id);
-      const statusOptions = STATUS_OPTIONS.map(opt =>
-        `<option value="${opt}" ${s.status === opt ? "selected" : ""}>${opt}</option>`
-      ).join("");
-      return `
-      <div class="kanban-card ${s.starred ? "favorited" : ""}">
-        <div class="kanban-card-head">
-          <strong>${escapeHtml(c.name)}</strong>
-          <button class="star-btn ${s.starred ? "active" : ""}" onclick="toggleStar('${c.id}')" data-star-id="${c.id}" aria-pressed="${s.starred}" aria-label="收藏 ${escapeHtml(c.name)}">${s.starred ? "⭐" : "☆"}</button>
-        </div>
-        <div class="kanban-card-meta">
-          ${deadlineHTML(c.deadline)}
-          ${c.location ? `<span>📍 ${escapeHtml(c.location)}</span>` : ""}
-        </div>
-        <div class="kanban-card-actions">
-          ${c.refCode ? `<span class="ref-code" onclick="copyCode(this,'${c.id}')">${escapeHtml(c.refCode)}</span>` : ""}
-          ${c.link ? `<a href="${safeLink(c.link)}" target="_blank" rel="noopener" class="link-btn">投递</a>` : ""}
-        </div>
-        ${Object.keys(s.jobs).length ? `<div class="card-applied-jobs">${Object.keys(s.jobs).map(n => `<span class="job-chip" data-status="${escapeHtml(s.jobs[n])}">${escapeHtml(n)}·${escapeHtml(s.jobs[n])}</span>`).join("")}</div>` : ""}
-        <div style="display:flex;gap:4px;align-items:center">
-          <select class="status-select" data-status="${escapeHtml(s.status)}" aria-label="投递状态" onchange="setStatus('${c.id}', this.value, this)">${statusOptions}</select>
-          <button class="job-mini" onclick="openJobModal('${c.id}')" title="管理投递岗位" aria-label="管理投递岗位">📎<span class="job-count">${Object.keys(s.jobs).length || ""}</span></button>
-        </div>
-      </div>`;
-    }).join("");
-    return `
-    <div class="kanban-col">
-      <div class="kanban-col-head" data-status="${col.status}">
-        <span>${col.label}</span>
-        <span class="kanban-count">${items.length}</span>
-      </div>
-      <div class="kanban-col-body">${cards || `<div class="kanban-empty">空</div>`}</div>
-    </div>`;
-  }).join("");
-}
-
-// ============================================================
-// 今日待办（聚合截止日期紧迫 + 进行中事项）
-// ============================================================
-function getTodoItems() {
-  const now = new Date(); now.setHours(0, 0, 0, 0);
-  const todo = [];
-  COMPANIES.forEach(c => {
-    const s = getState(c.id);
-    if (DONE_STATUSES.includes(s.status)) return; // 已结束的不提醒
+  (companies || []).forEach(c => {
+    const s = getSt(c.id);
+    if (DONE_STATUSES.includes(s.status)) return;
     if (c.deadline) {
       const dl = parseLocalDate(c.deadline);
       if (dl) {
-        dl.setHours(0, 0, 0, 0);
-        const days = Math.round((dl - now) / 86400000);
-        if (days >= 0 && days <= 3) {
-          todo.push({ c, type: "deadline", days, label: days === 0 ? "今天截止" : days + "天后截止" });
+        dl.setHours(23, 59, 0, 0);
+        const wd = new Date(dl); wd.setHours(0, 0, 0, 0);
+        const d = Math.round((wd - today) / 86400000);
+        if (d >= 0) {  // v7.3: 全部未来截止都进待办视图（横带只挑 ≤2 天）
+          const obj = { source: "company", companyId: c.id, company: c.name, jobName: "", kind: "action", type: "deadline", label: "投递截止", summary: "", actionUrl: c.link || "", eventTime: null, dueDate: c.deadline, done: false };
+          addTimeInfo(obj, dl);
+          items.push(obj);
         }
       }
     }
     if (s.status === "笔试中" || s.status === "面试中") {
-      todo.push({ c, type: "active", days: null, label: s.status === "笔试中" ? "笔试进行中" : "面试进行中" });
+      const type = s.status === "笔试中" ? "written" : "interview";
+      if (mailKeys.has(c.id + "|" + type)) return;  // 邮件已覆盖，避免重复
+      const obj = { source: "status", companyId: c.id, company: c.name, jobName: "", kind: "event", type, label: s.status + "", summary: "", actionUrl: "", eventTime: null, dueDate: null, done: false };
+      addTimeInfo(obj, null);
+      items.push(obj);
     }
   });
-  // v6.0: 邮箱动态中的待办（Offer 待回复 / 截止提醒 / 面试笔试动态）——无需采纳即可提醒
-  (window.__dynItems || []).forEach(it => {
-    if (!["offer", "written", "interview", "deadline"].includes(it.type)) return;
-    let days = null;
-    if (it.dueDate) {
-      const dl = parseLocalDate(it.dueDate);
-      if (dl) { dl.setHours(0, 0, 0, 0); days = Math.round((dl - now) / 86400000); }
-    }
-    const typeLabel = DYN_TYPE_LABEL[it.type] || it.type;
-    todo.push({
-      c: { name: it.company },
-      type: it.type === "deadline" ? "deadline" : "active",
-      days,
-      label: `${typeLabel}${days !== null && days >= 0 ? ` · ${days === 0 ? "今天截止" : days + "天内需处理"}` : "进行中"}`
-    });
-  });
-  return todo;
+  return items.sort((a, b) => a.sortKey - b.sortKey || String(a.company).localeCompare(String(b.company), "zh-CN"));
 }
 
+// 待办时间文案（纯函数可测）：今天 17:00 / 今天截止 / 2天后 / 已逾期1天
+function fmtTodoWhen(it) {
+  if (it.days === null || it.days === undefined) return "";
+  if (it.days < 0) return `已逾期${-it.days}天`;
+  if (it.days === 0 && it.eventTime) {
+    const t = new Date(it.eventTime);
+    return `今天 ${String(t.getHours()).padStart(2, "0")}:${String(t.getMinutes()).padStart(2, "0")}`;
+  }
+  if (it.days === 0) return "今天截止";
+  return `${it.days}天后`;
+}
+
+// 分组（纯函数可测）：已完成沉底，其余按紧急度
+const TODO_GROUPS = [
+  { key: "overdue", label: "⚠️ 已逾期" }, { key: "today", label: "🔴 今天" },
+  { key: "soon", label: "🟠 3天内" }, { key: "week", label: "🟡 本周" },
+  { key: "later", label: "🟢 更晚" }, { key: "none", label: "⚪ 无明确时间" },
+  { key: "done", label: "✅ 已完成" }
+];
+function groupTodos(items) {
+  const map = {};
+  TODO_GROUPS.forEach(g => { map[g.key] = []; });
+  (items || []).forEach(it => map[it.done ? "done" : (it.urgency || "none")].push(it));
+  return TODO_GROUPS.filter(g => map[g.key].length).map(g => ({ ...g, items: map[g.key] }));
+}
+
+let todoItemsCache = [];  // 供视图按钮按索引取回待办对象（展平后的展示顺序）
+
+function refreshTodos() {
+  todoItemsCache = buildTodoItems(COMPANIES, getState, window.__dynAll || [], getDynDone(), getDynIgnored(), new Date());
+  renderTodo();
+  if (currentView === "todo") renderTodoView();
+}
+
+// 顶部横带：2天内紧急项摘要 + 入口按钮（点击跳 ✅待办 视图）
 function renderTodo() {
   const bar = document.getElementById("todoBar");
-  const todo = getTodoItems();
-  if (todo.length === 0) { bar.classList.add("hidden"); bar.innerHTML = ""; return; }
+  const active = todoItemsCache.filter(t => !t.done);
+  if (active.length === 0) { bar.classList.add("hidden"); bar.innerHTML = ""; return; }
   bar.classList.remove("hidden");
-  const urgent = todo.filter(t => t.type === "deadline" && t.days <= 1);
-  const items = todo.slice(0, 6).map(t =>
-    `<span class="todo-item ${t.type === "deadline" && t.days <= 1 ? "urgent" : ""}">${escapeHtml(t.c.name)} · ${t.label}</span>`
+  const urgent = active.filter(t => t.days !== null && t.days <= 2);  // 已逾期/今天/明天/后天
+  const briefs = urgent.slice(0, 4).map(t =>
+    `<span class="todo-item ${t.days <= 0 ? "urgent" : ""}">${escapeHtml(t.company)}·${escapeHtml(t.label)} ${escapeHtml(fmtTodoWhen(t))}</span>`
   ).join("");
-  bar.innerHTML = `⏰ <strong>今日待办 ${todo.length} 项</strong>${urgent.length ? ` <span class="todo-urgent-tag">${urgent.length} 项紧急</span>` : ""}：${items}`;
+  bar.innerHTML = urgent.length
+    ? `⏰ <strong>紧急待办 ${urgent.length} 项</strong>：${briefs}${urgent.length > 4 ? " …" : ""} <button class="todo-more" onclick="switchView('todo')">全部 ${active.length} 项 ▸</button>`
+    : `📋 <strong>待办 ${active.length} 项</strong>（2天内无紧急事项） <button class="todo-more" onclick="switchView('todo')">查看全部 ▸</button>`;
+}
+
+// 待办视图：分组渲染全部事项（含远期），操作：📅导出日历 / ✓完成 / ↩恢复 / ✕忽略
+function renderTodoView() {
+  const view = document.getElementById("todoView");
+  if (!view) return;
+  const groups = groupTodos(todoItemsCache);
+  if (groups.length === 0) {
+    view.innerHTML = `<div class="todo-empty">🎉 暂无待办事项</div>`;
+    return;
+  }
+  let idx = 0;  // 展平索引，供 todoAction(i, ...) 取回对象
+  view.innerHTML = groups.map(g => `
+    <div class="todo-group">
+      <div class="todo-group-head">${g.label} <span class="todo-group-count">${g.items.length}</span></div>
+      ${g.items.map(t => { const i = idx++; return `
+        <div class="todo-row urgency-${t.done ? "done" : t.urgency}">
+          <span class="todo-kind">${t.kind === "event" ? "🗓" : "✋"}</span>
+          <div class="todo-main">
+            <div><strong>${escapeHtml(t.company)}</strong>${t.jobName ? ` · ${escapeHtml(t.jobName)}` : ""} · ${escapeHtml(t.label)}
+              ${fmtTodoWhen(t) ? `<span class="todo-when ${t.days !== null && t.days <= 0 ? "urgent" : ""}">${escapeHtml(fmtTodoWhen(t))}</span>` : ""}</div>
+            ${t.summary ? `<div class="todo-sum">${escapeHtml(t.summary)}</div>` : ""}
+          </div>
+          <div class="todo-acts">
+            ${t.actionUrl && safeLink(t.actionUrl) !== "#" ? `<a class="link-btn" href="${safeLink(t.actionUrl)}" target="_blank" rel="noopener">🔗 打开</a>` : ""}
+            ${!t.done && (t.eventTime || t.dueDate) ? `<button class="copy-mini" onclick="todoAction(${i},'ics')" title="导出日历 (.ics)" aria-label="导出日历">📅</button>` : ""}
+            ${t.dynId && !t.done ? `<button class="btn btn-primary dyn-apply" onclick="todoAction(${i},'done')">✓ 完成</button>` : ""}
+            ${t.dynId && t.done ? `<button class="btn" onclick="todoAction(${i},'undo')">↩ 恢复</button>` : ""}
+            ${t.dynId && !t.done ? `<button class="job-row-del" onclick="todoAction(${i},'ignore')" aria-label="忽略">✕</button>` : ""}
+          </div>
+        </div>`; }).join("")}
+    </div>`).join("");
 }
 
 // ============================================================

@@ -45,13 +45,21 @@ function exportJSON() {
 }
 
 // 合并外部状态（导入/同步共用）：只覆盖已知公司，未知 id 忽略
+// v7.2 修复：之前只保留 status/starred/note，岗位级 jobs/lastUpdate/history 在导入时丢失
 function mergeIncoming(incoming) {
   if (!incoming || typeof incoming !== "object") return 0;
   let merged = 0;
   Object.keys(incoming).forEach(id => {
     if (!COMPANY_IDS.has(id)) return;
     const st = incoming[id] || {};
-    userState.companies[id] = { status: st.status || "未投递", starred: !!st.starred, note: st.note || "" };
+    userState.companies[id] = {
+      status: st.status || "未投递",
+      starred: !!st.starred,
+      note: st.note || "",
+      lastUpdate: st.lastUpdate === undefined ? null : st.lastUpdate,
+      jobs: st.jobs && typeof st.jobs === "object" ? st.jobs : {},
+      history: Array.isArray(st.history) ? st.history : []
+    };
     merged++;
   });
   if (merged > 0) {
@@ -108,7 +116,10 @@ function saveCloudConfig(cfg) {
   updateCloudBadge();
 }
 
-// 公司级合并（纯函数可测）：同公司取 lastUpdate 较新者，单方有则用单方
+// 岗位级合并（纯函数可测）：公司取 lastUpdate 较新侧为基准
+// jobs 按 key 取并集（同 key 冲突取较新侧），再从并集聚合回写 status ——
+// 避免多设备各投不同岗位/各改不同岗位进度时整包互覆（v7.1 修复）
+// 已知取舍：一侧删除岗位、另一侧未动时，并集会复活该岗位（无岗位级时间戳，宁可不丢投递记录）
 function mergeCloudState(local, remote) {
   const out = {};
   const allIds = new Set([...Object.keys(local.companies || {}), ...Object.keys(remote.companies || {})]);
@@ -117,7 +128,28 @@ function mergeCloudState(local, remote) {
     const r = remote.companies[id];
     if (!l) { out[id] = r; return; }
     if (!r) { out[id] = l; return; }
-    out[id] = (l.lastUpdate || 0) >= (r.lastUpdate || 0) ? l : r;
+    const base = (l.lastUpdate || 0) >= (r.lastUpdate || 0) ? l : r;
+    const other = base === l ? r : l;
+    const jobs = { ...(other.jobs || {}), ...(base.jobs || {}) };  // 展开顺序保证较新侧覆盖同 key
+    // 历史记录取双侧并集：按 (time,job,from,to) 去重、按时间排序、封顶 50 条
+    const seen = new Set();
+    const history = [...(base.history || []), ...(other.history || [])]
+      .filter(h => {
+        const k = `${h.time}|${h.job || ""}|${h.from || ""}|${h.to || ""}`;
+        if (seen.has(k)) return false;
+        seen.add(k);
+        return true;
+      })
+      .sort((a, b) => (a.time || 0) - (b.time || 0))
+      .slice(-50);
+    out[id] = {
+      status: deriveCompanyStatus(jobs, base.status),
+      starred: !!(base.starred || other.starred),   // 收藏取并集：任一侧收藏即保留
+      note: base.note || other.note || "",          // 备注：较新侧为空时保留另一侧，防丢
+      lastUpdate: Math.max(l.lastUpdate || 0, r.lastUpdate || 0) || null,
+      jobs,
+      history
+    };
   });
   return { version: 3, companies: out };
 }

@@ -24,7 +24,7 @@
 </script>
 <script src="https://cdn.staticfile.org/qrcodejs/1.0.0/qrcode.min.js" defer></script>
 <!-- html5-qrcode 改为按需动态加载（见 app.js startQrScanner），避免 ~300KB 全量下载 -->
-<link rel="stylesheet" href="style.css?v=6.1">
+<link rel="stylesheet" href="style.css?v=7.3">
 </head>
 <body>
 
@@ -89,6 +89,7 @@
           </div>
         </div>
         <div class="fp-foot">
+          <label class="fp-opt fp-hide-expired"><input type="checkbox" id="hideExpiredCb" checked onchange="toggleHideExpired(this.checked)"> <span>隐藏已截止（未投递）</span></label>
           <button class="fp-clear" onclick="clearFilters()">重置全部</button>
         </div>
       </div>
@@ -97,6 +98,7 @@
     <div class="view-toggle">
       <button id="tableViewBtn" class="active" onclick="switchView('table')">📋 表格</button>
       <button id="cardViewBtn" onclick="switchView('card')">🗂️ 卡片</button>
+      <button id="todoViewBtn" onclick="switchView('todo')" title="全部待办事项">✅ 待办</button>
     </div>
   </div>
 
@@ -123,8 +125,8 @@
 
   <div class="card-grid hidden" id="cardView"></div>
 
-  <!-- 看板视图 -->
-  <div class="kanban hidden" id="kanbanView"></div>
+  <!-- 待办视图（全部事项：逾期/今天/近期/远期/已完成） -->
+  <div class="todo-view hidden" id="todoView"></div>
 
   <footer>
     <p>📋 全量秋招个人内推文档（含笔试题库、就业资料包）：
@@ -162,6 +164,7 @@
       <button class="btn btn-primary" onclick="addAppliedJob(jobModalId)">添加</button>
     </div>
     <div id="jobModalList"></div>
+    <div id="jobModalHistory" class="tl"></div>
   </div>
 </div>
 
@@ -188,13 +191,13 @@
   </div>
 </div>
 
-<script src="data.js?v=6.1"></script>
+<script src="data.js?v=7.3"></script>
 <!-- 求职Agent · 模块化加载（顺序敏感：core 基础层 → views 视图 → features 交互 → export-sync 导出同步 → main 入口） -->
-<script src="js/core.js?v=6.1"></script>
-<script src="js/views.js?v=6.1"></script>
-<script src="js/features.js?v=6.1"></script>
-<script src="js/export-sync.js?v=6.1"></script>
-<script src="js/main.js?v=6.1"></script>
+<script src="js/core.js?v=7.3"></script>
+<script src="js/views.js?v=7.3"></script>
+<script src="js/features.js?v=7.3"></script>
+<script src="js/export-sync.js?v=7.3"></script>
+<script src="js/main.js?v=7.3"></script>
 
 </body>
 </html>

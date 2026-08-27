@@ -62,7 +62,8 @@ const filters = {
   locations: new Set(),    // 城市多选
   industries: new Set(),   // 行业多选
   jobs: new Set(),         // 岗位多选
-  keyword: ""              // 搜索词（空格分词 AND）
+  keyword: "",             // 搜索词（空格分词 AND）
+  hideExpired: true        // v7.2: 隐藏已截止且未投递的公司（默认开）
 };
 
 let currentSort = { field: null, asc: true };
@@ -119,6 +120,15 @@ function matchFilters(c, f, getSt) {
   const s = getSt(c.id);
   if (f.starred && !s.starred) return false;
   if (f.status.size && !f.status.has(s.status)) return false;
+  // v7.2: 已截止且未投递的公司默认隐藏（已投递/进行中的不受影响，避免漏跟进）
+  if (f.hideExpired && s.status === "未投递" && c.deadline) {
+    const dl = parseLocalDate(c.deadline);
+    if (dl) {
+      const today = new Date(); today.setHours(0, 0, 0, 0);
+      dl.setHours(0, 0, 0, 0);
+      if (dl < today) return false;
+    }
+  }
   if (f.locations.size && !(c.location || "").split("/").some(l => f.locations.has(l.trim()))) return false;
   if (f.industries.size && !c.category.some(cat => f.industries.has(cat))) return false;
   // v6: 岗位筛选匹配 公司招聘岗位 OR 已投递岗位
@@ -176,7 +186,7 @@ function parseLocalDate(str) {
 function defaultState() {
   const companies = {};
   COMPANIES.forEach(c => {
-    companies[c.id] = { status: "未投递", starred: false, note: "", lastUpdate: null, jobs: {} };
+    companies[c.id] = { status: "未投递", starred: false, note: "", lastUpdate: null, jobs: {}, history: [] };
   });
   return { version: 3, companies };
 }
@@ -207,7 +217,8 @@ function upgradeToV3(state) {
       starred: !!st.starred,
       note: st.note || "",
       lastUpdate: st.lastUpdate === undefined ? null : st.lastUpdate,
-      jobs: st.jobs && typeof st.jobs === "object" ? st.jobs : {}
+      jobs: st.jobs && typeof st.jobs === "object" ? st.jobs : {},
+      history: Array.isArray(st.history) ? st.history : []
     };
   });
   return v;
@@ -319,22 +330,93 @@ function saveState() {
     localStorage.setItem(STATE_KEY, JSON.stringify(userState));
   } catch(e) {
     console.warn("保存失败", e);
+    showToast("⚠️ 状态保存失败（存储可能已满），请立即 💾 导出备份", 4000);
   }
   scheduleCloudPush();  // v7: 本地变更后防抖云同步
 }
 
 function getState(id) {
   if (!userState.companies[id]) {
-    userState.companies[id] = { status: "未投递", starred: false, note: "", lastUpdate: null };
+    userState.companies[id] = { status: "未投递", starred: false, note: "", lastUpdate: null, jobs: {}, history: [] };
   }
   // 兼容老数据：缺 lastUpdate 字段补 null
   if (userState.companies[id].lastUpdate === undefined) userState.companies[id].lastUpdate = null;
   // v6 兼容：缺 jobs 映射补空对象
   if (userState.companies[id].jobs === undefined) userState.companies[id].jobs = {};
+  // v7.2 兼容：缺 history 补空数组
+  if (!Array.isArray(userState.companies[id].history)) userState.companies[id].history = [];
   return userState.companies[id];
 }
 
 // 记录状态变更时间戳（v2.1）
 function touchState(id) {
   getState(id).lastUpdate = Date.now();
+}
+
+// v7.2: 进度历史——每次状态/岗位变更追加一条，每公司封顶 50 条
+// entry: { job?: 岗位名, from: 原状态|null, to: 新状态|null }
+function recordHistory(id, entry) {
+  const s = getState(id);
+  s.history.push({ time: Date.now(), job: entry.job || null, from: entry.from || null, to: entry.to || null });
+  if (s.history.length > 50) s.history = s.history.slice(-50);
+}
+
+// ============================================================
+// v7.2: UI 偏好持久化（视图/排序/筛选/隐藏已截止，刷新不丢）
+// ============================================================
+const UI_KEY = "qiuzhao2027.ui";
+
+// 序列化（纯函数可测）：Set → 数组
+function serializeUIPrefs(f, sort, view) {
+  return JSON.stringify({
+    v: 1, view, sort,
+    f: {
+      status: [...f.status], starred: !!f.starred,
+      locations: [...f.locations], industries: [...f.industries], jobs: [...f.jobs],
+      keyword: f.keyword || "", hideExpired: f.hideExpired !== false
+    }
+  });
+}
+
+// 反序列化（纯函数可测）：数组 → 数组（交给 loadUIPrefs 组装 Set），非法输入返回 null
+function deserializeUIPrefs(json) {
+  try {
+    const p = JSON.parse(json);
+    if (!p || p.v !== 1 || !p.f) return null;
+    return {
+      view: ["table", "card", "todo"].includes(p.view) ? p.view : null,
+      sort: p.sort && typeof p.sort === "object" ? p.sort : { field: null, asc: true },
+      f: {
+        status: Array.isArray(p.f.status) ? p.f.status : [],
+        starred: !!p.f.starred,
+        locations: Array.isArray(p.f.locations) ? p.f.locations : [],
+        industries: Array.isArray(p.f.industries) ? p.f.industries : [],
+        jobs: Array.isArray(p.f.jobs) ? p.f.jobs : [],
+        keyword: typeof p.f.keyword === "string" ? p.f.keyword : "",
+        hideExpired: p.f.hideExpired !== false
+      }
+    };
+  } catch(e) { return null; }
+}
+
+function saveUIPrefs() {
+  try { localStorage.setItem(UI_KEY, serializeUIPrefs(filters, currentSort, currentView)); } catch(e) {}
+}
+
+// 启动时恢复：视图/排序/筛选/搜索词（移动端未存偏好时仍默认卡片视图）
+function loadUIPrefs() {
+  let p = null;
+  try { p = deserializeUIPrefs(localStorage.getItem(UI_KEY)); } catch(e) {}
+  if (!p) return;
+  filters.status = new Set(p.f.status);
+  filters.starred = p.f.starred;
+  filters.locations = new Set(p.f.locations);
+  filters.industries = new Set(p.f.industries);
+  filters.jobs = new Set(p.f.jobs);
+  filters.keyword = p.f.keyword;
+  filters.hideExpired = p.f.hideExpired;
+  currentSort = p.sort;
+  if (p.view) currentView = p.view;
+  const input = document.getElementById("searchInput");
+  if (input && p.f.keyword) input.value = p.f.keyword;
 }

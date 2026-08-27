@@ -6,11 +6,14 @@
 // 初始化
 // ============================================================
 userState = loadState();
+// 请求持久存储权限，降低浏览器自动清理 localStorage 导致状态丢失的概率
+if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
+loadUIPrefs();         // v7.2: 恢复上次的视图/排序/筛选偏好
 renderDashboard();
 validateCompanies();   // 数据完整性校验（A3）
 renderFilterPanel();   // v5.4: 筛选下拉面板（地点/行业/岗位 checkbox）
 refreshFilterUI();     // v5: 同步所有筛选选中态 + 已选条件条
-renderTodo();          // 今日待办聚合
+refreshTodos();        // v7.3: 待办横带（含待办视图数据初始化）
 renderWeekly();        // 本周动态统计
 switchView(currentView); // 同步初始视图（修复移动端首屏显示空表格的问题）
 checkDeadlineAlert();  // 页面打开时的截止提醒（每天一次）
