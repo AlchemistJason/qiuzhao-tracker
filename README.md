@@ -37,7 +37,7 @@ qiuzhao-tracker/
 │   ├── features.js       #   交互层：状态操作/邮件动态/待办三态/岗位弹窗
 │   ├── export-sync.js    #   导入导出/二维码同步
 │   └── main.js           #   启动装配
-├── tests/run-tests.js    # 271 项回归测试（node tests/run-tests.js）
+├── tests/run-tests.js    # 296 项回归测试（node tests/run-tests.js）
 └── .github/workflows/    # CI 门禁 + GitHub Pages 部署
 ```
 
@@ -82,9 +82,19 @@ qiuzhao-tracker/
 
 - 本地跑测试：`node tests/run-tests.js`（时区无关，`TZ=UTC` 下也应全过）
 - 数据更新：改 `data.js` / `dynamics.json` → 本地测试 → 发布（CI 会校验 dynamics.json 的 schema 与隐私规则，link/actionUrl 非空直接红）
-- CI：push 后 GitHub Actions 自动执行语法检查 + 271 项回归测试，通过后自动部署 Pages
+- CI：push 后 GitHub Actions 自动执行语法检查 + 296 项回归测试，通过后自动部署 Pages
 
 ## 跨设备同步（手机 ↔ 电脑）
+
+### 云同步（推荐，v8.5 起）
+
+1. 点右上角 **☁️** 按钮 → 注册/登录账号（用户名 + 密码，密码不落盘）
+2. 之后所有设备登录同一账号即可自动同步进度：本地改动防抖 8 秒上传，页面打开/回到前台自动拉取
+3. 云端每条进度仅本人账号可读写（LeanCloud `_User` + 对象级 ACL 隔离），其他用户无法读取
+
+> 应用凭据（AppID/AppKey）由维护方内置在 `js/export-sync.js` 的 `BUILTIN_CLOUD`；未内置时可在弹窗「高级」里手动填写自己的 LeanCloud 应用。
+
+### 二维码手动同步（备用，无需网络服务）
 
 1. 电脑端点击右上角 **📱** 按钮 → 「导出状态」，显示二维码
 2. 手机打开本页面 → 点 **📱** → 「扫描/粘贴导入」→ 扫电脑二维码

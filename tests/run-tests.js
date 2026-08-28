@@ -806,6 +806,59 @@ section("index.html 缓存戳一致性");
   t("进度历史容器存在", html.includes('id="jobModalHistory"'));
 })();
 
+// ---------- v8.5 账号系统（LeanCloud _User + ACL 隔离） ----------
+section("v8.5 账号与 ACL");
+const buildUserACL = extractFn("buildUserACL");
+const buildOwnerWhere = extractFn("buildOwnerWhere");
+const isHttpsUrl = extractFn("isHttpsUrl");
+const lcErrorMessage = extractFn("lcErrorMessage");
+const validateCredential = extractFn("validateCredential");
+
+t("buildUserACL 已提取", typeof buildUserACL === "function");
+if (buildUserACL) {
+  const uid = "abc123xyz789";
+  const acl = buildUserACL(uid);
+  t("ACL: 公共读写全关", acl["*"].read === false && acl["*"].write === false);
+  t("ACL: 属主可读写", acl[uid].read === true && acl[uid].write === true);
+  t("ACL: 非法 uid 抛错", (() => { try { buildUserACL("短"); return false; } catch(e) { return true; } })());
+}
+t("buildOwnerWhere 已提取", typeof buildOwnerWhere === "function");
+if (buildOwnerWhere) {
+  t("where: ownerUid 结构", buildOwnerWhere("u12345abcde").ownerUid === "u12345abcde");
+  t("where: 非法 uid 抛错", (() => { try { buildOwnerWhere(""); return false; } catch(e) { return true; } })());
+}
+t("isHttpsUrl 已提取", typeof isHttpsUrl === "function");
+if (isHttpsUrl) {
+  t("https 通过", isHttpsUrl("https://example.com/1.1") === true);
+  t("http/空值拒绝", isHttpsUrl("http://example.com") === false && isHttpsUrl("") === false && isHttpsUrl(null) === false);
+}
+t("lcErrorMessage 已提取", typeof lcErrorMessage === "function");
+if (lcErrorMessage) {
+  t("错误码 210 → 密码错误", lcErrorMessage(210, "x") === "用户名或密码错误");
+  t("错误码 202 → 用户名占用", lcErrorMessage(202, "x") === "用户名已被占用");
+  t("未知码回退 fallback", lcErrorMessage(99999, "自定义") === "自定义");
+  t("未知码无 fallback 回退默认", lcErrorMessage(99999) === "云端服务错误");
+}
+t("validateCredential 已提取", typeof validateCredential === "function");
+if (validateCredential) {
+  t("合法凭据通过", validateCredential("jason_wu", "abc123") === null);
+  t("用户名过短拒绝", /2~32/.test(validateCredential("a", "abc123")));
+  t("用户名含空格拒绝", /空格/.test(validateCredential("jason wu", "abc123")));
+  t("密码过短拒绝", /6 位/.test(validateCredential("jason", "abc")));
+}
+// 结构检查：弹窗账号区 + 高级凭据折叠 + 样式
+(function() {
+  const html = fs.readFileSync(path.join(ROOT, "index.html"), "utf8");
+  const css = fs.readFileSync(path.join(ROOT, "style.css"), "utf8");
+  t("弹窗账号区存在", html.includes('id="cloudAccount"'));
+  t("应用凭据折叠为高级选项", /<details class="cloud-adv">/.test(html));
+  t("账号样式存在", css.includes(".cloud-logged") && css.includes(".cloud-adv"));
+  t("内置凭据位存在", appJs.includes("BUILTIN_CLOUD"));
+  // 密码不落盘：saveAuth 的存储值只允许 uid/username/sessionToken 三个字段
+  const src = fs.readFileSync(path.join(ROOT, "js", "export-sync.js"), "utf8");
+  t("密码不落盘", /setItem\(AUTH_KEY,\s*JSON\.stringify\(\{\s*uid:\s*a\.uid,\s*username:\s*a\.username,\s*sessionToken:\s*a\.sessionToken\s*\}\)\)/.test(src));
+})();
+
 // ---------- 结果 ----------
 console.log("\n══════════════════════════════");
 console.log("  结果: " + pass + " 通过 / " + fail + " 失败");

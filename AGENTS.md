@@ -47,6 +47,19 @@ push 到 `main` → GitHub Actions 跑语法检查 + `node tests/run-tests.js`�
 本地 `.git/config` 已清理失效 token，正常 `git push origin main` 即可。
 若凭据不可用，兜底方案：gh api 逐文件上传 blob → 建 tree → 建 commit → PATCH ref（参考此前会话的 `_push.cjs` 流程；注意 gh api 传 body 要加 `--input -`）。
 
+## 云同步账号（v8.5）
+
+- 认证走 LeanCloud `_User`（`/1.1/users` 注册、`/1.1/login` 登录），会话存 localStorage key `qiuzhao2027.auth`（只存 uid/username/sessionToken，**密码永不落盘**）。
+- 进度对象挂在 `QiuzhaoState` class：每条带 `ownerUid` + 对象级 ACL（`"*": 全禁, <uid>: 读写`），拉取时 `where={"ownerUid":uid}` 过滤。任何改动不得绕过 `buildUserACL`/`buildOwnerWhere`（有测试断言）。
+- 请求强制 HTTPS（`isHttpsUrl`，http 直接拒绝）；401/211 自动登出要求重新登录。
+- 应用凭据维护方内置在 `js/export-sync.js` 的 `BUILTIN_CLOUD`（BaaS 惯例，AppID/AppKey 可公开，安全靠 ACL 而非密钥保密）；为空时用户可在弹窗「高级」里自填。
+
+### LeanCloud 控制台一次性加固（用户在控制台操作，agent 改不了）
+
+1. 数据存储 → `QiuzhaoState` → 权限设置：关闭「匿名用户」的读/写，仅保留登录用户。
+2. `_User` 表保持默认（注册需用户名+密码即可，无需邮箱验证）。
+3. 如开通过「测试环境」确认请求走的是正式环境域名。
+
 ## 已知待办 / 口径备注
 
 - 地平线内推码笔误待核对（`dcncha` vs 链接参数 `dcnhca`）。

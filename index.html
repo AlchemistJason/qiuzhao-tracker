@@ -22,9 +22,9 @@
   } catch(e) {}
 })();
 </script>
-<script src="vendor/qrcode.min.js?v=8.4" defer></script>
+<script src="vendor/qrcode.min.js?v=8.5" defer></script>
 <!-- html5-qrcode 改为按需动态加载（见 js/export-sync.js startQrScanner），避免 ~300KB 全量下载 -->
-<link rel="stylesheet" href="style.css?v=8.4">
+<link rel="stylesheet" href="style.css?v=8.5">
 </head>
 <body>
 
@@ -190,14 +190,19 @@
 <div id="cloudModal" class="modal-overlay" style="display:none" role="dialog" aria-modal="true" aria-label="云同步设置" onclick="if(event.target===this)closeCloudModal()">
   <div class="modal">
     <button class="modal-close" onclick="closeCloudModal()" aria-label="关闭弹窗">✕</button>
-    <h3 id="cloudModalTitle">☁️ 云同步设置</h3>
-    <p class="modal-hint" style="margin-bottom:8px">填 LeanCloud 凭据后，本页面数据会自动同步到云端，换设备打开自动拉取。注册与获取方式见页面说明。</p>
-    <label class="cloud-label">AppID</label>
-    <input type="text" id="cloudAppId" class="job-input" placeholder="LeanCloud AppID" aria-label="AppID">
-    <label class="cloud-label">AppKey</label>
-    <input type="text" id="cloudAppKey" class="job-input" placeholder="LeanCloud AppKey" aria-label="AppKey">
-    <label class="cloud-label">ServerURL</label>
-    <input type="text" id="cloudServer" class="job-input" placeholder="https://api.leancloud.cn" aria-label="ServerURL">
+    <h3 id="cloudModalTitle">☁️ 云同步与账号</h3>
+    <!-- v8.5: 账号区（登录/注册/已登录），由 renderCloudAccount() 渲染 -->
+    <div id="cloudAccount"></div>
+    <details class="cloud-adv">
+      <summary>高级：应用凭据（维护方已内置时无需改动）</summary>
+      <p class="modal-hint" style="margin:8px 0">LeanCloud 应用凭据。数据安全由账号 ACL 保证，不依赖这两个值保密。</p>
+      <label class="cloud-label">AppID</label>
+      <input type="text" id="cloudAppId" class="job-input" placeholder="LeanCloud AppID" aria-label="AppID">
+      <label class="cloud-label">AppKey</label>
+      <input type="text" id="cloudAppKey" class="job-input" placeholder="LeanCloud AppKey" aria-label="AppKey">
+      <label class="cloud-label">ServerURL</label>
+      <input type="text" id="cloudServer" class="job-input" placeholder="https://api.leancloud.cn" aria-label="ServerURL">
+    </details>
     <label class="cloud-label cloud-check"><input type="checkbox" id="cloudEnabled" checked> 启用自动同步（本地变更后自动上传）</label>
     <div class="cloud-status" id="cloudStatus">未配置</div>
     <div style="margin-top:10px">
@@ -209,14 +214,14 @@
   </div>
 </div>
 
-<script src="data.js?v=8.4"></script>
-<script src="official-sites.js?v=8.4"></script>  <!-- v7.5: 官方校招门户固定清单 -->
+<script src="data.js?v=8.5"></script>
+<script src="official-sites.js?v=8.5"></script>  <!-- v7.5: 官方校招门户固定清单 -->
 <!-- 求职Agent · 模块化加载（顺序敏感：core 基础层 → views 视图 → features 交互 → export-sync 导出同步 → main 入口） -->
-<script src="js/core.js?v=8.4"></script>
-<script src="js/views.js?v=8.4"></script>
-<script src="js/features.js?v=8.4"></script>
-<script src="js/export-sync.js?v=8.4"></script>
-<script src="js/main.js?v=8.4"></script>
+<script src="js/core.js?v=8.5"></script>
+<script src="js/views.js?v=8.5"></script>
+<script src="js/features.js?v=8.5"></script>
+<script src="js/export-sync.js?v=8.5"></script>
+<script src="js/main.js?v=8.5"></script>
 
 </body>
 </html>
