@@ -135,8 +135,8 @@ let cloudStatus = "off";  // off | syncing | synced | error
 // ============================================================
 const AUTH_KEY = "qiuzhao2027.auth";
 
-// 维护方可在此内置应用凭据，用户即免填（anon key 可公开——Supabase 官方设计，安全靠 RLS 不靠密钥保密）
-const BUILTIN_CLOUD = { url: "", anonKey: "" };
+// 维护方内置的应用凭据（anon key 可公开——Supabase 官方设计，安全靠 RLS 不靠密钥保密）
+const BUILTIN_CLOUD = { url: "https://xwubfsvmkdvnahobrnic.supabase.co", anonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh3dWJmc3Zta2R2bmFob2JybmljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc5MjU2MzksImV4cCI6MjEwMzUwMTYzOX0.-O--rcbtKvm_JWO5bzvN2FKT2K8UxBV8f6Cr3iCm400" };
 
 function getAuth() {
   try {

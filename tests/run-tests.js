@@ -850,6 +850,7 @@ if (parseAuthResponse) {
   t("旧 LeanCloud 输入框已移除", !html.includes("cloudAppId") && !html.includes("cloudServer"));
   t("账号样式存在", css.includes(".cloud-logged") && css.includes(".cloud-adv"));
   t("内置凭据位存在", appJs.includes("BUILTIN_CLOUD"));
+  t("内置凭据已填写", /BUILTIN_CLOUD\s*=\s*\{\s*url:\s*"https:\/\/[\w-]+\.supabase\.co",\s*anonKey:\s*"eyJ/.test(src));
   t("LeanCloud 接口残留清零", !/X-LC-|\/1\.1\/(classes|login|users)/.test(src));
   // 密码不落盘：saveAuth 的存储值只允许 uid/email/accessToken/refreshToken/expiresAt
   t("密码不落盘", /setItem\(AUTH_KEY,\s*JSON\.stringify\(\{\s*uid:\s*a\.uid,\s*email:\s*a\.email,\s*accessToken:\s*a\.accessToken,\s*refreshToken:\s*a\.refreshToken,\s*expiresAt:\s*a\.expiresAt\s*\}\)\)/.test(src));
