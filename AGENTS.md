@@ -33,6 +33,7 @@ push 到 `main` → GitHub Actions 跑语法检查 + `node tests/run-tests.js`�
 ## 前端契约
 
 - 改动任何 `js/*.js` / `style.css` / `data.js` / `official-sites.js` 后，**必须同步 bump `index.html` 里全部 9 处 `?v=` 缓存戳**（CI 有一致性断言），否则用户端吃到旧缓存。
+- **每次改动 `data.js` 必须 bump 其头部 `window.DATA_VERSION`**（标题栏"数据版本"展示的就是它，是用户判断数据新鲜度的唯一线索；v8.4 合并 34 家时漏 bump，停在 6，已修复为 7）。
 - 用户状态存浏览器 localStorage（key 固定），任何改动不得破坏既有 key 和数据结构；迁移逻辑必须有测试。
 - 筛选维度（状态/地点/行业/性质/岗位）跨来源（内推/校招池）语义一致，选项按当前 tab scoped。
 
