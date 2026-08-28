@@ -1,5 +1,5 @@
 /* ============================================================
- * qiuzhao-tracker · 导出与同步层：CSV·JSON备份·同步码·LeanCloud云同步·重置
+ * qiuzhao-tracker · 导出与同步层：CSV·JSON备份·同步码·Supabase云同步·重置
  * 由 app.js v6.0 重构拆分（勿手工编辑此说明）
  * ============================================================ */
 // ============================================================
@@ -117,68 +117,64 @@ function importJSON(event) {
 // 二维码跨设备同步（手机↔电脑）
 // ============================================================
 // ============================================================
-// v7: 云同步（LeanCloud REST，纯前端免后端）
+// v7: 云同步（纯前端免自建后端）
+// v8.6: 后端迁移到 Supabase（LeanCloud 已于 2026-01 停止新注册、2027-01 全面停服）
+//   - 认证：GoTrue 邮箱+密码（/auth/v1/signup、/auth/v1/token）
+//   - 存储：PostgREST（/rest/v1/qiuzhao_state），行级安全 RLS 服务端强制隔离，
+//           他人即使拿到 anon key 也读不到你的进度（select/insert/update 策略均限定 auth.uid()）
 // ============================================================
 const CLOUD_KEY = "qiuzhao2027.cloud";
-const CLOUD_CLASS = "QiuzhaoState";
-const DEFAULT_SERVER = "https://api.leancloud.cn";
+const CLOUD_TABLE = "qiuzhao_state";
 let cloudTimer = null;
 let cloudStatus = "off";  // off | syncing | synced | error
 
 // ============================================================
-// v8.4: 账号系统（LeanCloud _User）——用户名+密码登录，云端状态按账号隔离（ACL 仅本人读写）
+// v8.6: 账号系统（Supabase GoTrue）——邮箱+密码登录，云端状态按账号隔离（RLS）
 // 安全模型：密码只出现在登录/注册请求体里，全程 HTTPS，不落盘、不进日志；
-//          登录后只保存 sessionToken；云端对象挂 ACL，他人持 AppKey 也读不到你的进度
+//          登录后只保存 access/refresh token；数据隔离由服务端 RLS 强制（不依赖客户端自觉）
 // ============================================================
 const AUTH_KEY = "qiuzhao2027.auth";
 
-// 维护方可在此内置应用凭据，用户即免填（机密性不靠这两个值——BaaS 惯例，等同 Supabase anon key）
-const BUILTIN_CLOUD = { appId: "", appKey: "", serverURL: DEFAULT_SERVER };
+// 维护方可在此内置应用凭据，用户即免填（anon key 可公开——Supabase 官方设计，安全靠 RLS 不靠密钥保密）
+const BUILTIN_CLOUD = { url: "", anonKey: "" };
 
 function getAuth() {
   try {
     const a = JSON.parse(localStorage.getItem(AUTH_KEY));
-    if (a && a.uid && a.sessionToken) return a;
+    if (a && a.uid && a.accessToken) return a;
   } catch(e) {}
   return null;
 }
 function saveAuth(a) {
-  try { localStorage.setItem(AUTH_KEY, JSON.stringify({ uid: a.uid, username: a.username, sessionToken: a.sessionToken })); } catch(e) {}
+  try { localStorage.setItem(AUTH_KEY, JSON.stringify({ uid: a.uid, email: a.email, accessToken: a.accessToken, refreshToken: a.refreshToken, expiresAt: a.expiresAt })); } catch(e) {}
 }
 function clearAuth() {
   try { localStorage.removeItem(AUTH_KEY); } catch(e) {}
 }
 
-// 纯函数（可测）：对象 ACL——仅本人可读写，其余人（含匿名）全禁
-function buildUserACL(uid) {
-  if (!/^[a-zA-Z0-9]{6,32}$/.test(uid || "")) throw new Error("uid 格式非法");
-  return { "*": { read: false, write: false }, [uid]: { read: true, write: true } };
-}
-// 纯函数（可测）：按属主查询条件
-function buildOwnerWhere(uid) {
-  if (!/^[a-zA-Z0-9]{6,32}$/.test(uid || "")) throw new Error("uid 格式非法");
-  return { ownerUid: uid };
-}
-// 纯函数（可测）：强制 HTTPS（防降级到明文 http 泄露 sessionToken）
+// 纯函数（可测）：强制 HTTPS（防降级到明文 http 泄露 access token）
 function isHttpsUrl(u) { return /^https:\/\//i.test(u || ""); }
-// 纯函数（可测）：LeanCloud 错误码 → 中文提示
-function lcErrorMessage(code, fallback) {
-  const map = {
-    200: "用户名为空", 201: "密码为空", 202: "用户名已被占用", 203: "邮箱已被占用",
-    204: "邮箱不能为空", 205: "邮箱未验证",
-    210: "用户名或密码错误", 211: "用户不存在或登录已过期",
-    214: "手机号已注册", 216: "邮箱未验证", 219: "登录失败次数过多，请稍后再试"
-  };
-  return map[code] || fallback || "云端服务错误";
+// 纯函数（可测）：Supabase 错误信息 → 中文提示（GoTrue 返回 error/msg，PostgREST 返回 code/message）
+function sbErrorMessage(err, fallback) {
+  const code = err && (err.code || err.error) || "";
+  const raw = (err && (err.msg || err.error_description || err.message)) || "";
+  const s = (code + " " + raw).toLowerCase();
+  if (/invalid login|invalid credentials/.test(s)) return "邮箱或密码错误";
+  if (/already registered|already been registered/.test(s)) return "该邮箱已注册，请直接登录";
+  if (/email not confirmed/.test(s)) return "邮箱未验证（请到控制台关闭 Confirm email，或去邮箱点确认链接）";
+  if (/weak password|password.*(at least|too short)/.test(s)) return "密码太弱，至少 6 位";
+  if (/42p01|does not exist/.test(s)) return "云端表不存在（请先在 SQL Editor 执行建表 SQL，见 README）";
+  if (/42501|row-level security|permission denied/.test(s)) return "云端权限拒绝（请检查 RLS 策略是否已建）";
+  if (/rate limit|too many requests|over_request_rate/.test(s)) return "请求过于频繁，请稍后再试";
+  return fallback || raw || "云端服务错误";
 }
 
 function getCloudConfig() {
   let c = {};
   try { c = JSON.parse(localStorage.getItem(CLOUD_KEY)) || {}; } catch(e) {}
   return {
-    appId: c.appId || BUILTIN_CLOUD.appId,
-    appKey: c.appKey || BUILTIN_CLOUD.appKey,
-    serverURL: c.serverURL || BUILTIN_CLOUD.serverURL || DEFAULT_SERVER,
+    url: (c.url || BUILTIN_CLOUD.url || "").replace(/\/+$/, ""),  // 去尾斜杠防双斜杠
+    anonKey: c.anonKey || BUILTIN_CLOUD.anonKey,
     enabled: c.enabled !== false
   };
 }
@@ -234,11 +230,56 @@ function mergeCloudState(local, remote) {
   return { version: 3, companies: out };
 }
 
+// 纯函数（可测）：解析 GoTrue 登录/注册响应为本地会话（仅 token，不含密码）
+function parseAuthResponse(r, email) {
+  if (!r || !r.access_token || !r.user || !r.user.id) return null;
+  return {
+    uid: r.user.id,
+    email: r.user.email || email,
+    accessToken: r.access_token,
+    refreshToken: r.refresh_token || "",
+    expiresAt: Date.now() + (r.expires_in || 3600) * 1000
+  };
+}
+
+// access token 临期（<60s）时用 refresh token 换新，失败返回 null（调用方按登出处理）
+async function ensureFreshToken() {
+  const auth = getAuth();
+  if (!auth) return null;
+  if (auth.expiresAt && auth.expiresAt - Date.now() > 60000) return auth;
+  if (!auth.refreshToken) return null;
+  const cfg = getCloudConfig();
+  try {
+    const res = await fetch(cfg.url + "/auth/v1/token?grant_type=refresh_token", {
+      method: "POST",
+      headers: { "apikey": cfg.anonKey, "Content-Type": "application/json" },
+      body: JSON.stringify({ refresh_token: auth.refreshToken })
+    });
+    if (!res.ok) return null;
+    const r = await res.json();
+    const next = parseAuthResponse(r, auth.email);
+    if (!next) return null;
+    saveAuth(next);
+    return next;
+  } catch(e) { return null; }
+}
+
 async function cloudFetch(path, opts = {}) {
   const cfg = getCloudConfig();
-  if (!cfg.appId || !cfg.appKey) throw new Error("未配置云同步");
-  if (!isHttpsUrl(cfg.serverURL)) throw new Error("云同步地址必须是 https");  // v8.4: 防明文泄露 sessionToken
-  const auth = getAuth();
+  if (!cfg.url || !cfg.anonKey) throw new Error("未配置云同步");
+  if (!isHttpsUrl(cfg.url)) throw new Error("云同步地址必须是 https");  // 防明文泄露 token
+  let auth = getAuth();
+  // v8.6: 需要登录态的请求，token 临期先自动续期
+  if (auth && opts.auth !== false) {
+    auth = await ensureFreshToken();
+    if (!auth) {
+      clearAuth();
+      setCloudStatus("error");
+      updateCloudBadge();
+      showToast("☁️ 登录已过期，请重新登录");
+      throw new Error("登录已过期");
+    }
+  }
   // v8.1: 15s 超时，弱网挂起时不再永久卡「同步中」
   // 兼容：AbortSignal.timeout 不可用时手动 AbortController + setTimeout
   let signal;
@@ -252,15 +293,13 @@ async function cloudFetch(path, opts = {}) {
   }
   let res;
   try {
-    res = await fetch(cfg.serverURL + path, {
+    res = await fetch(cfg.url + path, {
       ...opts,
       signal,
       headers: {
-        "X-LC-Id": cfg.appId,
-        "X-LC-Key": cfg.appKey,
+        "apikey": cfg.anonKey,
+        "Authorization": "Bearer " + (auth && opts.auth !== false ? auth.accessToken : cfg.anonKey),
         "Content-Type": "application/json",
-        // v8.4: 登录后所有请求带会话（opts.auth === false 时跳过，如登录/注册本身）
-        ...(auth && opts.auth !== false ? { "X-LC-Session": auth.sessionToken } : {}),
         ...(opts.headers || {})
       }
     });
@@ -273,71 +312,57 @@ async function cloudFetch(path, opts = {}) {
   } finally {
     if (timer) clearTimeout(timer);
   }
-  // v8.4: 先读错误体拿 LeanCloud 错误码，友好提示；401/211 = 会话失效 → 自动登出
+  // 先读错误体做友好提示；401 = 会话失效 → 自动登出
   if (!res.ok) {
-    let code = 0, msg = "";
-    try { const ej = await res.json(); code = ej.code || 0; msg = ej.error || ""; } catch(e2) {}
-    if ((res.status === 401 || code === 211) && auth && opts.auth !== false) {
+    let errJson = null;
+    try { errJson = await res.json(); } catch(e2) {}
+    if (res.status === 401 && auth && opts.auth !== false) {
       clearAuth();
       setCloudStatus("error");
       updateCloudBadge();
       showToast("☁️ 登录已过期，请重新登录");
       throw new Error("登录已过期");
     }
-    throw new Error(lcErrorMessage(code, msg || ("云同步 HTTP " + res.status)));
+    throw new Error(sbErrorMessage(errJson, "云同步 HTTP " + res.status));
   }
+  if (res.status === 204) return null;
   return res.json();
 }
 
-async function cloudGetObject() {
-  // v8.4: 登录后只查本人对象（ownerUid 过滤 + 服务端 ACL 双保险）；匿名模式维持旧行为
-  // v8.1: 多取几条以检测多云对象分叉（同账号多设备各建一个对象时会分叉且无收敛）；
-  // 仍只使用最新一条，检测到分叉仅 console.warn 提示，不做自动合并删除（太危险）
-  let path = `/1.1/classes/${CLOUD_CLASS}?limit=5&order=-updatedAt`;
-  const auth = getAuth();
-  if (auth) path += "&where=" + encodeURIComponent(JSON.stringify(buildOwnerWhere(auth.uid)));
-  const list = await cloudFetch(path);
-  if (list.results && list.results.length > 0 && list.results[0].state) {
-    if (list.results.length > 1) {
-      console.warn(`检测到 ${list.results.length} 个云端状态对象（多设备分叉），仅使用最新一条，请到 LeanCloud 控制台手动清理多余对象`);
-    }
-    return { id: list.results[0].objectId, state: JSON.parse(list.results[0].state) };
+// 拉取本人云端状态行（RLS 已限定只能读到自己的行）
+async function cloudGetState() {
+  const rows = await cloudFetch(`/rest/v1/${CLOUD_TABLE}?select=payload,updated_at&limit=1`);
+  if (rows && rows.length > 0 && rows[0].payload) {
+    return { state: rows[0].payload };
   }
   return null;
 }
 
-async function cloudCreateObject() {
+// 整体 upsert 本人状态行（user_id 冲突即覆盖）
+async function cloudPutState(state) {
   const auth = getAuth();
-  const body = { state: JSON.stringify(userState), lastSync: new Date().toISOString() };
-  if (auth) {  // v8.4: 账号对象挂属主 + ACL（仅本人读写）
-    body.ownerUid = auth.uid;
-    body.ACL = buildUserACL(auth.uid);
-  }
-  const created = await cloudFetch(`/1.1/classes/${CLOUD_CLASS}`, { method: "POST", body: JSON.stringify(body) });
-  return created.objectId;
+  if (!auth) throw new Error("未登录");
+  await cloudFetch(`/rest/v1/${CLOUD_TABLE}`, {
+    method: "POST",
+    headers: { "Prefer": "resolution=merge-duplicates" },
+    body: JSON.stringify({ user_id: auth.uid, payload: state, updated_at: new Date().toISOString() })
+  });
 }
 
 // 上传：先拉云端做公司级合并（避免覆盖另一设备的修改）再整体写入
 async function cloudPush() {
   const cfg = getCloudConfig();
-  if (!cfg.enabled || !cfg.appId || !cfg.appKey) return;
+  if (!cfg.enabled || !cfg.url || !cfg.anonKey) return;
+  if (!getAuth()) return;  // v8.6: 未登录不同步
   setCloudStatus("syncing");
   try {
-    const remote = await cloudGetObject();
-    let id = remote && remote.id;
+    const remote = await cloudGetState();
     if (remote && remote.state) {
       const merged = mergeCloudState(userState, remote.state);
       userState = merged;
       saveStateRaw();
-    } else if (!id) {
-      id = await cloudCreateObject();
     }
-    if (id) {
-      await cloudFetch(`/1.1/classes/${CLOUD_CLASS}/${id}`, {
-        method: "PUT",
-        body: JSON.stringify({ state: JSON.stringify(userState), lastSync: new Date().toISOString() })
-      });
-    }
+    await cloudPutState(userState);
     setCloudStatus("synced");
   } catch(e) {
     setCloudStatus("error");
@@ -348,10 +373,11 @@ async function cloudPush() {
 // 拉取：合并云端到本地（公司级），页面加载与手动触发
 async function cloudPull() {
   const cfg = getCloudConfig();
-  if (!cfg.enabled || !cfg.appId || !cfg.appKey) return;
+  if (!cfg.enabled || !cfg.url || !cfg.anonKey) return;
+  if (!getAuth()) return;
   setCloudStatus("syncing");
   try {
-    const remote = await cloudGetObject();
+    const remote = await cloudGetState();
     if (remote && remote.state) {
       const merged = mergeCloudState(userState, remote.state);
       userState = merged;
@@ -359,7 +385,7 @@ async function cloudPull() {
       refreshAll();
       showToast("☁️ 已从云端同步");
     } else {
-      await cloudCreateObject();
+      await cloudPutState(userState);  // 首次使用：初始化云端行
     }
     setCloudStatus("synced");
   } catch(e) {
@@ -374,19 +400,22 @@ function saveStateRaw() {
 }
 
 // ============================================================
-// v8.4: 登录 / 注册 / 登出
+// v8.6: 登录 / 注册 / 登出（Supabase GoTrue，邮箱+密码）
 // ============================================================
-function validateCredential(username, password) {  // 纯函数（可测）
-  const u = (username || "").trim();
-  if (u.length < 2 || u.length > 32) return "用户名需 2~32 个字符";
-  if (/\s/.test(u)) return "用户名不能含空格";
+function validateCredential(email, password) {  // 纯函数（可测）
+  const u = (email || "").trim();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(u)) return "请输入有效邮箱";
   if ((password || "").length < 6) return "密码至少 6 位";
   return null;
 }
 
-async function cloudAuthSubmit(path, username, password) {
-  const r = await cloudFetch(path, { method: "POST", auth: false, body: JSON.stringify({ username, password }) });
-  saveAuth({ uid: r.objectId, username: r.username || username, sessionToken: r.sessionToken });
+async function cloudAuthSubmit(mode, email, password) {
+  const path = mode === "login" ? "/auth/v1/token?grant_type=password" : "/auth/v1/signup";
+  const r = await cloudFetch(path, { method: "POST", auth: false, body: JSON.stringify({ email, password }) });
+  // 若控制台没关「Confirm email」，signup 会返回用户但无 session——明确提示而不是假装成功
+  const sess = parseAuthResponse(r, email);
+  if (!sess) throw new Error("注册成功但需要邮箱验证（建议到 Supabase 控制台关闭 Confirm email 后重试登录）");
+  saveAuth(sess);
   updateCloudBadge();
   return r;
 }
@@ -399,13 +428,13 @@ async function authUI(mode) {
   if (authBusy) return;
   const uEl = document.getElementById("cloudUser");
   const pEl = document.getElementById("cloudPass");
-  const username = (uEl.value || "").trim();
+  const email = (uEl.value || "").trim();
   const password = pEl.value || "";
-  const err = validateCredential(username, password);
+  const err = validateCredential(email, password);
   if (err) { showToast(err); return; }
   authBusy = true;
   try {
-    await cloudAuthSubmit(mode === "login" ? "/1.1/login" : "/1.1/users", username, password);
+    await cloudAuthSubmit(mode, email, password);
     pEl.value = "";  // 密码用完即清，不留 DOM
     renderCloudAccount();
     showToast(mode === "login" ? "☁️ 登录成功，开始同步..." : "☁️ 注册成功，已自动登录");
@@ -431,26 +460,26 @@ function renderCloudAccount() {
   if (!box) return;
   const a = getAuth();
   if (a) {
-    box.innerHTML = `<div class="cloud-logged">✅ 已登录 <strong>${escapeHtml(a.username)}</strong> · 进度仅本账号可读写，其他设备登录同一账号自动同步
+    box.innerHTML = `<div class="cloud-logged">✅ 已登录 <strong>${escapeHtml(a.email)}</strong> · 进度仅本账号可读写（服务端 RLS 强制隔离），其他设备登录同一账号自动同步
       <button class="btn" onclick="cloudLogout()">退出登录</button></div>`;
   } else {
     box.innerHTML = `
-      <label class="cloud-label" for="cloudUser">账号</label>
-      <input type="text" id="cloudUser" class="job-input" placeholder="用户名" autocomplete="username" autocapitalize="off">
+      <label class="cloud-label" for="cloudUser">邮箱</label>
+      <input type="email" id="cloudUser" class="job-input" placeholder="邮箱（登录账号）" autocomplete="username" autocapitalize="off">
       <label class="cloud-label" for="cloudPass">密码</label>
       <input type="password" id="cloudPass" class="job-input" placeholder="密码（至少 6 位）" autocomplete="current-password">
       <div style="margin:8px 0">
         <button class="btn btn-primary" onclick="cloudLoginUI()">登录</button>
         <button class="btn" onclick="cloudRegisterUI()">注册新账号</button>
       </div>
-      <p class="modal-hint">密码只随登录/注册请求加密传输，本机不保存；云端状态仅本人账号可读写（ACL 隔离）。</p>`;
+      <p class="modal-hint">密码只随登录/注册请求加密传输，本机不保存；云端状态仅本人账号可读写（Supabase 行级安全隔离）。</p>`;
   }
 }
 
 // 本地变更 → 防抖 8 秒后自动上传
 function scheduleCloudPush() {
   const cfg = getCloudConfig();
-  if (!cfg.enabled || !cfg.appId || !cfg.appKey) return;
+  if (!cfg.enabled || !cfg.url || !cfg.anonKey) return;
   clearTimeout(cloudTimer);
   cloudTimer = setTimeout(cloudPush, 8000);
 }
@@ -465,12 +494,12 @@ function updateCloudBadge() {
   if (!btn) return;
   const cfg = getCloudConfig();
   const auth = getAuth();
-  if (!cfg.appId || !cfg.appKey) {
+  if (!cfg.url || !cfg.anonKey) {
     btn.className = "icon-btn cloud-off";
     btn.title = "☁️ 云同步未配置（点击配置）";
     return;
   }
-  const who = auth ? `（${auth.username}）` : "（未登录）";
+  const who = auth ? `（${auth.email}）` : "（未登录）";
   if (cloudStatus === "syncing") { btn.className = "icon-btn cloud-syncing"; btn.title = "☁️ 同步中..." + who; }
   else if (cloudStatus === "error") { btn.className = "icon-btn cloud-err"; btn.title = "☁️ 同步失败（点击查看）" + who; }
   else { btn.className = "icon-btn cloud-ok"; btn.title = "☁️ 云同步" + who + "（点击管理）"; }
@@ -481,13 +510,12 @@ function openCloudModal() {
   const cfg = getCloudConfig();
   const modal = document.getElementById("cloudModal");
   document.getElementById("cloudModalTitle").textContent = "☁️ 云同步与账号";
-  renderCloudAccount();  // v8.4: 账号区（登录/注册/已登录）
-  document.getElementById("cloudAppId").value = cfg.appId;
-  document.getElementById("cloudAppKey").value = cfg.appKey;
-  document.getElementById("cloudServer").value = cfg.serverURL;
+  renderCloudAccount();  // 账号区（登录/注册/已登录）
+  document.getElementById("cloudUrl").value = cfg.url;
+  document.getElementById("cloudAnonKey").value = cfg.anonKey;
   document.getElementById("cloudEnabled").checked = cfg.enabled;
   const st = document.getElementById("cloudStatus");
-  st.textContent = cfg.appId ? (cloudStatus === "synced" ? "✅ 已连接" : cloudStatus === "error" ? "⚠️ 上次同步失败" : cloudStatus === "syncing" ? "🔄 同步中" : "⚪ 待同步") : "未配置";
+  st.textContent = cfg.url ? (cloudStatus === "synced" ? "✅ 已连接" : cloudStatus === "error" ? "⚠️ 上次同步失败" : cloudStatus === "syncing" ? "🔄 同步中" : "⚪ 待同步") : "未配置";
   modal.style.display = "flex";
 }
 
@@ -495,15 +523,18 @@ function closeCloudModal() {
   document.getElementById("cloudModal").style.display = "none";
 }
 
-function saveCloudSettings() {
-  const cfg = {
-    appId: document.getElementById("cloudAppId").value.trim(),
-    appKey: document.getElementById("cloudAppKey").value.trim(),
-    serverURL: document.getElementById("cloudServer").value.trim() || DEFAULT_SERVER,
+function readCloudSettingsForm() {
+  return {
+    url: document.getElementById("cloudUrl").value.trim(),
+    anonKey: document.getElementById("cloudAnonKey").value.trim(),
     enabled: document.getElementById("cloudEnabled").checked
   };
-  if (!cfg.appId || !cfg.appKey) { showToast("请填写 AppID 和 AppKey"); return; }
-  if (!isHttpsUrl(cfg.serverURL)) { showToast("ServerURL 必须是 https 地址"); return; }
+}
+
+function saveCloudSettings() {
+  const cfg = readCloudSettingsForm();
+  if (!cfg.url || !cfg.anonKey) { showToast("请填写项目 URL 和 anon key"); return; }
+  if (!isHttpsUrl(cfg.url)) { showToast("项目 URL 必须是 https 地址"); return; }
   saveCloudConfig(cfg);
   cloudStatus = "off";
   closeCloudModal();
@@ -512,18 +543,13 @@ function saveCloudSettings() {
 }
 
 async function testCloud() {
-  const cfg = {
-    appId: document.getElementById("cloudAppId").value.trim(),
-    appKey: document.getElementById("cloudAppKey").value.trim(),
-    serverURL: document.getElementById("cloudServer").value.trim() || DEFAULT_SERVER,
-    enabled: document.getElementById("cloudEnabled").checked
-  };
-  if (!cfg.appId || !cfg.appKey) { showToast("请先填写 AppID 和 AppKey"); return; }
+  const cfg = readCloudSettingsForm();
+  if (!cfg.url || !cfg.anonKey) { showToast("请先填写项目 URL 和 anon key"); return; }
   const st = document.getElementById("cloudStatus");
   st.textContent = "🔄 测试中...";
   try {
     saveCloudConfig(cfg);
-    await cloudGetObject();
+    await cloudGetState();
     st.textContent = "✅ 连接成功";
     showToast("☁️ 连接成功");
   } catch(e) {

@@ -37,7 +37,7 @@ qiuzhao-tracker/
 │   ├── features.js       #   交互层：状态操作/邮件动态/待办三态/岗位弹窗
 │   ├── export-sync.js    #   导入导出/二维码同步
 │   └── main.js           #   启动装配
-├── tests/run-tests.js    # 296 项回归测试（node tests/run-tests.js）
+├── tests/run-tests.js    # 298 项回归测试（node tests/run-tests.js）
 └── .github/workflows/    # CI 门禁 + GitHub Pages 部署
 ```
 
@@ -82,17 +82,38 @@ qiuzhao-tracker/
 
 - 本地跑测试：`node tests/run-tests.js`（时区无关，`TZ=UTC` 下也应全过）
 - 数据更新：改 `data.js` / `dynamics.json` → 本地测试 → 发布（CI 会校验 dynamics.json 的 schema 与隐私规则，link/actionUrl 非空直接红）
-- CI：push 后 GitHub Actions 自动执行语法检查 + 296 项回归测试，通过后自动部署 Pages
+- CI：push 后 GitHub Actions 自动执行语法检查 + 298 项回归测试，通过后自动部署 Pages
 
 ## 跨设备同步（手机 ↔ 电脑）
 
-### 云同步（推荐，v8.5 起）
+### 云同步（推荐，v8.6 起，后端 Supabase）
 
-1. 点右上角 **☁️** 按钮 → 注册/登录账号（用户名 + 密码，密码不落盘）
+1. 点右上角 **☁️** 按钮 → 用邮箱注册/登录（密码不落盘）
 2. 之后所有设备登录同一账号即可自动同步进度：本地改动防抖 8 秒上传，页面打开/回到前台自动拉取
-3. 云端每条进度仅本人账号可读写（LeanCloud `_User` + 对象级 ACL 隔离），其他用户无法读取
+3. 云端每行进度仅本人账号可读写（Supabase 行级安全 RLS 在服务端强制隔离，他人拿到 anon key 也读不到）
 
-> 应用凭据（AppID/AppKey）由维护方内置在 `js/export-sync.js` 的 `BUILTIN_CLOUD`；未内置时可在弹窗「高级」里手动填写自己的 LeanCloud 应用。
+> 项目凭据（Project URL + anon key）由维护方内置在 `js/export-sync.js` 的 `BUILTIN_CLOUD`；未内置时可在弹窗「高级」里手动填写自己的 Supabase 项目。
+
+**维护方一次性搭建步骤（Supabase 控制台）：**
+
+1. [supabase.com](https://supabase.com) 注册（可用 GitHub 账号）→ New project，区域建议新加坡
+2. 「SQL Editor」执行建表 + RLS：
+
+```sql
+create table qiuzhao_state (
+  user_id uuid primary key references auth.users(id) on delete cascade,
+  payload jsonb not null,
+  updated_at timestamptz not null default now()
+);
+alter table qiuzhao_state enable row level security;
+create policy "own select" on qiuzhao_state for select using (auth.uid() = user_id);
+create policy "own insert" on qiuzhao_state for insert with check (auth.uid() = user_id);
+create policy "own update" on qiuzhao_state for update using (auth.uid() = user_id);
+```
+
+3. 「Authentication → Sign In / Providers → Email」关闭 **Confirm email**（否则注册后需收信验证才能登录）
+4. 「Project Settings → Data API」确认 REST API 已启用（默认开启）
+5. 把 Project URL 和 anon public key 填进 `BUILTIN_CLOUD` 后发布
 
 ### 二维码手动同步（备用，无需网络服务）
 

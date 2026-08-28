@@ -806,57 +806,56 @@ section("index.html 缓存戳一致性");
   t("进度历史容器存在", html.includes('id="jobModalHistory"'));
 })();
 
-// ---------- v8.5 账号系统（LeanCloud _User + ACL 隔离） ----------
-section("v8.5 账号与 ACL");
-const buildUserACL = extractFn("buildUserACL");
-const buildOwnerWhere = extractFn("buildOwnerWhere");
+// ---------- v8.6 账号系统（Supabase GoTrue + RLS 隔离） ----------
+section("v8.6 账号与云同步");
 const isHttpsUrl = extractFn("isHttpsUrl");
-const lcErrorMessage = extractFn("lcErrorMessage");
+const sbErrorMessage = extractFn("sbErrorMessage");
 const validateCredential = extractFn("validateCredential");
+const parseAuthResponse = extractFn("parseAuthResponse");
 
-t("buildUserACL 已提取", typeof buildUserACL === "function");
-if (buildUserACL) {
-  const uid = "abc123xyz789";
-  const acl = buildUserACL(uid);
-  t("ACL: 公共读写全关", acl["*"].read === false && acl["*"].write === false);
-  t("ACL: 属主可读写", acl[uid].read === true && acl[uid].write === true);
-  t("ACL: 非法 uid 抛错", (() => { try { buildUserACL("短"); return false; } catch(e) { return true; } })());
-}
-t("buildOwnerWhere 已提取", typeof buildOwnerWhere === "function");
-if (buildOwnerWhere) {
-  t("where: ownerUid 结构", buildOwnerWhere("u12345abcde").ownerUid === "u12345abcde");
-  t("where: 非法 uid 抛错", (() => { try { buildOwnerWhere(""); return false; } catch(e) { return true; } })());
-}
 t("isHttpsUrl 已提取", typeof isHttpsUrl === "function");
 if (isHttpsUrl) {
-  t("https 通过", isHttpsUrl("https://example.com/1.1") === true);
-  t("http/空值拒绝", isHttpsUrl("http://example.com") === false && isHttpsUrl("") === false && isHttpsUrl(null) === false);
+  t("https 通过", isHttpsUrl("https://abc.supabase.co") === true);
+  t("http/空值拒绝", isHttpsUrl("http://abc.supabase.co") === false && isHttpsUrl("") === false && isHttpsUrl(null) === false);
 }
-t("lcErrorMessage 已提取", typeof lcErrorMessage === "function");
-if (lcErrorMessage) {
-  t("错误码 210 → 密码错误", lcErrorMessage(210, "x") === "用户名或密码错误");
-  t("错误码 202 → 用户名占用", lcErrorMessage(202, "x") === "用户名已被占用");
-  t("未知码回退 fallback", lcErrorMessage(99999, "自定义") === "自定义");
-  t("未知码无 fallback 回退默认", lcErrorMessage(99999) === "云端服务错误");
+t("sbErrorMessage 已提取", typeof sbErrorMessage === "function");
+if (sbErrorMessage) {
+  t("无效凭据 → 密码错误", sbErrorMessage({ error: "invalid_grant", error_description: "Invalid login credentials" }) === "邮箱或密码错误");
+  t("已注册提示", sbErrorMessage({ msg: "User already registered" }) === "该邮箱已注册，请直接登录");
+  t("邮箱未验证提示", /邮箱未验证/.test(sbErrorMessage({ error: "email_not_confirmed", msg: "Email not confirmed" })));
+  t("表不存在提示", /建表 SQL/.test(sbErrorMessage({ code: "42P01", message: "relation does not exist" })));
+  t("RLS 拒绝提示", /RLS/.test(sbErrorMessage({ code: "42501", message: "row-level security policy violation" })));
+  t("未知错误回退 fallback", sbErrorMessage({ code: "xxx" }, "自定义") === "自定义");
 }
 t("validateCredential 已提取", typeof validateCredential === "function");
 if (validateCredential) {
-  t("合法凭据通过", validateCredential("jason_wu", "abc123") === null);
-  t("用户名过短拒绝", /2~32/.test(validateCredential("a", "abc123")));
-  t("用户名含空格拒绝", /空格/.test(validateCredential("jason wu", "abc123")));
-  t("密码过短拒绝", /6 位/.test(validateCredential("jason", "abc")));
+  t("合法邮箱+密码通过", validateCredential("a@qq.com", "abc123") === null);
+  t("非邮箱拒绝", /邮箱/.test(validateCredential("jason", "abc123")));
+  t("邮箱含空格拒绝", /邮箱/.test(validateCredential("a b@qq.com", "abc123")));
+  t("密码过短拒绝", /6 位/.test(validateCredential("a@qq.com", "abc")));
 }
-// 结构检查：弹窗账号区 + 高级凭据折叠 + 样式
+t("parseAuthResponse 已提取", typeof parseAuthResponse === "function");
+if (parseAuthResponse) {
+  const s = parseAuthResponse({ access_token: "tok", refresh_token: "ref", expires_in: 3600, user: { id: "u1", email: "a@qq.com" } }, "a@qq.com");
+  t("会话解析: 字段齐全", s && s.uid === "u1" && s.accessToken === "tok" && s.refreshToken === "ref" && s.email === "a@qq.com" && s.expiresAt > Date.now());
+  t("会话解析: 无 session 返回 null", parseAuthResponse({ user: { id: "u1" } }, "a@qq.com") === null);
+}
+// 结构检查：弹窗账号区 + Supabase 凭据折叠 + 样式 + 旧 LeanCloud 残留清零
 (function() {
   const html = fs.readFileSync(path.join(ROOT, "index.html"), "utf8");
   const css = fs.readFileSync(path.join(ROOT, "style.css"), "utf8");
+  const src = fs.readFileSync(path.join(ROOT, "js", "export-sync.js"), "utf8");
   t("弹窗账号区存在", html.includes('id="cloudAccount"'));
-  t("应用凭据折叠为高级选项", /<details class="cloud-adv">/.test(html));
+  t("Supabase 凭据折叠为高级选项", /<details class="cloud-adv">/.test(html) && html.includes('id="cloudUrl"') && html.includes('id="cloudAnonKey"'));
+  t("旧 LeanCloud 输入框已移除", !html.includes("cloudAppId") && !html.includes("cloudServer"));
   t("账号样式存在", css.includes(".cloud-logged") && css.includes(".cloud-adv"));
   t("内置凭据位存在", appJs.includes("BUILTIN_CLOUD"));
-  // 密码不落盘：saveAuth 的存储值只允许 uid/username/sessionToken 三个字段
-  const src = fs.readFileSync(path.join(ROOT, "js", "export-sync.js"), "utf8");
-  t("密码不落盘", /setItem\(AUTH_KEY,\s*JSON\.stringify\(\{\s*uid:\s*a\.uid,\s*username:\s*a\.username,\s*sessionToken:\s*a\.sessionToken\s*\}\)\)/.test(src));
+  t("LeanCloud 接口残留清零", !/X-LC-|\/1\.1\/(classes|login|users)/.test(src));
+  // 密码不落盘：saveAuth 的存储值只允许 uid/email/accessToken/refreshToken/expiresAt
+  t("密码不落盘", /setItem\(AUTH_KEY,\s*JSON\.stringify\(\{\s*uid:\s*a\.uid,\s*email:\s*a\.email,\s*accessToken:\s*a\.accessToken,\s*refreshToken:\s*a\.refreshToken,\s*expiresAt:\s*a\.expiresAt\s*\}\)\)/.test(src));
+  // 数据隔离由服务端 RLS 强制：不再依赖客户端拼 ACL/where
+  t("客户端不再自拼 ACL", !src.includes("buildUserACL") && !src.includes("buildOwnerWhere"));
+  t("未登录不上传", /async function cloudPush\(\) \{[\s\S]*?if \(!getAuth\(\)\) return;/.test(src));
 })();
 
 // ---------- 结果 ----------
