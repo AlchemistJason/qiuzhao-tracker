@@ -19,7 +19,8 @@
       "nature": "民企",
       "source": "manual-seed",
       "foundAt": "2026-08-27",
-      "note": "官方校招官网"
+      "note": "官方校招官网",
+      "graduated": true
     },
     {
       "id": "alibaba",
@@ -605,7 +606,8 @@
       "nature": "民企",
       "source": "manual-seed",
       "foundAt": "2026-08-27",
-      "note": "独立校招官网"
+      "note": "独立校招官网",
+      "graduated": true
     },
     {
       "id": "byd",
@@ -865,7 +867,8 @@
       "nature": "国企",
       "source": "manual-seed",
       "foundAt": "2026-08-27",
-      "note": "官方招聘平台"
+      "note": "官方招聘平台",
+      "graduated": true
     },
     {
       "id": "transsion",
@@ -878,7 +881,8 @@
       "nature": "民企",
       "source": "manual-seed",
       "foundAt": "2026-08-27",
-      "note": "校招页（zhiye 承办）"
+      "note": "校招页（zhiye 承办）",
+      "graduated": true
     },
     {
       "id": "sf-express",
@@ -943,7 +947,8 @@
       "nature": "民企",
       "source": "manual-seed",
       "foundAt": "2026-08-27",
-      "note": "独立官方网申域名"
+      "note": "独立官方网申域名",
+      "graduated": true
     },
     {
       "id": "ebscn",
@@ -1047,7 +1052,8 @@
       "nature": "民企",
       "source": "manual-seed",
       "foundAt": "2026-08-27",
-      "note": "自有官方校招站（旧域 anker-in.com 已弃用）"
+      "note": "自有官方校招站（旧域 anker-in.com 已弃用）",
+      "graduated": true
     },
     {
       "id": "szvc",
@@ -1073,7 +1079,8 @@
       "nature": "民企",
       "source": "manual-seed",
       "foundAt": "2026-08-27",
-      "note": "官方投递通道（勿与联洲国际 tplinkglobal 混淆）"
+      "note": "官方投递通道（勿与联洲国际 tplinkglobal 混淆）",
+      "graduated": true
     },
     {
       "id": "ubiquant",
@@ -1855,7 +1862,8 @@
       "source": "manual-seed",
       "foundAt": "2026-08-27",
       "note": "阿里系规则：本集团 1 次投递机会、最多 2 个意向（淘宝天猫）",
-      "quota": 2
+      "quota": 2,
+      "graduated": true
     },
     {
       "id": "alibaba-aliyun",

@@ -1068,5 +1068,437 @@ window.COMPANIES = [
     location: "全国多地", refCode: "ESKPTV",
     link: "https://career.hello-tech.com/campus/jobs?shareId=c585b43e-fd63-46cf-8951-e3fc00dd75cb&shareSource=2",
     note: "便携储能(Jackery电小二)，旧码已过期此为新码"
+  },
+  {
+    id: "ampace", name: "新能安", type: "秋招",
+    category: ["工业/制造/能源"],
+    nature: "合资",
+    jobs: ["材料&电芯研发类 电源&电子研发类 结构研发类 IT大数据类 智能制造类 项目&运营类 客户一线类 支持类"],
+    location: "厦门/东莞", refCode: "qdzvdm",
+    link: "https://wecruit.hotjob.cn/SU6618fd381eb8053acd5fc2b9/mc/posi",
+    note: "宁德时代与ATL合资，便携储能"
+  },
+  {
+    id: "mediatek", name: "联发科技", type: "提前批",
+    category: ["半导体/电子"],
+    nature: "外企",
+    jobs: ["软件类","通信类","IC类"],
+    location: "北京/深圳/上海/成都", refCode: "EVBJR9",
+    link: "https://mediatek.zhiye.com/campus/jobs?shareId=316d69c9-f95b",
+    note: "台资IC设计龙头"
+  },
+  {
+    id: "momenta", name: "Momenta魔门塔", type: "秋招",
+    category: ["汽车/智能驾驶","AI/机器人"],
+    nature: "民企",
+    jobs: ["系统集成","SDK开发","功能安全","嵌入式软件","基础组件研发","电子"],
+    location: "北京/上海/苏州", refCode: "8QPJRFQ",
+    link: "https://momenta.jobs.feishu.cn/s/he44HSiGd14",
+    note: "选择大使推荐；选择大使推荐"
+  },
+  {
+    id: "hoymiles", name: "禾迈股份", type: "秋招",
+    category: ["工业/制造/能源"],
+    nature: "民企",
+    jobs: ["研发技术","产品技术","智能制造","市场营销"],
+    location: "杭州 苏州 成都 拉美 欧洲 亚太 海宁 丽水 中东非", refCode: "DS2Rahfv",
+    link: "https://app.mokahr.com/m/campus-recruitment/hoymiles/70377?r",
+    note: "光伏储能逆变器"
+  },
+  {
+    id: "ecoflow", name: "正浩创新EcoFlow", type: "提前批",
+    category: ["智能硬件"],
+    nature: "民企",
+    jobs: ["电力电子硬件工程师电力电子软件工程师AI算法工程师嵌入式软件工程师后端工程师结构工程师软件产品经理"],
+    location: "深圳/苏州/西安", refCode: "UNGTUSA",
+    link: "https://jobs.ecoflow.com/s/1mHxZxAUg50",
+    note: "选择校园大使推荐；选择大使推荐"
+  },
+  {
+    id: "jereh", name: "杰瑞集团", type: "提前批",
+    category: ["工业/制造/能源"],
+    nature: "民企",
+    jobs: ["算法工程师","电气工程师","机械工程师","仿真工程师","质量管理工程师","ai开发工程师等50+岗位"],
+    location: "北京/上海/深圳/成都", refCode: "ESVPRB",
+    link: "https://future.jereh.com/campus/jobs?shareId=9a6ae0bf-40b9-4",
+    note: "油气装备"
+  },
+  {
+    id: "gigadevice", name: "兆易创新", type: "提前批",
+    category: ["半导体/电子"],
+    nature: "民企",
+    jobs: ["模拟设计工程师","模拟电路设计工程师","射频模拟设计工程师","电路设计工程师","数字电路设计工程师","高速接口设计工程师"],
+    location: "北京/上海/深圳/西安", refCode: "NTAe7RL",
+    link: "https://app.mokahr.com/su/qgoyzx",
+    note: "存储芯片"
+  },
+  {
+    id: "xsquare", name: "自变量机器人", type: "秋招",
+    category: ["AI/机器人"],
+    nature: "民企",
+    jobs: ["强化学习算法工程师","机械结构工程师","嵌入式软件工程师","运控算法工程师","大模型infra工程师","灵巧手算法工程师"],
+    location: "深圳/北京", refCode: "9Z2W9UR",
+    link: "https://x2-robot.jobs.feishu.cn/s/78PnzPM-AWQ",
+    note: "选择大使推荐；选择大使推荐"
+  },
+  {
+    id: "tianrui", name: "天锐星通", type: "提前批",
+    category: ["通信/运营商"],
+    nature: "民企",
+    jobs: ["天线工程师","射频工程师","逻辑工程师","嵌入式工程师","硬件工程师","结构工程师"],
+    location: "成都/南京/上海", refCode: "ESKM98",
+    link: "https://t-ray.zhiye.com/campus/jobs?shareId=4ba7337c-8ec3-46",
+    note: "相控阵通信"
+  },
+  {
+    id: "gaotu", name: "高途教育", type: "提前批",
+    category: ["教育"],
+    nature: "民企",
+    jobs: ["主讲老师类","国际教育类","顾问类","二讲类","运营类","主播类"],
+    location: "全国24个城市", refCode: "DSwyTTQV",
+    link: "https://app.mokahr.com/m/campus_apply/bjhl/102145?recommendC",
+    note: "在线教育"
+  },
+  {
+    id: "weaver", name: "泛微网络", type: "提前批",
+    category: ["互联网"],
+    nature: "民企",
+    jobs: ["ToB销售经理"],
+    location: "上海", refCode: null,
+    link: "https://f.wps.cn/g/l8LXPzr4?channel=yjjv1y",
+    note: "独家直推，点击链接即内推；点击链接即内推"
+  },
+  {
+    id: "yutong", name: "宇通集团", type: "提前批",
+    category: ["工业/制造/能源"],
+    nature: "民企",
+    jobs: ["技术类","运营类","职能类","销售类"],
+    location: "郑州", refCode: "znanoi",
+    link: "https://wecruit.hotjob.cn/SU64e7157a1eb80519a8e4efcf/mc/posi",
+    note: "客车龙头"
+  },
+  {
+    id: "alibaba-t-head", name: "阿里系-平头哥", type: "秋招",
+    category: ["半导体/电子","AI/机器人"],
+    nature: "民企",
+    jobs: ["前端开发类","软件开发类","平台技术类"],
+    location: "上海/北京/深圳/杭州", refCode: "2T4L7MKS",
+    link: "https://campus-talent.alibaba.com/campus/position?campusShar",
+    note: "阿里芯片"
+  },
+  {
+    id: "kingbase", name: "电科金仓", type: "秋招",
+    category: ["互联网"],
+    nature: "央企",
+    jobs: ["C语言研发工程师","JAVA开发工程师","测试工程师","售前管培生","销售管培生"],
+    location: "北京 |天津 | 成都 | 青岛 | 西安", refCode: "DSz3casj",
+    link: "https://app.mokahr.com/m/campus-recruitment/kingbase/47259?r",
+    note: "国产数据库，中国电科旗下"
+  },
+  {
+    id: "novastar", name: "诺瓦星云", type: "秋招",
+    category: ["半导体/电子"],
+    nature: "民企",
+    jobs: ["研发方向","营销方向"],
+    location: "西安 深圳 北京国内其他城市 海外", refCode: "ES1M1K",
+    link: "https://novastar.zhiye.com/campus/jobs?shareId=3155d34e-7412",
+    note: "LED显示控制"
+  },
+  {
+    id: "zhuoyue-edu", name: "卓越教育", type: "秋招",
+    category: ["教育"],
+    nature: "民企",
+    jobs: ["教师岗","营运岗","IT研发岗","人工智能岗","大健康类岗"],
+    location: "东莞/广州/深圳/中山", refCode: "kteres",
+    link: "https://wecruit.hotjob.cn/SU63366959bef57c270741e2c6/mc/posi",
+    note: "K12教育"
+  },
+  {
+    id: "allwinner", name: "全志科技", type: "秋招",
+    category: ["半导体/电子"],
+    nature: "民企",
+    jobs: ["AI研发类","芯片验证类","模批版图类","芯片制造类","芯片设计类","算法类"],
+    location: "广州/上海/珠海/西安", refCode: "DSVmPHBb",
+    link: "https://app.mokahr.com/m/campus-recruitment/allwinnertech/43",
+    note: "SoC芯片"
+  },
+  {
+    id: "hopewind", name: "禾望电气", type: "秋招",
+    category: ["工业/制造/能源"],
+    nature: "民企",
+    jobs: ["研发","市场","售后"],
+    location: "深圳/苏州/西安/武汉", refCode: "EV3JHR",
+    link: "https://hopewind1.zhiye.com/campus/jobs?shareId=1947873d-93d",
+    note: "新能源电控"
+  },
+  {
+    id: "qiongche", name: "穹彻智能", type: "秋招",
+    category: ["AI/机器人"],
+    nature: "民企",
+    jobs: ["具身智能算法｜端到端｜运动控制｜机器人系统｜具身agen｜机器人机械设计｜机器人电气工程师｜机器人产品等"],
+    location: "上海", refCode: "FT5YPV1",
+    link: "https://flexivrobotics.jobs.feishu.cn/s/3woHcGd0FHE",
+    note: "面向985，选择大使推荐；选择大使推荐"
+  },
+  {
+    id: "qcraft", name: "轻舟智航", type: "秋招",
+    category: ["汽车/智能驾驶"],
+    nature: "民企",
+    jobs: ["算法研发类","工程开发类"],
+    location: "北京/苏州", refCode: "MWTTW2R",
+    link: "https://qcraft.jobs.feishu.cn/s/11tH8fCyewY",
+    note: "选择大使推荐；选择大使推荐"
+  },
+  {
+    id: "yidianyun", name: "易点云", type: "秋招",
+    category: ["互联网"],
+    nature: "民企",
+    jobs: ["储备管理类","商业创新类","产品经理类","研发技术类","其他职能类"],
+    location: "北京/上海/广州/深圳", refCode: "YD4280",
+    link: "https://recruit-pro.edianyun.com/#/wap/recruitment-collect",
+    note: "办公IT服务"
+  },
+  {
+    id: "geely", name: "吉利控股", type: "秋招",
+    category: ["汽车/智能驾驶"],
+    nature: "民企",
+    jobs: ["整车研发类","IT","互联网类","智能制造类","采购","供应链"],
+    location: "全国各地/比较全", refCode: "DSS2s6wa",
+    link: "https://app.mokahr.com/m/campus-recruitment/geely/78436?reco",
+    note: "车企龙头"
+  },
+  {
+    id: "kingdom", name: "金证科技", type: "秋招",
+    category: ["金融科技"],
+    nature: "民企",
+    jobs: ["软件研发（C","C++","Java","Web","大模型应用开发工程师等）","技术支持（测试"],
+    location: "深圳/长沙/成都/上海", refCode: "EVBG00",
+    link: "https://szkingdom1.zhiye.com/campus/jobs?shareId=ce91dc10-57",
+    note: "金融IT"
+  },
+  {
+    id: "emdoor", name: "亿道", type: "秋招",
+    category: ["智能硬件"],
+    nature: "民企",
+    jobs: ["研发类","非研发类"],
+    location: "深圳（大部分岗位）/重庆", refCode: "EV3PS3",
+    link: "https://emdoor1.zhiye.com/campus/jobs?shareId=06e1e286-11a0-",
+    note: "智能硬件方案"
+  },
+  {
+    id: "switchbot", name: "卧安机器人", type: "秋招",
+    category: ["AI/机器人"],
+    nature: "民企",
+    jobs: ["算法工程师","运营管培生","人力资源专员"],
+    location: "深圳", refCode: "ESVRTG",
+    link: "https://woanhome.zhiye.com/campus/jobs?shareId=7b4a752e-747c",
+    note: "消费级机器人"
+  },
+  {
+    id: "dashenlin", name: "大参林", type: "秋招",
+    category: ["消费/零售"],
+    nature: "民企",
+    jobs: ["营运类","商品类","新零售类","策略运营类","商业分析类","审计类"],
+    location: "全国各地", refCode: "DSnMM84B",
+    link: "https://app.mokahr.com/m/campus_apply/dslyy/136052?recommend",
+    note: "医药零售龙头"
+  },
+  {
+    id: "yushi-space", name: "宇石空间", type: "秋招",
+    category: ["工业/制造/能源"],
+    nature: "民企",
+    jobs: ["发动机研发","结构与发射","动力系统","电气系统","软件","控制"],
+    location: "北京/长沙", refCode: "DSzmPYHp",
+    link: "https://app.mokahr.com/m/campus-recruitment/astronstone/1683",
+    note: "商业航天，要求硕士及以上"
+  },
+  {
+    id: "zuru", name: "ZURU", type: "秋招",
+    category: ["消费/零售"],
+    nature: "外企",
+    jobs: ["商科","创意","设计","研发","制造五大类岗位等你来投！快来ZURU解锁更多福利吧！"],
+    location: "广州/上海/深圳/东莞", refCode: "hvehbp",
+    link: "https://wecruit.hotjob.cn/SU69fd8f7f1f17c372512fdd19/mc/posi",
+    note: "全球玩具前十"
+  },
+  {
+    id: "smartsens", name: "思特威", type: "秋招",
+    category: ["半导体/电子"],
+    nature: "民企",
+    jobs: ["前端","嵌入式","AI算法等技术类"],
+    location: "上海", refCode: "DSYGf7rJ",
+    link: "https://app.mokahr.com/m/campus_apply/smartsenstech1/56088?r",
+    note: "CMOS图像传感器"
+  },
+  {
+    id: "hongqing", name: "鸿擎科技", type: "秋招",
+    category: ["工业/制造/能源"],
+    nature: "民企",
+    jobs: ["研发类","工艺类","试验类等"],
+    location: "北京/上海/西安/深圳", refCode: null,
+    link: "https://qcnhg4ksaiwt.jobs.feishu.cn/257870/m/position?extern",
+    note: "点击链接即内推；点击链接即内推"
+  },
+  {
+    id: "cambricon", name: "寒武纪", type: "秋招",
+    category: ["半导体/电子","AI/机器人"],
+    nature: "民企",
+    jobs: ["芯片类","软件类","职能与研发支持类"],
+    location: "北京/上海/深圳/合肥", refCode: "NTAeIEY",
+    link: "https://app.mokahr.com/su/iluzya",
+    note: "AI芯片"
+  },
+  {
+    id: "xinen", name: "芯恩", type: "秋招",
+    category: ["半导体/电子"],
+    nature: "民企",
+    jobs: ["IT类","职能类","研发类","专项技术类","OP技术类"],
+    location: "青岛", refCode: null,
+    link: "https://wecruit.hotjob.cn/SU62b31a44bef57c0f6faa4c71/mc/posi",
+    note: "点击链接即内推；点击链接即内推"
+  },
+  {
+    id: "wondershare", name: "万兴科技", type: "提前批",
+    category: ["互联网"],
+    nature: "民企",
+    jobs: ["产品","研发","营销","设计","职能全序列开放","实习额外享受1500元房餐补贴"],
+    location: "长沙/深圳", refCode: "ESKTHH",
+    link: "https://wondersharecampus.zhiye.com/intern/jobs?shareId=2feb",
+    note: "可转正实习"
+  },
+  {
+    id: "3peak", name: "思瑞浦电子", type: "秋招",
+    category: ["半导体/电子"],
+    nature: "民企",
+    jobs: ["研发类","销售类","运营与质量类","工艺与器件类"],
+    location: "苏州", refCode: "NTA6gtq",
+    link: "https://app.mokahr.com/m/recommendation-apply/3peakic/67895?",
+    note: "模拟芯片"
+  },
+  {
+    id: "shokz", name: "韶音科技", type: "秋招",
+    category: ["智能硬件"],
+    nature: "民企",
+    jobs: ["研究类","开发类","产品类"],
+    location: "广东省深圳市", refCode: "DS1Qqjn8",
+    link: "https://app.mokahr.com/campus-recruitment/aftershokzhr/36940",
+    note: "开放式耳机"
+  },
+  {
+    id: "huawei-dc", name: "华为（数据通信产品线）", type: "秋招",
+    category: ["通信/运营商"],
+    nature: "民企",
+    jobs: ["•嵌入式软件","通用软件开发工程师·通信算法工程师• AI Infra 工程师  • AI 软件工程师  • AI 算法工程师  • AI 数据工程师• AI 应用工程师"],
+    location: "北京 / 南京 / 东莞 / 上海 / 深圳 / 苏州 / 成都 / 武汉 / 杭州 / 西安", refCode: "HWLMQ",
+    link: "https://docs.qq.com/form/page/DSXNIS2hJYk1EeXV2#/fill",
+    note: "华为独立产品线内推"
+  },
+  {
+    id: "netease-leihuo", name: "网易雷火", type: "秋招",
+    category: ["游戏"],
+    nature: "民企",
+    jobs: ["游戏策划类","游戏程序类","游戏艺术类","技术类","游戏测试类产品类","人工智能类"],
+    location: "广州/杭州/上海多地", refCode: "oKFLGH",
+    link: "https://campus.game.163.com/?referralCode=oKFLGH",
+    note: "与网易互娱独立"
+  },
+  {
+    id: "cmb-cloud", name: "招银云创", type: "秋招",
+    category: ["金融科技"],
+    nature: "央企",
+    jobs: ["JAVA开发工程师","客户运营岗","后台职能岗"],
+    location: "深圳/武汉/杭州", refCode: "DSAkZbgh",
+    link: "https://app.mokahr.com/m/campus_apply/mbcloud/150116?recomme",
+    note: "招商银行全资子公司"
+  },
+  {
+    id: "zte", name: "中兴通讯", type: "秋招",
+    category: ["通信/运营商"],
+    nature: "民企",
+    jobs: ["AI算法工程师","软件开发工程师"],
+    location: "全国多地", refCode: "NTAtn7p",
+    link: "https://app.mokahr.com/m/recommendation-apply/zte/73988?reco",
+    note: "通信设备龙头"
+  },
+  {
+    id: "transsion", name: "传音控股", type: "秋招",
+    category: ["智能硬件"],
+    nature: "民企",
+    jobs: ["AI算法类","AI产品类"],
+    location: "深圳/上海/重庆", refCode: "EVHRJT",
+    link: "https://transsion.zhiye.com/campus/jobs?shareId=2b3250ef-301",
+    note: "出海手机龙头"
+  },
+  {
+    id: "anker", name: "安克创新", type: "秋招",
+    category: ["智能硬件"],
+    nature: "民企",
+    jobs: ["技术类","产品类","营销服类","供应链类","职能类","商科类"],
+    location: "深圳/长沙/海外（美国/日本", refCode: "5X21NAN",
+    link: "https://anker-in.jobs.feishu.cn/s/HjlCjzsg4Rc",
+    note: "选择校园大使推荐；选择大使推荐"
+  },
+  {
+    id: "alibaba-taotian", name: "阿里系-淘天", type: "秋招",
+    category: ["互联网"],
+    nature: "民企",
+    jobs: ["60+岗位方向（技术","产品","设计","等）","新增大量AI类岗位","让热爱与趋势同行！"],
+    location: "杭州/北京", refCode: "2T4L7MKS",
+    link: "https://campus-talent.alibaba.com/campus/position",
+    note: "仅可内推淘天，加入意向单仅淘天"
+  },
+  {
+    id: "alibaba-intl", name: "阿里系-阿里国际", type: "秋招",
+    category: ["互联网"],
+    nature: "民企",
+    jobs: ["九大职类"],
+    location: "杭州/北京/广州/深圳", refCode: "2T4L7MKS",
+    link: "https://campus-talent.alibaba.com/campus/position",
+    note: "仅可内推阿里国际"
+  },
+  {
+    id: "southchip", name: "南芯科技", type: "秋招",
+    category: ["半导体/电子"],
+    nature: "民企",
+    jobs: ["研发类","系统应用类","生产运营类","质量类","业务类","其他职类"],
+    location: "上海| 成都 | 深圳 | 北京 | 西安 | 南京 |珠海 | 杭州 | 苏州", refCode: "IVBCJV",
+    link: "https://nanxin.zhiye.com",
+    note: "电源管理芯片"
+  },
+  {
+    id: "huawei-ict", name: "华为（ICT BG云核心网）", type: "秋招",
+    category: ["通信/运营商"],
+    nature: "民企",
+    jobs: ["▪️AI Infra工程师（AI训推系统","算子技术","建模仿真等）▪️AI应用工程师（AI技术应用","AI系统软件）▪️AI模型工程师（多模态","语言","端侧大模型"],
+    location: "上海｜西安｜北京｜东莞｜杭州｜南京", refCode: "HWAAA123",
+    link: "https://career.huawei.com",
+    note: "注意内推方式：内推码需按邮件流程填写"
+  },
+  {
+    id: "jd-tgt", name: "京东TGT顶尖天才项目", type: "提前批",
+    category: ["互联网"],
+    nature: "民企",
+    jobs: ["多模态大模型与应用方向空间与具身智能方向机器学习方向AI Infra方向搜索推荐广告方向高性能与云计算方向安全方向大数据方向"],
+    location: "北京/上海/深圳", refCode: "XIAWE3",
+    link: "https://campus.jd.com",
+    note: "顶尖天才项目，注意填写内推码"
+  },
+  {
+    id: "bytedance", name: "字节跳动", type: "秋招",
+    category: ["互联网"],
+    nature: "民企",
+    jobs: ["研发","产品","运营","设计","职能","支持"],
+    location: "北京/深圳 上海/杭州/成都", refCode: "VFU1Z1A",
+    link: "https://jobs.bytedance.com/campus",
+    note: "内推码用完可用备用码，见备注"
+  },
+  {
+    id: "tplink", name: "TP-Link普联", type: "秋招",
+    category: ["智能硬件","通信/运营商"],
+    nature: "民企",
+    jobs: ["研发类| 技术市场类 | 市场营销类|制造类人事行政类|供应链计划类|内审风控类|采购类|财务类"],
+    location: "深圳/杭州/北京/南京", refCode: "XYDS009",
+    link: "https://hr.tp-link.com.cn",
+    note: "与联洲独立招聘，可分别投递"
   }
 ];
