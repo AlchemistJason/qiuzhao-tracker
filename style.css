@@ -1196,6 +1196,9 @@ mark.hl {
   margin-bottom: 6px;
   background: var(--bg-secondary);
 }
+/* v9.5: 未登录锁定态提示 */
+.dyn-locked { font-size: 13px; color: var(--text-secondary); padding: 4px 2px; }
+.dyn-locked a { color: var(--accent); text-decoration: underline; }
 .dyn-type {
   flex: 0 0 auto;
   font-size: 11px;

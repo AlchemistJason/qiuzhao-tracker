@@ -37,7 +37,7 @@ qiuzhao-tracker/
 │   ├── features.js       #   交互层：状态操作/邮件动态/待办三态/岗位弹窗
 │   ├── export-sync.js    #   导入导出/二维码同步
 │   └── main.js           #   启动装配
-├── tests/run-tests.js    # 319 项回归测试（node tests/run-tests.js）
+├── tests/run-tests.js    # 322 项回归测试（node tests/run-tests.js）
 └── .github/workflows/    # CI 门禁 + GitHub Pages 部署
 ```
 
@@ -82,7 +82,7 @@ qiuzhao-tracker/
 
 - 本地跑测试：`node tests/run-tests.js`（时区无关，`TZ=UTC` 下也应全过）
 - 数据更新：改 `data.js` / `dynamics.json` → 本地测试 → 发布（CI 会校验 dynamics.json 的 schema 与隐私规则，link/actionUrl 非空直接红）
-- CI：push 后 GitHub Actions 自动执行语法检查 + 319 项回归测试，通过后自动部署 Pages
+- CI：push 后 GitHub Actions 自动执行语法检查 + 322 项回归测试，通过后自动部署 Pages
 
 ## 跨设备同步（手机 ↔ 电脑）
 
@@ -114,6 +114,22 @@ create policy "own update" on qiuzhao_state for update using (auth.uid() = user_
 3. 「Authentication → Sign In / Providers → Email」关闭 **Confirm email**（否则注册后需收信验证才能登录）
 4. 「Project Settings → Data API」确认 REST API 已启用（默认开启）
 5. 把 Project URL 和 anon public key 填进 `BUILTIN_CLOUD` 后发布
+
+**v9.5 邮件动态私有化（再执行一次）：** 邮件动态不再进公开仓库，改存私有表，登录账号后才可见。SQL Editor 执行：
+
+```sql
+create table qiuzhao_dynamics (
+  user_id uuid primary key references auth.users(id) on delete cascade,
+  payload jsonb not null,
+  updated_at timestamptz not null default now()
+);
+alter table qiuzhao_dynamics enable row level security;
+create policy "own select" on qiuzhao_dynamics for select using (auth.uid() = user_id);
+create policy "own insert" on qiuzhao_dynamics for insert with check (auth.uid() = user_id);
+create policy "own update" on qiuzhao_dynamics for update using (auth.uid() = user_id);
+```
+
+> 过渡期行为：已登录但云端表暂无数据时，网站回退读仓库里的 `dynamics.json`（WorkBuddy 切换写入端前的桥接）；未登录一律不显示邮件动态与邮件待办。写入端接入方式见 AGENTS.md「邮件动态写入端（WorkBuddy）」。
 
 ### 二维码手动同步（备用，无需登录账号）
 

@@ -4,7 +4,7 @@
 push 到 `main` → GitHub Actions 跑语法检查 + `node tests/run-tests.js`（271 项）→ 全绿自动部署 Pages。
 **任何改动以 CI 全绿 + 线上 curl 验证为完成标准。**
 
-三个数据文件全部由 WorkBuddy 维护：`data.js`（内推清单，腾讯文档同步+人工补充）、`discovered.json`（爬虫候选池）、`dynamics.json`（邮件动态解析）。契约如下。
+三个数据文件全部由 WorkBuddy 维护：`data.js`（内推清单，腾讯文档同步+人工补充）、`discovered.json`（爬虫候选池）、`dynamics.json`（邮件动态，v9.5 起冻结并迁往 Supabase 私有表，见下文）。契约如下。
 
 ## 数据文件契约
 
@@ -27,9 +27,16 @@ push 到 `main` → GitHub Actions 跑语法检查 + `node tests/run-tests.js`�
 - `parent` 必须指向同文件已存在条目（集团子集团结构）；`quota` 为正整数。
 - 只放公开校招信息，禁止写入任何个人邮箱相关内容。
 
-### `dynamics.json` — 邮件动态（WorkBuddy 解析邮件写入）
+### `dynamics.json` — 邮件动态（⚠️ v9.5 起冻结，写入端迁往 Supabase 私有表）
+- **v9.5 私有化**：邮件动态改为 WorkBuddy 直接写 Supabase 私有表 `qiuzhao_dynamics`（RLS 限定用户本人），网站端登录后才拉取；未登录一律不显示邮件动态与邮件待办。本文件保留最后一期作为过渡期回退数据源（已登录但云端无数据时网站读它），**WorkBuddy 切换写入端后停止更新本文件，但不要删除**（CI 仍校验其 schema；git 历史中的旧数据属已知留痕，接受不清理）。
 - 字段：`id/type/company/companyId/jobName/title/summary/time/dueDate/eventTime/suggestStatus`；`type` 白名单 `offer|written|interview|deadline|reject|evaluation|other`；`suggestStatus` 白名单 `未投递|已投递|笔试中|面试中|Offer|已拒绝`；`companyId` 必须是 `data.js` 里存在的 id 或 null。
-- **隐私红线（CI 门禁）**：`link`/`actionUrl` 一律为空，禁止附件字段，摘要化描述，不含邮件正文原文、链接、附件、个人邮箱地址。违反则 CI 直接红。
+- **隐私红线（CI 门禁）**：`link`/`actionUrl` 一律为空，禁止附件字段，摘要化描述，不含邮件正文原文、链接、附件、个人邮箱地址。违反则 CI 直接红。写入 Supabase 的 payload 同样遵守此红线。
+
+### 邮件动态写入端接入（WorkBuddy，v9.5）
+1. 本地配置 Supabase 凭据（**只在 WorkBuddy 本机私有配置，绝不提交进任何仓库**）：Project URL、anon key、账号邮箱+密码。
+2. 每次写入前先走 GoTrue 登录拿 token：`POST {url}/auth/v1/token?grant_type=password`，body `{"email","password"}`，取 `access_token`（过期用 `refresh_token` 走 `grant_type=refresh_token` 续期）。
+3. upsert 本人行：`POST {url}/rest/v1/qiuzhao_dynamics`，headers `apikey: {anonKey}`、`Authorization: Bearer {access_token}`、`Content-Type: application/json`、`Prefer: resolution=merge-duplicates`，body `{"user_id": "<登录返回的 user.id>", "payload": {"updatedAt": "...", "items": [...]}, "updated_at": "<ISO 时间>"}`。payload.items 的 schema 与 dynamics.json 完全一致（含隐私红线）。
+4. 失败处理：写入失败必须本地记日志并告警（网站端不再读公开文件后，写入失败=邮件动态静默断更）；网站端动态条 title 会显示 `updated_at` 供核对新鲜度。
 
 ## 前端契约
 

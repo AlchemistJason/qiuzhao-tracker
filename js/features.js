@@ -603,15 +603,50 @@ function unmarkDynIgnored(id) {  // v7.4: 忽略回收站的恢复入口
   userState.dyn.ignored = s; saveState();
 }
 
+// v9.5: 邮件动态来源决策（纯函数可测）——未登录=不加载（私密）；已登录且云端有数据=云端私有表；
+// 已登录但云端无行=过渡期回退 dynamics.json（WorkBuddy 切换写入端前的桥接，切换后此分支自然失效）
+function dynSourcePlan(authed, hasRemote) {
+  if (!authed) return "none";
+  return hasRemote ? "remote" : "legacy";
+}
+
 async function loadDynamics() {
-  let data;
+  const authed = typeof getAuth === "function" && !!getAuth();
+  if (dynSourcePlan(authed, false) === "none") {
+    window.__dynAll = [];  // 邮件待办一并消失（待办从 __dynAll 派生），截止类待办不受影响
+    renderDynLocked();
+    return;
+  }
+  let items = null, updatedAt = null;
   try {
-    const res = await fetch("dynamics.json?t=" + Date.now());
-    if (!res.ok) return;
-    data = await res.json();
-  } catch(e) { return; }
-  window.__dynAll = data.items || [];  // v7.3: 全量保留给待办视图（含远期事项）
+    const remote = await cloudGetDynamics();
+    if (remote && Array.isArray(remote.items)) { items = remote.items; updatedAt = remote.updatedAt; }
+  } catch(e) { console.warn("云端邮件动态拉取失败", e); }
+  if (items === null) {
+    // 过渡期回退：WorkBuddy 尚未切换到 Supabase 写入时读公开文件（已登录才走这里）
+    try {
+      const res = await fetch("dynamics.json?t=" + Date.now());
+      if (res.ok) items = (await res.json()).items || [];
+    } catch(e) {}
+  }
+  window.__dynAll = items || [];
+  const toggle = document.querySelector(".dyn-toggle");
+  if (toggle) toggle.title = updatedAt
+    ? "邮件动态最后更新：" + new Date(updatedAt).toLocaleString("zh-CN")
+    : "过渡期数据源：公开文件（WorkBuddy 切换到私密表后此处显示云端更新时间）";
   renderDynamicsBar(filterNewDynamics(window.__dynAll, getDynSeen()));
+}
+
+// v9.5: 未登录锁定态——邮件动态条显示登录引导，不暴露任何邮件内容
+function renderDynLocked() {
+  const bar = document.getElementById("dynBar");
+  if (!bar) return;
+  bar.classList.remove("hidden");
+  document.getElementById("dynCount").textContent = "🔒";
+  const list = document.getElementById("dynList");
+  list.classList.remove("hidden");
+  list.innerHTML = `<div class="dyn-locked">邮件动态与邮件待办已设为私密，<a href="javascript:void(0)" onclick="openCloudModal()">登录 / 注册账号</a>后自动同步显示。</div>`;
+  refreshTodos();
 }
 
 // ============================================================

@@ -692,6 +692,15 @@ section("dynamics.json 邮件动态校验");
   t("隐私: 无附件字段", items.every(i => !i.attachment && !i.attachments));
 })();
 
+// ---------- v9.5 邮件动态私有化：来源决策 ----------
+section("v9.5 邮件动态来源决策");
+const dynSourcePlan = extractFn("dynSourcePlan");
+if (dynSourcePlan) {
+  t("来源决策: 未登录一律不加载（私密）", dynSourcePlan(false, false) === "none" && dynSourcePlan(false, true) === "none");
+  t("来源决策: 已登录+云端有数据走私有表", dynSourcePlan(true, true) === "remote");
+  t("来源决策: 已登录+云端无行回退公开文件（过渡期）", dynSourcePlan(true, false) === "legacy");
+}
+
 // ---------- v7.5 官网清单 + 爬虫候选池 ----------
 section("v7.5 official-sites / discovered 候选池");
 

@@ -344,6 +344,17 @@ async function cloudGetState() {
   return null;
 }
 
+// v9.5: 邮件动态私有化——存独立私有表（RLS 限定本人），网站端只读；写入端是 WorkBuddy（接入说明见 AGENTS.md）
+const CLOUD_DYN_TABLE = "qiuzhao_dynamics";
+async function cloudGetDynamics() {
+  if (!getAuth()) return null;
+  const rows = await cloudFetch(`/rest/v1/${CLOUD_DYN_TABLE}?select=payload,updated_at&limit=1`);
+  if (rows && rows.length > 0 && rows[0].payload) {
+    return { items: rows[0].payload.items || [], updatedAt: rows[0].updated_at || null };
+  }
+  return null;
+}
+
 // 整体 upsert 本人状态行（user_id 冲突即覆盖）
 async function cloudPutState(state) {
   const auth = getAuth();
@@ -445,6 +456,7 @@ async function authUI(mode) {
     renderCloudAccount();
     showToast(mode === "login" ? "☁️ 登录成功，开始同步..." : "☁️ 注册成功，已自动登录");
     cloudPull();  // 拉取本人云端状态并合并
+    loadDynamics();  // v9.5: 登录后解锁邮件动态（从私有表拉取）
   } catch(e) {
     showToast("☁️ " + (e.message || "操作失败"), 4000);
   } finally {
@@ -453,10 +465,11 @@ async function authUI(mode) {
 }
 
 function cloudLogout() {
-  if (!confirm("退出登录后本设备不再云同步（本地进度保留）。确定退出？")) return;
+  if (!confirm("退出登录后本设备不再云同步（本地进度保留），邮件动态将隐藏。确定退出？")) return;
   clearAuth();
   setCloudStatus("off");
   renderCloudAccount();
+  loadDynamics();  // v9.5: 登出后邮件动态回到锁定态
   showToast("已退出登录");
 }
 
