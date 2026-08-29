@@ -22,9 +22,9 @@
   } catch(e) {}
 })();
 </script>
-<script src="vendor/qrcode.min.js?v=9.6" defer></script>
+<script src="vendor/qrcode.min.js?v=9.7" defer></script>
 <!-- html5-qrcode 改为按需动态加载（见 js/export-sync.js startQrScanner），避免 ~300KB 全量下载 -->
-<link rel="stylesheet" href="style.css?v=9.6">
+<link rel="stylesheet" href="style.css?v=9.7">
 </head>
 <body>
 
@@ -190,6 +190,15 @@
   </div>
 </div>
 
+<!-- v9.7: 公司详情弹窗（介绍/注意事项/毕业要求/笔试日历——长文不挤占表格与卡片） -->
+<div id="detailModal" class="modal-overlay" style="display:none" role="dialog" aria-modal="true" aria-label="公司详情" onclick="if(event.target===this)closeDetailModal()">
+  <div class="modal">
+    <button class="modal-close" onclick="closeDetailModal()" aria-label="关闭弹窗">✕</button>
+    <h3 id="detailModalTitle">公司详情</h3>
+    <div id="detailModalBody"></div>
+  </div>
+</div>
+
 <!-- v7: 云同步设置弹窗 -->
 <div id="cloudModal" class="modal-overlay" style="display:none" role="dialog" aria-modal="true" aria-label="云同步设置" onclick="if(event.target===this)closeCloudModal()">
   <div class="modal">
@@ -224,14 +233,15 @@
   </div>
 </div>
 
-<script src="data.js?v=9.6"></script>
-<script src="official-sites.js?v=9.6"></script>  <!-- v7.5: 官方校招门户固定清单 -->
+<script src="data.js?v=9.7"></script>
+<script src="official-sites.js?v=9.7"></script>  <!-- v7.5: 官方校招门户固定清单 -->
+<script src="extras.js?v=9.7"></script>  <!-- v9.7: 公司扩展信息（介绍/注意事项/毕业要求/笔试日历） -->
 <!-- 求职Agent · 模块化加载（顺序敏感：core 基础层 → views 视图 → features 交互 → export-sync 导出同步 → main 入口） -->
-<script src="js/core.js?v=9.6"></script>
-<script src="js/views.js?v=9.6"></script>
-<script src="js/features.js?v=9.6"></script>
-<script src="js/export-sync.js?v=9.6"></script>
-<script src="js/main.js?v=9.6"></script>
+<script src="js/core.js?v=9.7"></script>
+<script src="js/views.js?v=9.7"></script>
+<script src="js/features.js?v=9.7"></script>
+<script src="js/export-sync.js?v=9.7"></script>
+<script src="js/main.js?v=9.7"></script>
 
 </body>
 </html>

@@ -897,6 +897,28 @@ function closeJobModal() {
   jobModalId = null;
 }
 
+// ============================================================
+// v9.7: 公司详情弹窗（数据在 extras.js 的 window.COMPANY_EXTRAS，键=公司 id）
+// 长文本（介绍/注意事项/毕业要求/笔试日历）收进弹窗，表格与卡片只露一个 ℹ️ 入口
+// ============================================================
+function openDetailModal(id) {
+  const c = COMPANIES.find(x => x.id === id);
+  const e = (window.COMPANY_EXTRAS || {})[id];
+  if (!c || !e) return;
+  const sec = (title, text) => text
+    ? `<div class="detail-sec"><h4>${title}</h4><p>${escapeHtml(text).replace(/\n/g, "<br>")}</p></div>` : "";
+  const imgs = Array.isArray(e.examImages) && e.examImages.length
+    ? `<div class="detail-sec"><h4>🗓️ 笔试安排 & 校招日历</h4>${e.examImages.map(src => `<img class="detail-img" src="${escapeHtml(src)}" alt="笔试安排/校招日历图" loading="lazy">`).join("")}</div>` : "";
+  document.getElementById("detailModalBody").innerHTML =
+    sec("🏢 公司介绍", e.intro) + sec("⚠️ 投递注意事项", e.tips) +
+    sec("🎓 毕业时间要求", e.gradReq) + sec("🗓️ 笔试安排 & 校招日历", e.exam) + imgs;
+  document.getElementById("detailModalTitle").textContent = c.name;
+  document.getElementById("detailModal").style.display = "flex";
+}
+function closeDetailModal() {
+  document.getElementById("detailModal").style.display = "none";
+}
+
 function renderJobModal(id) {
   const c = COMPANIES.find(x => x.id === id);
   if (!c) return;

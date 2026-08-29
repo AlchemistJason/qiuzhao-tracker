@@ -136,7 +136,11 @@ function nameWithSite(c, keyword) {
   const nameHtml = (safe && safe !== "#")
     ? `<a class="company-site" href="${safe}" target="_blank" rel="noopener" title="官网校招页">${inner}</a>`
     : inner;
-  return badge + gradBadge + nameHtml + quota;
+  // v9.7: 有扩展信息（extras.js）的公司带详情入口——介绍/注意事项/毕业要求/笔试日历收进弹窗，不占列表空间
+  const info = (window.COMPANY_EXTRAS || {})[c.id]
+    ? ` <button class="info-mini" onclick="openDetailModal('${c.id}')" title="公司介绍 / 投递注意事项 / 毕业时间要求 / 笔试日历" aria-label="查看 ${escapeHtml(c.name)} 详情">ℹ️</button>`
+    : "";
+  return badge + gradBadge + nameHtml + quota + info;
 }
 
 function renderTable(data) {
