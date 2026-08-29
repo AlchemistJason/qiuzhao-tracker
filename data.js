@@ -11,7 +11,7 @@
  *   deadline : 截止日期 "YYYY-MM-DD"（可选，用于倒计时）
  * ============================================================ */
 
-window.DATA_VERSION = 8;
+window.DATA_VERSION = 9;
 
 // 行业分组（筛选面板分级目录用）：组名 → 行业值（顺序即展示顺序）
 window.INDUSTRY_GROUPS = {

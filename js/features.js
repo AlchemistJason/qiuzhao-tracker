@@ -108,6 +108,7 @@ function toggleFilter(dim, value) {
 function clearFilters() {
   filters.status.clear();
   filters.starred = false;
+  filters.showDismissed = false;
   filters.locations.clear();
   filters.industries.clear();
   filters.natures.clear();
@@ -150,6 +151,9 @@ function refreshFilterUI() {
   // v7.2: 隐藏已截止开关选中态
   const he = document.getElementById("hideExpiredCb");
   if (he) he.checked = filters.hideExpired;
+  // v9.9: 显示已屏蔽开关选中态
+  const sd = document.getElementById("showDismissedCb");
+  if (sd) sd.checked = filters.showDismissed;
   renderFilterSummary();
 }
 
@@ -513,6 +517,26 @@ function toggleStar(id) {
   if (filters.starred && !st.starred) {
     applyFilters();
   }
+}
+
+// v9.9: 屏蔽（不感兴趣/暂无合适岗位）——布尔开关，进度优先（已投递/进行中不受屏蔽影响）
+function toggleDismiss(id) {
+  const st = getState(id);
+  st.dismissed = !st.dismissed;
+  touchState(id);
+  saveState();
+  renderDashboard();
+  refreshTodos();
+  renderWeekly();
+  // 屏蔽影响列表可见性 → 全量刷新列表
+  applyFilters();
+  showToast(st.dismissed ? "已屏蔽（默认隐藏），仪表盘点「⊘ 已屏蔽」或筛选面板勾选可找回" : "已取消屏蔽");
+}
+
+// v9.9: 显示已屏蔽开关（筛选面板底部）
+function toggleShowDismissed(v) {
+  filters.showDismissed = !!v;
+  applyFilters();
 }
 
 function setStatus(id, status, el) {

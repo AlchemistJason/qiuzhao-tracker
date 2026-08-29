@@ -354,6 +354,18 @@ if (matchFilters) {
   t("隐藏已截止: 开关关闭时全部显示", matchFilters(pastC, { ...baseF, hideExpired: false }, getStPast) === true);
 }
 
+// matchFilters: 屏蔽（不感兴趣/暂无合适岗位，v9.9）
+if (matchFilters) {
+  const disC = { id: "dis", name: "被屏蔽公司", jobs: [], location: "", category: [], note: "" };
+  const disProg = { id: "disProg", name: "屏蔽但已投递", jobs: [], location: "", category: [], note: "" };
+  const getStDis = id => ({ status: id === "disProg" ? "已投递" : "未投递", dismissed: id === "dis" || id === "disProg" });
+  const disF = { status: new Set(), starred: false, locations: new Set(), industries: new Set(), jobs: new Set(), keyword: "", hideExpired: true, showDismissed: false };
+  t("屏蔽: 未投递+已屏蔽默认隐藏", matchFilters(disC, disF, getStDis) === false);
+  t("屏蔽: 进度优先（已投递不被屏蔽隐藏）", matchFilters(disProg, disF, getStDis) === true);
+  t("屏蔽: 勾选「显示已屏蔽」后可见", matchFilters(disC, { ...disF, showDismissed: true }, getStDis) === true);
+  t("屏蔽: 未屏蔽公司不受影响", matchFilters({ id: "ok", name: "正常公司", jobs: [], location: "", category: [], note: "" }, disF, getStDis) === true);
+}
+
 // ---------- v6 岗位级状态 ----------
 section("v6 岗位级投递状态");
 if (deriveCompanyStatus) {

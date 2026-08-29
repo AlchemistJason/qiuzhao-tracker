@@ -64,7 +64,8 @@ const filters = {
   natures: new Set(),      // v8.2: 企业性质多选（央企/国企/民企/外企/合资）
   jobs: new Set(),         // 岗位多选
   keyword: "",             // 搜索词（空格分词 AND）
-  hideExpired: true        // v7.2: 隐藏已截止且未投递的公司（默认开）
+  hideExpired: true,       // v7.2: 隐藏已截止且未投递的公司（默认开）
+  showDismissed: false     // v9.9: 显示已屏蔽（不感兴趣/暂无合适岗位）的公司（默认关）
 };
 
 let currentSort = { field: null, asc: true };
@@ -148,6 +149,8 @@ function extractJobKeywords(companies, min = 2) {
 function matchFilters(c, f, getSt) {
   const s = getSt(c.id);
   if (f.starred && !s.starred) return false;
+  // v9.9: 已屏蔽公司默认隐藏；进度优先（已投递/进行中的不被屏蔽隐藏），勾选「显示已屏蔽」时可见
+  if (!f.showDismissed && s.dismissed && s.status === "未投递") return false;
   if (f.status.size && !f.status.has(s.status)) return false;
   // v7.2: 已截止且未投递的公司默认隐藏（已投递/进行中的不受影响，避免漏跟进）
   if (f.hideExpired && s.status === "未投递" && c.deadline) {
@@ -259,7 +262,7 @@ function parseLocalDate(str) {
 function defaultState() {
   const companies = {};
   COMPANIES.forEach(c => {
-    companies[c.id] = { status: "未投递", starred: false, note: "", lastUpdate: null, jobs: {}, history: [] };
+    companies[c.id] = { status: "未投递", starred: false, dismissed: false, note: "", lastUpdate: null, jobs: {}, history: [] };
   });
   return { version: 3, companies, dyn: { seen: [], done: [], ignored: [] } };  // v9.4: 邮件分诊随账号同步
 }
@@ -323,6 +326,7 @@ function upgradeToV3(state) {
     v.companies[id] = {
       status: st.status || "未投递",
       starred: !!st.starred,
+      dismissed: !!st.dismissed,
       note: st.note || "",
       lastUpdate: st.lastUpdate === undefined ? null : st.lastUpdate,
       jobs: st.jobs && typeof st.jobs === "object" ? st.jobs : {},
@@ -452,7 +456,7 @@ function saveState() {
 
 function getState(id) {
   if (!userState.companies[id]) {
-    userState.companies[id] = { status: "未投递", starred: false, note: "", lastUpdate: null, jobs: {}, history: [] };
+    userState.companies[id] = { status: "未投递", starred: false, dismissed: false, note: "", lastUpdate: null, jobs: {}, history: [] };
   }
   // 兼容老数据：缺 lastUpdate 字段补 null
   if (userState.companies[id].lastUpdate === undefined) userState.companies[id].lastUpdate = null;

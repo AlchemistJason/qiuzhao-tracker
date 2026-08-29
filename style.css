@@ -1344,3 +1344,12 @@ mark.hl {
   /* 紧急待办横带紧凑化：「全部 N 项」回到文字级按钮，不再撑成 44px 大 pill 独占一行 */
   .todo-more { min-width: 0; min-height: 0; padding: 2px 10px; }
 }
+
+/* ====== v9.9 屏蔽（不感兴趣/暂无合适岗位） ====== */
+.dismiss-btn {
+  background: none; border: none; cursor: pointer;
+  font-size: 14px; color: var(--text-muted);
+  transition: all 0.2s; margin-left: 4px; line-height: 1;
+}
+.dismiss-btn:hover { transform: scale(1.2); color: var(--red); }
+.dismiss-btn.active { color: var(--red); opacity: 0.85; }

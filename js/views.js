@@ -6,13 +6,14 @@
 // 仪表盘
 // ============================================================
 function renderDashboard() {
-  const stats = { total: 0, applied: 0, test: 0, interview: 0, offer: 0, rejected: 0, starred: 0, pending: 0 };
+  const stats = { total: 0, applied: 0, test: 0, interview: 0, offer: 0, rejected: 0, starred: 0, pending: 0, dismissed: 0 };
   // v9.2: 仪表盘=全局进度总览，跨内推+校招池合并统计（COMPANIES 单数组 + CI 唯一性约束，天然去重，
   // 同一家公司内推/校招链接不同也只算一条）；点击卡片统一下钻到「全部」tab，保证数字与结果口径一致
   filterBySource(COMPANIES, "all").forEach(c => {
     const s = getState(c.id);
     stats.total++;
     if (s.starred) stats.starred++;
+    if (s.dismissed) stats.dismissed++;
     if (s.status === "未投递") stats.pending++;
     if (s.status === "已投递") stats.applied++;
     if (s.status === "笔试中") stats.test++;
@@ -33,6 +34,8 @@ function renderDashboard() {
     { filter: "已拒绝", icon: "🚫", num: stats.rejected, label: "已拒绝", cls: "", fn: "viewByStatus('已拒绝')" },
     { filter: "starred", icon: "⭐", num: stats.starred, label: "已收藏", cls: "", fn: "viewStarred()" }
   ];
+  // v9.9: 有屏蔽的公司才显示卡片（点击 = 勾选「显示已屏蔽」并切到全部 tab，保持数字与结果一致）
+  if (stats.dismissed > 0) dashCards.push({ filter: "dismissed", icon: "⊘", num: stats.dismissed, label: "已屏蔽", cls: "", fn: "viewDismissed()" });
   document.getElementById("dashboard").innerHTML = dashCards.map(d =>
     `<div class="dash-card ${d.cls}" data-filter="${d.filter}" role="button" tabindex="0" onclick="${d.fn}" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();${d.fn}}" title="查看 ${d.label}">
       <div class="dash-icon">${d.icon}</div><div class="dash-num">${d.num}</div><div class="dash-label">${d.label}</div>
@@ -65,6 +68,15 @@ function viewStarred() {
   ensureListView();
   ensureAllSource();
   filters.starred = !filters.starred;
+  refreshFilterUI();
+  applyFilters();
+}
+
+// v9.9: 点仪表盘「已屏蔽」卡片 → 勾选「显示已屏蔽」切到全部 tab
+function viewDismissed() {
+  ensureListView();
+  ensureAllSource();
+  filters.showDismissed = !filters.showDismissed;
   refreshFilterUI();
   applyFilters();
 }
@@ -160,7 +172,7 @@ function renderTable(data) {
 
     return `
     <tr class="${starredClass}">
-      <td><button class="star-btn ${s.starred ? "active" : ""}" onclick="toggleStar('${c.id}')" data-star-id="${c.id}" aria-pressed="${s.starred}" aria-label="收藏 ${escapeHtml(c.name)}">${starIcon}</button></td>
+      <td><button class="star-btn ${s.starred ? "active" : ""}" onclick="toggleStar('${c.id}')" data-star-id="${c.id}" aria-pressed="${s.starred}" aria-label="收藏 ${escapeHtml(c.name)}">${starIcon}</button><button class="dismiss-btn ${s.dismissed ? "active" : ""}" onclick="toggleDismiss('${c.id}')" data-dismiss-id="${c.id}" aria-pressed="${s.dismissed}" aria-label="屏蔽 ${escapeHtml(c.name)}" title="不感兴趣/暂无合适岗位，屏蔽后默认隐藏">⊘</button></td>
       <td><strong>${nameWithSite(c, filters.keyword)}</strong></td>
       <td><span class="type-tag ${escapeHtml(c.type)}">${escapeHtml(c.type)}</span>${programTag}${natureTag}</td>
       <td><div class="job-tags">${jobTags}</div></td>
@@ -207,6 +219,7 @@ function renderCards(data) {
       <div class="card-header">
         <h3>${nameWithSite(c, filters.keyword)}</h3>
         <button class="star-btn ${s.starred ? "active" : ""}" onclick="toggleStar('${c.id}')" data-star-id="${c.id}" aria-pressed="${s.starred}" aria-label="收藏 ${escapeHtml(c.name)}">${starIcon}</button>
+        <button class="dismiss-btn ${s.dismissed ? "active" : ""}" onclick="toggleDismiss('${c.id}')" data-dismiss-id="${c.id}" aria-pressed="${s.dismissed}" aria-label="屏蔽 ${escapeHtml(c.name)}" title="不感兴趣/暂无合适岗位，屏蔽后默认隐藏">⊘</button>
       </div>
       <div class="card-body">
         <span class="type-tag ${escapeHtml(c.type)}">${escapeHtml(c.type)}</span>${programTag}${natureTag}${catTags}
