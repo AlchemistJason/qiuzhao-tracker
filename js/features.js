@@ -440,20 +440,25 @@ function switchTab(tab) {
 let isRestoringHash = false;  // popstate 还原期间置 true，避免还原动作再次 pushState 污染历史
 function updateNavUI() {
   const todo = currentView === "todo";
+  const tabA = document.getElementById("tabAll");
   const tabR = document.getElementById("tabReferral");
   if (!tabR) return;
+  if (tabA) tabA.classList.toggle("active", !todo && currentSource === "all");
   tabR.classList.toggle("active", !todo && currentSource === "referral");
   document.getElementById("tabPool").classList.toggle("active", !todo && currentSource === "pool");
   document.getElementById("todoViewBtn").classList.toggle("active", todo);
   // tab aria 语义同步
+  if (tabA) tabA.setAttribute("aria-selected", String(!todo && currentSource === "all"));
   tabR.setAttribute("aria-selected", String(!todo && currentSource === "referral"));
   document.getElementById("tabPool").setAttribute("aria-selected", String(!todo && currentSource === "pool"));
   document.getElementById("todoViewBtn").setAttribute("aria-selected", String(todo));
   const lv = document.getElementById("listViewToggle");
   if (lv) lv.classList.toggle("hidden", todo);
-  // 数量角标
-  document.getElementById("tabReferralCount").textContent = COMPANIES.filter(c => !c.discovered).length;
-  document.getElementById("tabPoolCount").textContent = COMPANIES.filter(c => !!c.discovered).length;
+  // 数量角标（v9.2: 口径与 filterBySource 一致——全部=合并去重总数；校招池含毕业保留条目）
+  const tac = document.getElementById("tabAllCount");
+  if (tac) tac.textContent = filterBySource(COMPANIES, "all").length;
+  document.getElementById("tabReferralCount").textContent = filterBySource(COMPANIES, "referral").length;
+  document.getElementById("tabPoolCount").textContent = filterBySource(COMPANIES, "pool").length;
   const urgentN = todoItemsCache.filter(t => !t.done && !t.ignored && t.days !== null && t.days <= 2).length;
   const tc = document.getElementById("tabTodoCount");
   if (tc) { tc.textContent = urgentN; tc.classList.toggle("hidden", urgentN === 0); }
@@ -929,7 +934,7 @@ function toggleTheme() {
 // ============================================================
 window.addEventListener("popstate", function() {
   const h = String(location.hash || "").replace(/^#/, "");
-  if (h !== "referral" && h !== "pool" && h !== "todo") return;
+  if (h !== "all" && h !== "referral" && h !== "pool" && h !== "todo") return;
   isRestoringHash = true;
   try {
     if (h === "todo") {

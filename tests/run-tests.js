@@ -783,6 +783,9 @@ if (filterBySource) {
   const list2 = [{ id: "g", inPool: true }, { id: "h" }];
   t("来源过滤: 毕业条目同时进校招池和内推", filterBySource(list2, "pool").map(c => c.id).join(",") === "g"
     && filterBySource(list2, "referral").map(c => c.id).join(",") === "g,h");
+  // v9.2: all=合并视图（内推+校招池，单数组天然去重），仪表盘全局统计与「全部」tab 的口径
+  t("来源过滤: all 返回全量（含 discovered 与毕业条目）", filterBySource(list.concat(list2), "all").length === 5);
+  t("来源过滤: all 不修改原数组（返回副本）", (() => { const src = [{ id: "a" }]; const out = filterBySource(src, "all"); out.push({ id: "b" }); return src.length === 1; })());
 }
 
 // v8.1: debounce 必须透传事件参数（丢参曾导致搜索框输入必抛 TypeError）

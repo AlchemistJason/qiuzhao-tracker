@@ -11,11 +11,11 @@ if (navigator.storage && navigator.storage.persist) navigator.storage.persist().
 loadUIPrefs();         // v7.2: 恢复上次的视图/排序/筛选偏好
 renderDashboard();
 validateCompanies();   // 数据完整性校验（A3）
-// v7.7: URL hash 路由（#pool / #todo / #referral），刷新保持所在 tab
+// v7.7: URL hash 路由（#all / #pool / #todo / #referral），刷新保持所在 tab
 // 必须先于 renderFilterPanel 执行，否则 #pool 首屏筛选面板选项会错来自内推来源
 (function() {
   const h = (location.hash || "").replace("#", "");
-  if (h === "pool" || h === "referral") currentSource = h;
+  if (h === "all" || h === "pool" || h === "referral") currentSource = h;
   if (h === "todo") currentView = "todo";
 })();
 renderFilterPanel();   // v5.4: 筛选下拉面板（地点/行业/岗位 checkbox）

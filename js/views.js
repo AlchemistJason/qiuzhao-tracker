@@ -7,8 +7,9 @@
 // ============================================================
 function renderDashboard() {
   const stats = { total: 0, applied: 0, test: 0, interview: 0, offer: 0, rejected: 0, starred: 0, pending: 0 };
-  // v7.8: 数字按当前来源 tab 统计，保证卡片数字与点击筛选结果口径一致
-  filterBySource(COMPANIES, currentSource).forEach(c => {
+  // v9.2: 仪表盘=全局进度总览，跨内推+校招池合并统计（COMPANIES 单数组 + CI 唯一性约束，天然去重，
+  // 同一家公司内推/校招链接不同也只算一条）；点击卡片统一下钻到「全部」tab，保证数字与结果口径一致
+  filterBySource(COMPANIES, "all").forEach(c => {
     const s = getState(c.id);
     stats.total++;
     if (s.starred) stats.starred++;
@@ -46,8 +47,14 @@ function ensureListView() {
   if (currentView === "todo") switchView(preferredListView || "table");
 }
 
+// v9.2: 仪表盘数字是全局口径，点击卡片统一下钻到「全部」tab 展示合并结果
+function ensureAllSource() {
+  if (currentSource !== "all") switchTab("all");
+}
+
 function viewByStatus(status) {
   ensureListView();
+  ensureAllSource();
   if (filters.status.has(status)) filters.status.delete(status);
   else { filters.status.clear(); filters.status.add(status); }
   refreshFilterUI();
@@ -56,6 +63,7 @@ function viewByStatus(status) {
 
 function viewStarred() {
   ensureListView();
+  ensureAllSource();
   filters.starred = !filters.starred;
   refreshFilterUI();
   applyFilters();
@@ -63,6 +71,7 @@ function viewStarred() {
 
 function viewAll() {
   ensureListView();
+  ensureAllSource();
   filters.status.clear();
   filters.starred = false;
   refreshFilterUI();

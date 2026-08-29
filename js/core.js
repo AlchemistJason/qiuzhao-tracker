@@ -69,7 +69,7 @@ const filters = {
 
 let currentSort = { field: null, asc: true };
 let currentView = (window.innerWidth <= 768) ? "card" : "table";
-let currentSource = "referral";  // v7.7: 来源分页 referral=内推(data.js) / pool=校招池(discovered.json)
+let currentSource = "referral";  // v7.7: 来源分页 referral=内推(data.js) / pool=校招池(discovered.json)；v9.2: all=合并视图
 let preferredListView = currentView;  // v7.7: 从待办切回列表时恢复表格/卡片（初始跟随当前视图）
 let userState = null;
 
@@ -225,9 +225,12 @@ function discoveredToCompany(it) {
   };
 }
 
-// v7.7: 来源分页过滤（纯函数可测）：referral=内推清单 / pool=校招池（discovered 标记驱动）
+// v7.7: 来源分页过滤（纯函数可测）：referral=内推清单 / pool=校招池（discovered 标记驱动）/ all=合并视图
 function filterBySource(list, source) {
   // v9.1: 毕业条目（inPool）在内推 tab 正常显示，同时也在校招池 tab 可见（池=关注清单）
+  // v9.2: all=内推+校招池合并视图。COMPANIES 是单数组且 CI 保证 id/名称唯一，合并天然去重——
+  // 同一家公司的内推链接与校招官网链接是同一条目上的不同字段，不会产生两条记录。
+  if (source === "all") return list.slice();
   return list.filter(c => source === "pool" ? (c.discovered || c.inPool) : !c.discovered);
 }
 

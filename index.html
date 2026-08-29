@@ -22,9 +22,9 @@
   } catch(e) {}
 })();
 </script>
-<script src="vendor/qrcode.min.js?v=9.1" defer></script>
+<script src="vendor/qrcode.min.js?v=9.2" defer></script>
 <!-- html5-qrcode 改为按需动态加载（见 js/export-sync.js startQrScanner），避免 ~300KB 全量下载 -->
-<link rel="stylesheet" href="style.css?v=9.1">
+<link rel="stylesheet" href="style.css?v=9.2">
 </head>
 <body>
 
@@ -105,10 +105,12 @@
   </div>
 
   <!-- v7.8: 导航行——来源 tab（下划线式导航）居左，表格/卡片分段控件居右，与工具栏分离 -->
+  <!-- v9.2: 新增「全部」tab——内推+校招池合并视图（同一家公司只算一次），仪表盘卡片点击下钻到此 -->
   <div class="nav-row">
     <div class="source-tabs" role="tablist">
-      <button id="tabReferral" class="active" role="tab" onclick="switchTab('referral')" title="76 家精选内推码清单，点公司名直达官网">🏠 内推 <span class="tab-count" id="tabReferralCount"></span></button>
-      <button id="tabPool" role="tab" onclick="switchTab('pool')" title="爬虫聚合的 168 家官方校招入口，设状态即开始跟踪">🆕 校招池 <span class="tab-count" id="tabPoolCount"></span></button>
+      <button id="tabAll" role="tab" onclick="switchTab('all')" title="内推+校招池合并视图，同一家公司只算一次">🌐 全部 <span class="tab-count" id="tabAllCount"></span></button>
+      <button id="tabReferral" class="active" role="tab" onclick="switchTab('referral')" title="精选内推码清单，点公司名直达官网">🏠 内推 <span class="tab-count" id="tabReferralCount"></span></button>
+      <button id="tabPool" role="tab" onclick="switchTab('pool')" title="爬虫聚合的官方校招入口，设状态即开始跟踪">🆕 校招池 <span class="tab-count" id="tabPoolCount"></span></button>
       <button id="todoViewBtn" role="tab" onclick="switchTab('todo')" title="全部待办事项">✅ 待办 <span class="tab-count tab-urgent hidden" id="tabTodoCount"></span></button>
     </div>
     <div class="view-toggle" id="listViewToggle">
@@ -219,14 +221,14 @@
   </div>
 </div>
 
-<script src="data.js?v=9.1"></script>
-<script src="official-sites.js?v=9.1"></script>  <!-- v7.5: 官方校招门户固定清单 -->
+<script src="data.js?v=9.2"></script>
+<script src="official-sites.js?v=9.2"></script>  <!-- v7.5: 官方校招门户固定清单 -->
 <!-- 求职Agent · 模块化加载（顺序敏感：core 基础层 → views 视图 → features 交互 → export-sync 导出同步 → main 入口） -->
-<script src="js/core.js?v=9.1"></script>
-<script src="js/views.js?v=9.1"></script>
-<script src="js/features.js?v=9.1"></script>
-<script src="js/export-sync.js?v=9.1"></script>
-<script src="js/main.js?v=9.1"></script>
+<script src="js/core.js?v=9.2"></script>
+<script src="js/views.js?v=9.2"></script>
+<script src="js/features.js?v=9.2"></script>
+<script src="js/export-sync.js?v=9.2"></script>
+<script src="js/main.js?v=9.2"></script>
 
 </body>
 </html>

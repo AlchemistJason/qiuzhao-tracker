@@ -37,6 +37,7 @@ push 到 `main` → GitHub Actions 跑语法检查 + `node tests/run-tests.js`�
 - **每次改动 `data.js` 必须 bump 其头部 `window.DATA_VERSION`**（标题栏"数据版本"展示的就是它，是用户判断数据新鲜度的唯一线索；v8.4 合并 34 家时漏 bump，停在 6，已修复为 7）。
 - 用户状态存浏览器 localStorage（key 固定），任何改动不得破坏既有 key 和数据结构；迁移逻辑必须有测试。
 - 筛选维度（状态/地点/行业/性质/岗位）跨来源（内推/校招池）语义一致，选项按当前 tab scoped。
+- **仪表盘（顶部统计卡片）是全局口径**：跨内推+校招池合并统计（COMPANIES 单数组 + CI 唯一性约束，天然去重——同一家公司内推/校招链接不同也只算一条）；点击卡片统一下钻到「全部」tab（`currentSource === "all"`，`filterBySource` 原样返回全量），保证数字与点击结果一致（v9.2 起，取代了 v7.8 的按来源统计）。URL hash 支持 `#all`。
 - **CSS 红线：`::before/::after` 伪元素若用 `position: absolute; inset: 0`，宿主元素必须 `position: relative`**——否则伪元素相对初始包含块铺开成全页隐形护盾，截获全页面指针事件（v8.9 前 #themeBtn 因此导致悬停闪烁，有测试断言）。
 
 ## 验收流程
