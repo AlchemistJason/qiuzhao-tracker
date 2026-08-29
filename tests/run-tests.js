@@ -788,6 +788,32 @@ if (filterBySource) {
   t("来源过滤: all 不修改原数组（返回副本）", (() => { const src = [{ id: "a" }]; const out = filterBySource(src, "all"); out.push({ id: "b" }); return src.length === 1; })());
 }
 
+// v9.3: 筛选选项计数（countByDim，口径与 matchFilters 一致）
+const countByDim = extractFn("countByDim", { ...DEP,
+  JOB_KEYWORDS: ["算法", "研发", "开发", "测试", "数据", "产品", "运营", "市场", "设计", "美术"]
+});
+if (countByDim) {
+  const scoped = [
+    { id: "a", location: "深圳/广州", category: ["互联网"], nature: "民企", jobs: ["算法工程师", "后端开发"] },
+    { id: "b", location: "深圳", category: ["互联网", "游戏"], nature: "民企", jobs: ["算法"] },
+    { id: "c", location: "北京", category: ["银行"], nature: "", jobs: [] }
+  ];
+  const cnt = countByDim(scoped);
+  t("选项计数: 地点按 / 拆分且同公司同城只计一次", cnt.locations["深圳"] === 2 && cnt.locations["广州"] === 1 && cnt.locations["北京"] === 1);
+  t("选项计数: 行业按 category 计数", cnt.industries["互联网"] === 2 && cnt.industries["游戏"] === 1 && cnt.industries["银行"] === 1);
+  t("选项计数: 性质精确匹配，空值不计", cnt.natures["民企"] === 2 && !cnt.natures[""]);
+  t("选项计数: 岗位按标准词命中且同公司同词只计一次", cnt.jobs["算法"] === 2 && cnt.jobs["开发"] === 1 && !cnt.jobs["产品"]);
+}
+
+// v9.3: 分页页码窗口（pageWindow：当前页 ±2 + 首尾页）
+const pageWindow = extractFn("pageWindow");
+if (pageWindow) {
+  t("页码窗口: 单页只有首页", pageWindow(1, 1).join(",") === "1");
+  t("页码窗口: 首页附近无省略", pageWindow(1, 14).join(",") === "1,2,3,14");
+  t("页码窗口: 中间页带首尾", pageWindow(7, 14).join(",") === "1,5,6,7,8,9,14");
+  t("页码窗口: 末页附近无省略", pageWindow(14, 14).join(",") === "1,12,13,14");
+}
+
 // v8.1: debounce 必须透传事件参数（丢参曾导致搜索框输入必抛 TypeError）
 t("debounce: 事件参数透传", /function\s+debounce[\s\S]*?fn\.apply\(this,\s*args\)/.test(appJs));
 

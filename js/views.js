@@ -227,8 +227,11 @@ function renderCards(data) {
 // ============================================================
 // 筛选 + 搜索 + 排序
 // ============================================================
-function applyFilters() {
+// v9.3: resetPage 默认 true——筛选/排序/搜索/切 tab 都回到第 1 页；
+// 仅翻页（goPage）和表格/卡片视图切换（switchView）传 false 保持页码
+function applyFilters(resetPage) {
   saveUIPrefs();  // v7.2: 所有筛选/排序/视图操作都汇聚到这里，顺带持久化
+  if (resetPage !== false) currentPage = 1;
   // v7.7: 先按来源分页（内推/校招池），再多条件筛选（同维 OR / 跨维 AND），纯函数 matchFilters 驱动
   let filtered = filterBySource(COMPANIES, currentSource).filter(c => matchFilters(c, filters, getState));
 
@@ -261,9 +264,17 @@ function applyFilters() {
     filtered.sort((a, b) => (TYPE_ORDER[a.type] ?? 9) - (TYPE_ORDER[b.type] ?? 9));
   }
 
-  if (currentView === "table") renderTable(filtered);
+  // v9.3: 分页切片（待办视图不分页，它有自己的完整面板）
+  const total = filtered.length;
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  if (currentPage > totalPages) currentPage = totalPages;
+  const pageItems = currentView === "todo" ? filtered
+    : filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+
+  if (currentView === "table") renderTable(pageItems);
   else if (currentView === "todo") renderTodoView();
-  else renderCards(filtered);
+  else renderCards(pageItems);
+  renderPagination(total, totalPages);
 
   // 无结果提示带搜索词（避免用户困惑"怎么没反应"）
   const noRes = document.getElementById("noResults");
@@ -273,6 +284,44 @@ function applyFilters() {
       ? `没有找到与"${filters.keyword}"匹配的企业 😕`
       : "没有找到匹配的企业 😕";
   }
+}
+
+// v9.3: 页码窗口（纯函数可测）：当前页 ±2 + 首尾页
+function pageWindow(current, totalPages) {
+  const pages = [];
+  for (let p = 1; p <= totalPages; p++) {
+    if (p === 1 || p === totalPages || Math.abs(p - current) <= 2) pages.push(p);
+  }
+  return pages;
+}
+
+// v9.3: 分页条（超过 1 页才显示）
+function renderPagination(total, totalPages) {
+  const el = document.getElementById("pagination");
+  if (!el) return;
+  if (currentView === "todo" || totalPages <= 1) { el.classList.add("hidden"); el.innerHTML = ""; return; }
+  el.classList.remove("hidden");
+  const pages = pageWindow(currentPage, totalPages);
+  let last = 0;
+  const nums = pages.map(p => {
+    const gap = last && p - last > 1 ? `<span class="pg-gap">…</span>` : "";
+    last = p;
+    return gap + `<button class="pg-num ${p === currentPage ? "active" : ""}" onclick="goPage(${p})" ${p === currentPage ? 'aria-current="page"' : ""}>${p}</button>`;
+  }).join("");
+  el.innerHTML =
+    `<button class="pg-nav" onclick="goPage(${currentPage - 1})" ${currentPage === 1 ? "disabled" : ""} aria-label="上一页">‹</button>` +
+    nums +
+    `<button class="pg-nav" onclick="goPage(${currentPage + 1})" ${currentPage === totalPages ? "disabled" : ""} aria-label="下一页">›</button>` +
+    `<span class="pg-info">第 ${currentPage}/${totalPages} 页 · 共 ${total} 家</span>`;
+}
+
+function goPage(p) {
+  const total = filterBySource(COMPANIES, currentSource).filter(c => matchFilters(c, filters, getState)).length;
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  currentPage = Math.min(Math.max(1, p), totalPages);
+  applyFilters(false);
+  const anchor = document.querySelector(".nav-row");
+  if (anchor) anchor.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 

@@ -270,8 +270,24 @@ function groupJobsByDirection(jobs) {
   return out;
 }
 
-// 树形分组渲染（分级目录：组头可折叠，默认收起，叶子 checkbox 多选）
-function treeHTML(groups, dim, keyField) {
+// v9.3: 各筛选取值在当前来源内命中的公司数（纯函数可测；口径与 matchFilters 一致——
+// 地点按 "/" 拆分、行业按 category、性质精确匹配、岗位按标准词 includes，同一家公司同一取值只计一次）
+function countByDim(scoped) {
+  const counts = { locations: {}, industries: {}, natures: {}, jobs: {} };
+  const bump = (dim, key) => { counts[dim][key] = (counts[dim][key] || 0) + 1; };
+  scoped.forEach(c => {
+    new Set((c.location || "").split("/").map(s => s.trim()).filter(Boolean)).forEach(l => bump("locations", l));
+    new Set(c.category).forEach(cat => bump("industries", cat));
+    if (c.nature) bump("natures", c.nature);
+    const hit = new Set();
+    (c.jobs || []).forEach(j => JOB_KEYWORDS.forEach(kw => { if (j.includes(kw)) hit.add(kw); }));
+    hit.forEach(kw => bump("jobs", kw));
+  });
+  return counts;
+}
+
+// 树形分组渲染（分级目录：组头可折叠，默认收起，叶子 checkbox 多选；v9.3 叶子带命中数量）
+function treeHTML(groups, dim, keyField, counts) {
   return groups.map(g =>
     `<div class="fp-group collapsed">
       <button type="button" class="fp-group-head" onclick="this.parentNode.classList.toggle('collapsed')">
@@ -279,7 +295,7 @@ function treeHTML(groups, dim, keyField) {
       </button>
       <div class="fp-group-body">
         ${(g.cities || g.jobs || g.values).map(v =>
-          `<label class="fp-opt"><input type="checkbox" data-dim="${dim}" data-value="${escapeHtml(v)}" onchange="toggleFilter('${dim}','${jsArg(v)}')"> <span>${escapeHtml(v)}</span></label>`
+          `<label class="fp-opt"><input type="checkbox" data-dim="${dim}" data-value="${escapeHtml(v)}" onchange="toggleFilter('${dim}','${jsArg(v)}')"> <span>${escapeHtml(v)}</span><span class="fp-opt-count">${(counts && counts[dim][v]) || 0}</span></label>`
         ).join("")}
       </div>
     </div>`
@@ -313,15 +329,16 @@ function scopedNatures(scoped) {
 
 // v5.6: 筛选下拉面板（分级目录：地点按省份、行业按行业组、岗位按方向，性质平铺）
 function renderFilterPanel() {
-  const optsHTML = (values, dim) => values.map(v =>
-    `<label class="fp-opt"><input type="checkbox" data-dim="${dim}" data-value="${escapeHtml(v)}" onchange="toggleFilter('${dim}','${jsArg(v)}')"> <span>${escapeHtml(v)}</span></label>`
+  const optsHTML = (values, dim, counts) => values.map(v =>
+    `<label class="fp-opt"><input type="checkbox" data-dim="${dim}" data-value="${escapeHtml(v)}" onchange="toggleFilter('${dim}','${jsArg(v)}')"> <span>${escapeHtml(v)}</span><span class="fp-opt-count">${(counts && counts[dim][v]) || 0}</span></label>`
   ).join("");
   const scoped = filterBySource(COMPANIES, currentSource);  // v7.7: 选项只取自当前来源
-  document.getElementById("fpLoc").innerHTML = treeHTML(groupCitiesByProvince(extractCities(scoped)), "locations", "province");
-  document.getElementById("fpInd").innerHTML = treeHTML(groupIndustries(scopedIndustries(scoped)), "industries", "group");
+  const counts = countByDim(scoped);  // v9.3: 选项命中数量
+  document.getElementById("fpLoc").innerHTML = treeHTML(groupCitiesByProvince(extractCities(scoped)), "locations", "province", counts);
+  document.getElementById("fpInd").innerHTML = treeHTML(groupIndustries(scopedIndustries(scoped)), "industries", "group", counts);
   const natEl = document.getElementById("fpNat");
-  if (natEl) natEl.innerHTML = optsHTML(scopedNatures(scoped), "natures");
-  document.getElementById("fpJob").innerHTML = treeHTML(groupJobsByDirection(extractStandardJobs(scoped, 2)), "jobs", "dir");
+  if (natEl) natEl.innerHTML = optsHTML(scopedNatures(scoped), "natures", counts);
+  document.getElementById("fpJob").innerHTML = treeHTML(groupJobsByDirection(extractStandardJobs(scoped, 2)), "jobs", "dir", counts);
 }
 
 // 开关筛选面板 + 点击外部 / Esc 关闭
@@ -406,7 +423,7 @@ function switchView(view) {
   document.getElementById("tableViewBtn").classList.toggle("active", view === "table");
   document.getElementById("cardViewBtn").classList.toggle("active", view === "card");
   updateNavUI();
-  applyFilters();
+  applyFilters(false);  // v9.3: 表格/卡片切换保持当前页码
 }
 
 // v7.7: 来源分页 tab（内推 / 校招池 / 待办）

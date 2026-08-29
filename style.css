@@ -853,6 +853,23 @@ mark.hl {
 }
 .fp-opt:hover { background: var(--accent-glow); color: var(--text); }
 .fp-opt input { accent-color: var(--accent); width: 14px; height: 14px; flex: 0 0 auto; }
+/* v9.3: 筛选选项命中数量 */
+.fp-opt-count { margin-left: auto; font-size: 11px; color: var(--text-muted); flex: 0 0 auto; }
+
+/* v9.3: 分页条 */
+.pagination { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 6px; margin: 14px 0 8px; }
+.pg-num, .pg-nav {
+  min-width: 32px; height: 32px; padding: 0 8px;
+  border: 1px solid var(--border); border-radius: 8px;
+  background: var(--bg-card, transparent); color: var(--text-secondary);
+  cursor: pointer; font-size: 13px; transition: border-color 0.15s, background 0.15s;
+}
+.pg-num:hover, .pg-nav:hover { border-color: var(--accent); color: var(--text); }
+.pg-num.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+.pg-nav:disabled { opacity: 0.35; cursor: default; }
+.pg-nav:disabled:hover { border-color: var(--border); color: var(--text-secondary); }
+.pg-gap { color: var(--text-muted); font-size: 13px; padding: 0 2px; }
+.pg-info { color: var(--text-muted); font-size: 12px; margin-left: 8px; }
 .fp-foot {
   margin-top: 12px;
   padding-top: 10px;

@@ -70,6 +70,9 @@ const filters = {
 let currentSort = { field: null, asc: true };
 let currentView = (window.innerWidth <= 768) ? "card" : "table";
 let currentSource = "referral";  // v7.7: 来源分页 referral=内推(data.js) / pool=校招池(discovered.json)；v9.2: all=合并视图
+// v9.3: 列表分页（每页 20 条；筛选/排序/搜索/切 tab 时重置回第 1 页，翻页/切换表格卡片视图时保持）
+const PAGE_SIZE = 20;
+let currentPage = 1;
 let preferredListView = currentView;  // v7.7: 从待办切回列表时恢复表格/卡片（初始跟随当前视图）
 let userState = null;
 
