@@ -261,7 +261,32 @@ function defaultState() {
   COMPANIES.forEach(c => {
     companies[c.id] = { status: "未投递", starred: false, note: "", lastUpdate: null, jobs: {}, history: [] };
   });
-  return { version: 3, companies };
+  return { version: 3, companies, dyn: { seen: [], done: [], ignored: [] } };  // v9.4: 邮件分诊随账号同步
+}
+
+// v9.4: 邮件动态分诊三列表（seen=已分诊 / done=已完成 / ignored=已忽略）并入 userState.dyn，
+// 随账号云同步（此前是独立 localStorage 键，换设备丢失）。缺省/脏数据兜底。
+function sanitizeDyn(d) {
+  const arr = v => Array.isArray(v) ? v.filter(x => typeof x === "string") : [];
+  return { seen: arr(d && d.seen), done: arr(d && d.done), ignored: arr(d && d.ignored) };
+}
+
+// v9.4: 一次性迁移——旧的三个独立 localStorage 分诊键并入 userState.dyn 后删除
+// （在 main.js 里 loadState 之后调用一次；并集合并防重复，saveState 落盘并触发云同步）
+function migrateDynLegacyKeys() {
+  const KEYS = [["qiuzhao2027.dynSeen", "seen"], ["qiuzhao2027.dynDone", "done"], ["qiuzhao2027.dynIgnored", "ignored"]];
+  let changed = false;
+  KEYS.forEach(([k, kind]) => {
+    let arr = null;
+    try { arr = JSON.parse(localStorage.getItem(k)); } catch(e) {}
+    if (Array.isArray(arr) && arr.length) {
+      const dst = userState.dyn[kind];
+      arr.forEach(id => { if (typeof id === "string" && !dst.includes(id)) dst.push(id); });
+      changed = true;
+    }
+    if (arr !== null) { try { localStorage.removeItem(k); } catch(e) {} }
+  });
+  if (changed) saveState();
 }
 
 // ============================================================
@@ -288,9 +313,9 @@ function shouldAdoptStatus(prev, next) {
   return (JOB_STATUS_RANK[next] || 0) >= (JOB_STATUS_RANK[prev] || 0);
 }
 
-// v2 → v3 无损迁移（纯函数可测）：老状态保留，补 jobs 空映射
+// v2 → v3 无损迁移（纯函数可测）：老状态保留，补 jobs 空映射；v9.4: dyn 透传并兜底
 function upgradeToV3(state) {
-  const v = { version: 3, companies: {} };
+  const v = { version: 3, companies: {}, dyn: sanitizeDyn(state.dyn) };
   Object.keys(state.companies || {}).forEach(id => {
     // 原型链防护：跳过计算键中的危险属性名，防 __proto__ 等污染
     if (id === "__proto__" || id === "constructor" || id === "prototype") return;
@@ -314,8 +339,9 @@ function loadState() {
   if (raw) {
     try {
       const parsed = JSON.parse(raw);
-      // v3 格式直接使用
+      // v3 格式直接使用（v9.4: dyn 缺省/脏数据兜底）
       if (parsed && parsed.version === 3 && parsed.companies) {
+        parsed.dyn = sanitizeDyn(parsed.dyn);
         return parsed;
       }
       // v2 格式 → v3 迁移（补 jobs 映射，老数据无损）

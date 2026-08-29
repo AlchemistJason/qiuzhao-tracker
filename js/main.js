@@ -6,6 +6,7 @@
 // 初始化
 // ============================================================
 userState = loadState();
+migrateDynLegacyKeys();  // v9.4: 旧独立分诊键一次性并入 userState.dyn（随账号云同步）
 // 请求持久存储权限，降低浏览器自动清理 localStorage 导致状态丢失的概率
 if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
 loadUIPrefs();         // v7.2: 恢复上次的视图/排序/筛选偏好

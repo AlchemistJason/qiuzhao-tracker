@@ -36,6 +36,7 @@ push 到 `main` → GitHub Actions 跑语法检查 + `node tests/run-tests.js`�
 - 改动任何 `js/*.js` / `style.css` / `data.js` / `official-sites.js` 后，**必须同步 bump `index.html` 里全部 9 处 `?v=` 缓存戳**（CI 有一致性断言），否则用户端吃到旧缓存。
 - **每次改动 `data.js` 必须 bump 其头部 `window.DATA_VERSION`**（标题栏"数据版本"展示的就是它，是用户判断数据新鲜度的唯一线索；v8.4 合并 34 家时漏 bump，停在 6，已修复为 7）。
 - 用户状态存浏览器 localStorage（key 固定），任何改动不得破坏既有 key 和数据结构；迁移逻辑必须有测试。
+- **userState（v3）= 账号同步的全部内容**：`companies`（进度/收藏/备注/岗位/历史）+ `dyn`（邮件分诊三列表 seen/done/ignored，v9.4 起并入，此前是独立键 `qiuzhao2027.dynSeen/dynDone/dynIgnored`，由 `migrateDynLegacyKeys` 一次性迁入后删除）。云合并时 companies 按 lastUpdate 公司级合并、dyn 三列表取并集。待办事项的完成/忽略标记就是 dyn.done/dyn.ignored，因此也随账号同步。
 - 筛选维度（状态/地点/行业/性质/岗位）跨来源（内推/校招池）语义一致，选项按当前 tab scoped。
 - **仪表盘（顶部统计卡片）是全局口径**：跨内推+校招池合并统计（COMPANIES 单数组 + CI 唯一性约束，天然去重——同一家公司内推/校招链接不同也只算一条）；点击卡片统一下钻到「全部」tab（`currentSource === "all"`，`filterBySource` 原样返回全量），保证数字与点击结果一致（v9.2 起，取代了 v7.8 的按来源统计）。URL hash 支持 `#all`。
 - **列表分页（v9.3）**：每页 `PAGE_SIZE=20` 条，筛选/排序/搜索/切 tab 调 `applyFilters()` 默认重置回第 1 页；翻页（`goPage`）和表格/卡片视图切换传 `applyFilters(false)` 保持页码。待办视图不分页。筛选面板选项带命中数量（`countByDim`，口径与 `matchFilters` 一致）。

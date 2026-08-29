@@ -140,7 +140,7 @@ const matchFilters = extractFn("matchFilters", DEP);
 const formatFilterParts = extractFn("formatFilterParts", DEP);
 const countFiltered = extractFn("countFiltered", { ...DEP, matchFilters, filterBySource: extractFn("filterBySource"), currentSource: "referral" });
 const deriveCompanyStatus = extractFn("deriveCompanyStatus", { ...DEP, JOB_STATUS_RANK: { "Offer": 6, "面试中": 5, "笔试中": 4, "已投递": 3, "已拒绝": 2, "未投递": 1 } });
-const upgradeToV3 = extractFn("upgradeToV3", DEP);
+const upgradeToV3 = extractFn("upgradeToV3", { ...DEP, sanitizeDyn: extractFn("sanitizeDyn") });
 const groupCitiesByProvince = extractFn("groupCitiesByProvince", { ...DEP,
   CITY_PROVINCE: { "深圳": "广东", "广州": "广东", "苏州": "江苏", "杭州": "浙江", "上海": "上海", "北京": "北京", "成都": "四川", "全国多地": "全国" }
 });
@@ -258,6 +258,13 @@ if (mergeCloudState) {
   ).companies.a.history;
   t("历史合并: 双侧并集去重", mHist.length === 3);
   t("历史合并: 按时间排序", mHist[0].time === 10 && mHist[2].time === 50);
+  // v9.4: 邮件分诊三列表（dyn）双侧并集，缺省侧兜底为空数组
+  const mDyn = mergeCloudState(
+    { companies: {}, dyn: { seen: ["m1"], done: ["m1"], ignored: [] } },
+    { companies: {}, dyn: { seen: ["m2"], done: [], ignored: ["m3"] } }
+  ).dyn;
+  t("dyn合并: seen/done/ignored 取双侧并集", mDyn.seen.join(",") === "m1,m2" && mDyn.done.join(",") === "m1" && mDyn.ignored.join(",") === "m3");
+  t("dyn合并: 双侧缺 dyn 不报错", (() => { const m = mergeCloudState({ companies: {} }, { companies: {} }); return m.dyn.seen.length === 0 && m.dyn.done.length === 0 && m.dyn.ignored.length === 0; })());
 }
 
 // ---------- v7.2 新增功能 ----------
@@ -364,6 +371,10 @@ if (upgradeToV3) {
   t("迁移: 补 jobs 空映射", v3.companies.shopee.jobs && Object.keys(v3.companies.shopee.jobs).length === 0);
   const v3b = upgradeToV3({ version: 3, companies: { xiaomi: { status: "未投递", starred: false, note: "", lastUpdate: null, jobs: { "算法岗": "笔试中" } } } });
   t("迁移: v3 幂等(已有 jobs 保留)", v3b.companies.xiaomi.jobs["算法岗"] === "笔试中");
+  // v9.4: dyn（邮件分诊）透传 + 脏数据兜底
+  const v3c = upgradeToV3({ version: 3, companies: {}, dyn: { seen: ["m1", 42], done: "oops", ignored: null } });
+  t("迁移: dyn 透传并过滤非字符串", v3c.dyn.seen.join(",") === "m1" && Array.isArray(v3c.dyn.done) && v3c.dyn.done.length === 0 && v3c.dyn.ignored.length === 0);
+  t("迁移: 老数据无 dyn 补空三列表", v3.dyn.seen.length === 0 && v3.dyn.done.length === 0 && v3.dyn.ignored.length === 0);
 }
 
 if (getWeeklyStats) {

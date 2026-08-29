@@ -543,7 +543,7 @@ function setStatus(id, status, el) {
 // ============================================================
 // v6.0: 邮件动态追踪（WorkBuddy 扫描邮箱 → dynamics.json → 网站确认应用）
 // ============================================================
-const DYN_SEEN_KEY = "qiuzhao2027.dynSeen";
+// v9.4: 分诊状态已并入 userState.dyn；旧键名 qiuzhao2027.dynSeen/dynDone/dynIgnored 见 core.js migrateDynLegacyKeys
 const DYN_TYPE_LABEL = { interview: "面试", written: "笔试", offer: "Offer", reject: "拒信", evaluation: "评价", deadline: "截止", other: "线索" };
 
 // 邮件分类（纯函数可测）：按标题+发件人识别秋招通知类型；营销邮件仅保留"新公司校招线索"
@@ -569,40 +569,38 @@ function filterNewDynamics(items, seenIds) {
   return (items || []).filter(it => !seen.has(it.id)).sort((a, b) => String(b.time).localeCompare(String(a.time)));
 }
 
-function getDynSeen() {
-  try { return JSON.parse(localStorage.getItem(DYN_SEEN_KEY)) || []; } catch(e) { return []; }
+// v9.4: 分诊状态读写统一走 userState.dyn（随账号云同步）；旧独立 localStorage 键由 migrateDynLegacyKeys 一次性并入
+function dynList(kind) {
+  if (!userState.dyn) userState.dyn = { seen: [], done: [], ignored: [] };
+  if (!Array.isArray(userState.dyn[kind])) userState.dyn[kind] = [];
+  return userState.dyn[kind];
 }
+function getDynSeen() { return dynList("seen"); }
 function markDynSeen(id) {
-  const s = getDynSeen();
-  if (!s.includes(id)) { s.push(id); try { localStorage.setItem(DYN_SEEN_KEY, JSON.stringify(s)); } catch(e) {} }
+  const s = dynList("seen");
+  if (!s.includes(id)) { s.push(id); saveState(); }
 }
 
 // v7.3: 待办三态——seen=已分诊(出动态条) / done=已完成(待办视图沉底) / ignored=彻底隐藏
-const DYN_DONE_KEY = "qiuzhao2027.dynDone";
-const DYN_IGNORED_KEY = "qiuzhao2027.dynIgnored";
-function getDynDone() {
-  try { return JSON.parse(localStorage.getItem(DYN_DONE_KEY)) || []; } catch(e) { return []; }
-}
+function getDynDone() { return dynList("done"); }
 function markDynDone(id) {
-  const s = getDynDone();
-  if (!s.includes(id)) { s.push(id); try { localStorage.setItem(DYN_DONE_KEY, JSON.stringify(s)); } catch(e) {} }
+  const s = dynList("done");
+  if (!s.includes(id)) { s.push(id); saveState(); }
   markDynSeen(id);  // 完成即出动态条
 }
 function unmarkDynDone(id) {
   const s = getDynDone().filter(x => x !== id);
-  try { localStorage.setItem(DYN_DONE_KEY, JSON.stringify(s)); } catch(e) {}
+  userState.dyn.done = s; saveState();
 }
-function getDynIgnored() {
-  try { return JSON.parse(localStorage.getItem(DYN_IGNORED_KEY)) || []; } catch(e) { return []; }
-}
+function getDynIgnored() { return dynList("ignored"); }
 function markDynIgnored(id) {
-  const s = getDynIgnored();
-  if (!s.includes(id)) { s.push(id); try { localStorage.setItem(DYN_IGNORED_KEY, JSON.stringify(s)); } catch(e) {} }
+  const s = dynList("ignored");
+  if (!s.includes(id)) { s.push(id); saveState(); }
   markDynSeen(id);  // 忽略即出动态条
 }
 function unmarkDynIgnored(id) {  // v7.4: 忽略回收站的恢复入口
   const s = getDynIgnored().filter(x => x !== id);
-  try { localStorage.setItem(DYN_IGNORED_KEY, JSON.stringify(s)); } catch(e) {}
+  userState.dyn.ignored = s; saveState();
 }
 
 async function loadDynamics() {

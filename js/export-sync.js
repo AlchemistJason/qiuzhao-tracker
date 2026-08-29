@@ -227,7 +227,13 @@ function mergeCloudState(local, remote) {
       history
     };
   });
-  return { version: 3, companies: out };
+  // v9.4: 邮件分诊三列表取并集（集合语义：任一侧标记即生效；「恢复」操作可能被另一侧并回，属预期折衷）
+  const unionArr = (a, b) => [...new Set([...(Array.isArray(a) ? a : []), ...(Array.isArray(b) ? b : [])])];
+  return { version: 3, companies: out, dyn: {
+    seen: unionArr(local.dyn && local.dyn.seen, remote.dyn && remote.dyn.seen),
+    done: unionArr(local.dyn && local.dyn.done, remote.dyn && remote.dyn.done),
+    ignored: unionArr(local.dyn && local.dyn.ignored, remote.dyn && remote.dyn.ignored)
+  } };
 }
 
 // 纯函数（可测）：解析 GoTrue 登录/注册响应为本地会话（仅 token，不含密码）
