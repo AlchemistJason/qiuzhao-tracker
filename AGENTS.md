@@ -22,8 +22,8 @@ push 到 `main` → GitHub Actions 跑语法检查 + `node tests/run-tests.js`�
 
 ### `discovered.json` — 爬虫候选池（WorkBuddy 写入，schemaVersion 2）
 - taxonomy 同上（category 用 17 词表、nature 用 5 词表），文件内 `_readme` 是单一事实源，改动词表时同步更新 `_readme`。
-- 三查重（CI 断言）：不与 `data.js` 撞 id、撞归一化公司名、撞 `official-sites.js` 官网链接。
-- **毕业迁移（候选池 → 内推清单）必须保留原 id**：用户状态按 id 存 localStorage/云端，换 id 等于把用户在池里标记过的进度挂到孤儿 id 上（v8.4 三七互娱 37games→37、库洛 kurogame→kuro 曾踩坑，v9.0 回改）。
+- 三查重（CI 断言）：**非毕业条目**不与 `data.js` 撞 id、撞归一化公司名、撞 `official-sites.js` 官网链接。
+- **毕业迁移（候选池 → 内推清单）：池中条目不删除，打 `graduated: true` 保留**（池=用户关注清单），并满足两条硬约束：id 与 data.js 条目完全一致（用户状态按 id 共享，换 id=丢进度，v8.4 三七/库洛曾踩坑）、CI 对 graduated 条目豁免三查重但强制 id 命中。前端表现：毕业条目在校招池 tab 带 🔗 徽章继续可见，与内推 tab 共享同一跟踪状态。
 - `parent` 必须指向同文件已存在条目（集团子集团结构）；`quota` 为正整数。
 - 只放公开校招信息，禁止写入任何个人邮箱相关内容。
 

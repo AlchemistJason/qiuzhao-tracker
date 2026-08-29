@@ -720,16 +720,22 @@ if (OFFICIAL_SITES) {
   t("discovered: 必填字段齐全(id/name/source/foundAt)", items.every(i => i.id && i.name && i.source && i.foundAt));
   t("discovered: id 格式合法", items.every(i => /^[a-z0-9-]+$/.test(i.id)));
   t("discovered: id 唯一", new Set(items.map(i => i.id)).size === items.length);
-  t("discovered: 与 data.js 无 id 撞车", items.every(i => !knownIds.has(i.id)),
-    items.filter(i => knownIds.has(i.id)).map(i => i.id).join(","));
-  t("discovered: 与 data.js 无公司名撞车(归一化)", items.every(i => !knownNames.has(normalizeCompanyName(i.name))),
-    items.filter(i => knownNames.has(normalizeCompanyName(i.name))).map(i => i.name).join(","));
+  const grads = items.filter(i => i.graduated === true);   // v9.1: 毕业条目（已入内推清单，池中保留）
+  const fresh = items.filter(i => i.graduated !== true);   // 纯候选条目
+  t("discovered: 非毕业条目与 data.js 无 id 撞车", fresh.every(i => !knownIds.has(i.id)),
+    fresh.filter(i => knownIds.has(i.id)).map(i => i.id).join(","));
+  t("discovered: 非毕业条目与 data.js 无公司名撞车(归一化)", fresh.every(i => !knownNames.has(normalizeCompanyName(i.name))),
+    fresh.filter(i => knownNames.has(normalizeCompanyName(i.name))).map(i => i.name).join(","));
+  // v9.1: 毕业条目豁免撞车检查，但必须 id 精确命中 data.js（用户状态按 id 共享，id 漂移=丢进度）
+  t("discovered: 毕业条目 id 与 data.js 一致(统一标识)", grads.every(i => knownIds.has(i.id)),
+    grads.filter(i => !knownIds.has(i.id)).map(i => i.id).join(","));
   t("discovered: officialLink 为 http/https(如有)", items.every(i => !i.officialLink || /^https?:\/\//i.test(i.officialLink)));
   // v8.1: 跨文件查重——校招池入口不得与内推清单官网重复（防灵犀互娱式同公司两份跟踪）
+  // v9.1: 毕业条目豁免（同一公司官网链接必然一致，这正是"统一标识"的含义）
   if (OFFICIAL_SITES) {
     const siteUrls = new Set(Object.values(OFFICIAL_SITES));
-    t("discovered: 官网入口不与内推清单重复", items.every(i => !i.officialLink || !siteUrls.has(i.officialLink)),
-      items.filter(i => i.officialLink && siteUrls.has(i.officialLink)).map(i => i.id).join(","));
+    t("discovered: 官网入口不与内推清单重复", fresh.every(i => !i.officialLink || !siteUrls.has(i.officialLink)),
+      fresh.filter(i => i.officialLink && siteUrls.has(i.officialLink)).map(i => i.id).join(","));
   }
   t("discovered: deadline 格式合法(如有)", items.every(i => !i.deadline || /^\d{4}-\d{2}-\d{2}$/.test(i.deadline)));
   // v8.2: taxonomy 合法性——行业在 INDUSTRY_GROUPS 词表内，性质在 NATURES 内
@@ -773,6 +779,10 @@ if (filterBySource) {
   t("来源过滤: 内推只剩非 discovered", filterBySource(list, "referral").map(c => c.id).join(",") === "a");
   t("来源过滤: 校招池只剩 discovered", filterBySource(list, "pool").map(c => c.id).join(",") === "b,c");
   t("来源过滤: 全集无 discovered 时校招池为空", filterBySource([{ id: "x" }], "pool").length === 0);
+  // v9.1: 毕业条目（inPool）双 tab 可见，状态按 id 共享
+  const list2 = [{ id: "g", inPool: true }, { id: "h" }];
+  t("来源过滤: 毕业条目同时进校招池和内推", filterBySource(list2, "pool").map(c => c.id).join(",") === "g"
+    && filterBySource(list2, "referral").map(c => c.id).join(",") === "g,h");
 }
 
 // v8.1: debounce 必须透传事件参数（丢参曾导致搜索框输入必抛 TypeError）

@@ -6,7 +6,7 @@
     "头部券商/公募基金",
     "央企广东分公司"
   ],
-  "_readme": "爬虫发现公司候选池（schemaVersion 2）。行业词表 category（数组，1~2 个值）合法值仅限 17 个：银行 / 券商/基金/期货 / 金融科技 / 互联网 / 游戏 / 安全 / AI/机器人 / 智能硬件 / 半导体/电子 / 汽车/智能驾驶 / 工业/制造/能源 / 交通/物流 / 通信/运营商 / 消费/零售 / 教育 / 咨询/专业服务 / 综合集团。企业性质 nature（字符串，单值）合法值仅限 5 个：央企 / 国企 / 民企 / 外企 / 合资。category 描述行业、nature 描述所有制，两者相互独立；主业明确的条目 category 只给 1 个值，禁止发明词表外的新值。写入本文件的上游脚本必须遵守此 taxonomy（schemaVersion 2）。重点关注方向见 focus（互联网大厂 / 头部券商与公募基金 / 央企广东分公司）。字段：id(小写slug,不可改) / name / officialLink(官网校招页,可空) / jobs(数组或分隔文本,可空) / location(可空) / deadline(YYYY-MM-DD 或 null) / category(数组,行业) / nature(企业性质,紧跟 category) / source(来源标识) / foundAt(ISO 时间) / note(可空)。隐私：只放公开校招信息，禁止写入任何个人邮箱相关内容。首批 source=manual-seed 为人工核实的种子清单。",
+  "_readme": "爬虫发现公司候选池（schemaVersion 2）。行业词表 category（数组，1~2 个值）合法值仅限 17 个：银行 / 券商/基金/期货 / 金融科技 / 互联网 / 游戏 / 安全 / AI/机器人 / 智能硬件 / 半导体/电子 / 汽车/智能驾驶 / 工业/制造/能源 / 交通/物流 / 通信/运营商 / 消费/零售 / 教育 / 咨询/专业服务 / 综合集团。企业性质 nature（字符串，单值）合法值仅限 5 个：央企 / 国企 / 民企 / 外企 / 合资。category 描述行业、nature 描述所有制，两者相互独立；主业明确的条目 category 只给 1 个值，禁止发明词表外的新值。写入本文件的上游脚本必须遵守此 taxonomy（schemaVersion 2）。重点关注方向见 focus（互联网大厂 / 头部券商与公募基金 / 央企广东分公司）。字段：id(小写slug,不可改) / name / officialLink(官网校招页,可空) / jobs(数组或分隔文本,可空) / location(可空) / deadline(YYYY-MM-DD 或 null) / category(数组,行业) / nature(企业性质,紧跟 category) / source(来源标识) / foundAt(ISO 时间) / note(可空) / graduated(布尔,可空)。graduated=true 表示该公司已毕业进 data.js 内推清单：条目保留在池中（池=关注清单,不得删除），id 必须与 data.js 条目完全一致（用户状态按 id 共享）；非 graduated 条目不得与 data.js 撞 id/撞归一化名/撞官网链接，graduated 条目豁免这三项查重但必须 id 命中。隐私：只放公开校招信息，禁止写入任何个人邮箱相关内容。首批 source=manual-seed 为人工核实的种子清单。",
   "items": [
     {
       "id": "bytedance",
@@ -2112,6 +2112,104 @@
       "source": "manual-seed",
       "foundAt": "2026-08-27",
       "note": "广州市属国企集团统一入口；越秀资本独立网申限 2 志愿，越秀地产用年度智联子域"
+    },
+    {
+      "id": "ctrip",
+      "name": "携程",
+      "officialLink": "https://campus.ctrip.com",
+      "location": "上海/北京",
+      "category": [
+        "互联网"
+      ],
+      "nature": "民企",
+      "source": "manual-seed",
+      "foundAt": "2026-08-27",
+      "note": "校招官网",
+      "graduated": true
+    },
+    {
+      "id": "hisense",
+      "name": "海信",
+      "officialLink": "https://jobs.hisense.com",
+      "location": "青岛",
+      "category": [
+        "智能硬件"
+      ],
+      "nature": "国企",
+      "source": "manual-seed",
+      "foundAt": "2026-08-27",
+      "note": "官方招聘平台（含校招）",
+      "graduated": true
+    },
+    {
+      "id": "xiaohongshu",
+      "name": "小红书",
+      "officialLink": "https://campus.xiaohongshu.com",
+      "location": "北京/上海",
+      "category": [
+        "互联网"
+      ],
+      "nature": "民企",
+      "source": "manual-seed",
+      "foundAt": "2026-08-27",
+      "note": "独立校招官网",
+      "graduated": true
+    },
+    {
+      "id": "honor",
+      "name": "荣耀",
+      "officialLink": "https://www.honor.com/cn/career/",
+      "location": "深圳/北京",
+      "category": [
+        "智能硬件"
+      ],
+      "nature": "国企",
+      "source": "manual-seed",
+      "foundAt": "2026-08-27",
+      "note": "官网招聘页（含校招）",
+      "graduated": true
+    },
+    {
+      "id": "37games",
+      "name": "三七互娱",
+      "officialLink": "https://zhaopin.37.com/",
+      "location": "广州",
+      "category": [
+        "游戏"
+      ],
+      "nature": "民企",
+      "source": "manual-seed",
+      "foundAt": "2026-08-27",
+      "note": "官方招聘官网（游戏）",
+      "graduated": true
+    },
+    {
+      "id": "kurogame",
+      "name": "库洛游戏",
+      "officialLink": "https://kurogame.jobs.feishu.cn/campus/",
+      "location": "广州/上海",
+      "category": [
+        "游戏"
+      ],
+      "nature": "民企",
+      "source": "manual-seed",
+      "foundAt": "2026-08-27",
+      "note": "飞书招聘承办校招页",
+      "graduated": true
+    },
+    {
+      "id": "catl",
+      "name": "宁德时代",
+      "officialLink": "https://talent.catl.com",
+      "location": "宁德/溧阳",
+      "category": [
+        "工业/制造/能源"
+      ],
+      "nature": "民企",
+      "source": "manual-seed",
+      "foundAt": "2026-08-27",
+      "note": "官方唯一网申地址（新能源电池龙头）",
+      "graduated": true
     }
   ]
 }

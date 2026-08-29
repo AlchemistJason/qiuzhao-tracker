@@ -227,7 +227,8 @@ function discoveredToCompany(it) {
 
 // v7.7: 来源分页过滤（纯函数可测）：referral=内推清单 / pool=校招池（discovered 标记驱动）
 function filterBySource(list, source) {
-  return list.filter(c => (source === "pool") === !!c.discovered);
+  // v9.1: 毕业条目（inPool）在内推 tab 正常显示，同时也在校招池 tab 可见（池=关注清单）
+  return list.filter(c => source === "pool" ? (c.discovered || c.inPool) : !c.discovered);
 }
 
 // CSV 公式注入防护：以 = + - @ 开头的字段加前缀，防止 Excel 执行公式

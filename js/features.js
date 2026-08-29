@@ -615,12 +615,21 @@ async function loadDiscovered() {
   const knownNames = new Set(COMPANIES.map(c => normalizeCompanyName(c.name)));
   const knownIds = new Set(COMPANIES.map(c => c.id));
   let added = 0;
+  let marked = 0;  // v9.1: 毕业条目标记数（单独计数，不算"新发现"）
   items.forEach(it => {
     if (!it || !it.id || !it.name) return;
     // 爬虫产物零校验的兜底：id 只允许小写字母/数字/连字符（会进 DOM/存储/导出，非法直接跳过）
     if (!/^[a-z0-9-]+$/.test(it.id)) { console.warn("discovered.json 非法 id，已跳过:", it.id); return; }
-    // 双保险去重（WorkBuddy 入库前已去重，这里再挡一次）：id 撞车 / 名归一化撞车都跳过
-    if (knownIds.has(it.id) || knownNames.has(normalizeCompanyName(it.name))) return;
+    // 双保险去重（WorkBuddy 入库前已去重，这里再挡一次）：id 撞车 / 名归一化撞车
+    if (knownIds.has(it.id) || knownNames.has(normalizeCompanyName(it.name))) {
+      // v9.1: 毕业条目（graduated:true，池=关注清单不删条目）——不新建公司，
+      // 给内推清单里的同 id 条目打 inPool 标记，让它在校招池 tab 也可见，状态按 id 共享
+      if (it.graduated === true) {
+        const existing = COMPANIES.find(c => c.id === it.id);
+        if (existing && !existing.inPool) { existing.inPool = true; marked++; }
+      }
+      return;
+    }
     // quota 收敛：非正整数一律置 null
     const quota = Number(it.quota);
     it.quota = (Number.isInteger(quota) && quota > 0) ? quota : null;
@@ -631,14 +640,14 @@ async function loadDiscovered() {
     COMPANY_IDS.add(c.id);  // 让导出/导入/云同步认识这些 id
     added++;
   });
-  if (added > 0) {
+  if (added > 0 || marked > 0) {
     renderDashboard();
     renderFilterPanel();   // v7.7: 校招池选项随新公司扩充
     refreshFilterUI();
     refreshTodos();
     updateNavUI();         // v7.7: 刷新 tab 数量角标
     applyFilters();
-    showToast(`🆕 新发现 ${added} 家公司，已加入「校招池」标签页，设状态即开始跟踪`);
+    if (added > 0) showToast(`🆕 新发现 ${added} 家公司，已加入「校招池」标签页，设状态即开始跟踪`);
     checkDeadlineAlert();  // 校招池新公司若临近截止，也要进开机提醒
   }
 }
