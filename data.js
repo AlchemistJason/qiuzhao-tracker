@@ -11,7 +11,7 @@
  *   deadline : 截止日期 "YYYY-MM-DD"（可选，用于倒计时）
  * ============================================================ */
 
-window.DATA_VERSION = 7;
+window.DATA_VERSION = 8;
 
 // 行业分组（筛选面板分级目录用）：组名 → 行业值（顺序即展示顺序）
 window.INDUSTRY_GROUPS = {
@@ -926,7 +926,7 @@ window.COMPANIES = [
     note: "SLG手游厂商"
   },
   {
-    id: "37", name: "三七互娱", type: "秋招",
+    id: "37games", name: "三七互娱", type: "秋招",
     category: ["游戏"],
     nature: "民企",
     jobs: ["策划","技术","美术","运营","职能"],
@@ -935,7 +935,7 @@ window.COMPANIES = [
     note: "页游/手游发行龙头"
   },
   {
-    id: "kuro", name: "库洛游戏", type: "秋招",
+    id: "kurogame", name: "库洛游戏", type: "秋招",
     category: ["游戏"],
     nature: "民企",
     jobs: ["美术","策划","技术","营销","项管","职能","音频","运营"],
