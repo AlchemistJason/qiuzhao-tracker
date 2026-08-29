@@ -605,7 +605,7 @@ function openSyncModal(mode) {
     const code = encodeSyncCode();
     body.innerHTML = `
       <div class="sync-qr" id="qrBox"></div>
-      <p style="font-size:12px;color:var(--text-secondary);text-align:center">手机打开本页面 → 点 📱 按钮 → 「扫描导入」扫这个码</p>
+      <p style="font-size:12px;color:var(--text-secondary);text-align:center">另一台设备打开本页面 → 点 ☁️ 按钮 → 「无账号同步」→「扫描/粘贴导入」</p>
       <p style="font-size:12px;color:var(--text-secondary);margin-top:6px">也可以复制下面的码，在另一设备「粘贴导入」：</p>
       <textarea class="sync-code-text" readonly>${code}</textarea>
       <button class="btn btn-primary" onclick="copySyncText()">复制同步码</button>

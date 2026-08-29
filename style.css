@@ -473,7 +473,9 @@
   .footer-btn:hover { transform: translateY(-1px); }
 
   /* —— 主题按钮过渡动画 —— */
-  #themeBtn { overflow: hidden; }
+  /* v8.9: 必须 position:relative —— 伪元素 ::after 是 absolute inset:0，没有定位祖先时
+     会相对初始包含块铺开成"全页隐形护盾"，截获全页面指针事件并触发 hover 闪烁 */
+  #themeBtn { position: relative; overflow: hidden; }
   #themeBtn::after {
     content: ""; position: absolute; inset: 0; border-radius: 50%;
     background: radial-gradient(circle, var(--accent-glow), transparent 70%);

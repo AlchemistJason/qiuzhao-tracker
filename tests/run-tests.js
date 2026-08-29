@@ -859,6 +859,34 @@ if (parseAuthResponse) {
   t("未登录不上传", /async function cloudPush\(\) \{[\s\S]*?if \(!getAuth\(\)\) return;/.test(src));
 })();
 
+// ---------- v8.9 themeBtn 全页护盾修复 + 同步码入口收编 ----------
+section("v8.9 指针事件与入口收敛");
+(function() {
+  const html = fs.readFileSync(path.join(ROOT, "index.html"), "utf8");
+  const css = fs.readFileSync(path.join(ROOT, "style.css"), "utf8");
+  // 回归：#themeBtn::after 是 absolute inset:0，若按钮无 position:relative 会铺开成全页隐形护盾
+  // （曾截获全页面指针事件，邮件动态条 hover 每秒翻转十余次）
+  t("themeBtn 伪元素限定在按钮内(position:relative)", /#themeBtn\s*\{[^}]*position:\s*relative/.test(css));
+  // 无定位祖先的 absolute inset:0 伪元素全局扫描：不允许再出现同类问题
+  // （豁免：pointer-events:none 不截获事件 / position:fixed 本就设计为全页背景）
+  t("无其他失控的 inset:0 伪元素", (() => {
+    const bad = [...css.matchAll(/([\w#.:-]+)::(after|before)\s*\{([^}]*)inset:\s*0([^}]*)\}/g)]
+      .filter(m => {
+        const body = m[3] + m[4];
+        if (/pointer-events:\s*none/.test(body)) return false;
+        if (/position:\s*fixed/.test(body)) return false;
+        const sel = m[1];
+        const rule = new RegExp(sel.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "\\s*\\{([^}]*)\\}", "g");
+        const base = [...css.matchAll(rule)].find(r => !r[0].includes("::"));
+        return !(base && /position:\s*relative/.test(base[1]));
+      });
+    return bad.length === 0;
+  })());
+  // 入口收敛：顶部不再有独立 📱 按钮，同步码收进云同步弹窗的备用折叠区
+  t("顶部已移除独立同步码按钮", !/<button[^>]*>📱<\/button>/.test(html));
+  t("云弹窗含无账号同步备用区", html.includes("无账号同步（备用）") && (html.match(/openSyncModal\('/g) || []).length === 2);
+})();
+
 // ---------- 结果 ----------
 console.log("\n══════════════════════════════");
 console.log("  结果: " + pass + " 通过 / " + fail + " 失败");

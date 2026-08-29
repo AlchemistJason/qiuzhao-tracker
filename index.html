@@ -22,9 +22,9 @@
   } catch(e) {}
 })();
 </script>
-<script src="vendor/qrcode.min.js?v=8.8" defer></script>
+<script src="vendor/qrcode.min.js?v=8.9" defer></script>
 <!-- html5-qrcode 改为按需动态加载（见 js/export-sync.js startQrScanner），避免 ~300KB 全量下载 -->
-<link rel="stylesheet" href="style.css?v=8.8">
+<link rel="stylesheet" href="style.css?v=8.9">
 </head>
 <body>
 
@@ -36,7 +36,6 @@
     </div>
     <div class="top-actions">
       <button class="icon-btn cloud-off" onclick="openCloudModal()" id="cloudBtn" title="☁️ 云同步（自动跨设备同步）" aria-label="云同步">☁️</button>
-      <button class="icon-btn" onclick="openSyncModal('export')" title="跨设备同步(二维码)" aria-label="跨设备同步">📱</button>
       <button class="icon-btn" onclick="toggleTheme()" id="themeBtn" title="切换主题" aria-label="切换明暗主题">🌙</button>
       <button class="icon-btn" onclick="exportJSON()" title="导出备份" aria-label="导出备份">💾</button>
       <button class="icon-btn" onclick="document.getElementById('importInput').click()" title="导入备份" aria-label="导入备份">📥</button>
@@ -209,17 +208,25 @@
       <button class="btn" onclick="cloudPull()">立即拉取</button>
       <button class="btn" onclick="closeCloudModal()">取消</button>
     </div>
+    <details class="cloud-adv">
+      <summary>无账号同步（备用）：二维码 / 同步码</summary>
+      <p class="modal-hint" style="margin:8px 0">不登录账号时的手动迁移方式：一台设备导出同步码，另一台扫码或粘贴导入。适合临时借用设备或云服务不可用时兜底。</p>
+      <div style="margin-bottom:8px">
+        <button class="btn" onclick="closeCloudModal();openSyncModal('export')">📤 导出同步码</button>
+        <button class="btn" onclick="closeCloudModal();openSyncModal('import')">📥 扫描/粘贴导入</button>
+      </div>
+    </details>
   </div>
 </div>
 
-<script src="data.js?v=8.8"></script>
-<script src="official-sites.js?v=8.8"></script>  <!-- v7.5: 官方校招门户固定清单 -->
+<script src="data.js?v=8.9"></script>
+<script src="official-sites.js?v=8.9"></script>  <!-- v7.5: 官方校招门户固定清单 -->
 <!-- 求职Agent · 模块化加载（顺序敏感：core 基础层 → views 视图 → features 交互 → export-sync 导出同步 → main 入口） -->
-<script src="js/core.js?v=8.8"></script>
-<script src="js/views.js?v=8.8"></script>
-<script src="js/features.js?v=8.8"></script>
-<script src="js/export-sync.js?v=8.8"></script>
-<script src="js/main.js?v=8.8"></script>
+<script src="js/core.js?v=8.9"></script>
+<script src="js/views.js?v=8.9"></script>
+<script src="js/features.js?v=8.9"></script>
+<script src="js/export-sync.js?v=8.9"></script>
+<script src="js/main.js?v=8.9"></script>
 
 </body>
 </html>

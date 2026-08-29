@@ -37,7 +37,7 @@ qiuzhao-tracker/
 │   ├── features.js       #   交互层：状态操作/邮件动态/待办三态/岗位弹窗
 │   ├── export-sync.js    #   导入导出/二维码同步
 │   └── main.js           #   启动装配
-├── tests/run-tests.js    # 298 项回归测试（node tests/run-tests.js）
+├── tests/run-tests.js    # 303 项回归测试（node tests/run-tests.js）
 └── .github/workflows/    # CI 门禁 + GitHub Pages 部署
 ```
 
@@ -82,7 +82,7 @@ qiuzhao-tracker/
 
 - 本地跑测试：`node tests/run-tests.js`（时区无关，`TZ=UTC` 下也应全过）
 - 数据更新：改 `data.js` / `dynamics.json` → 本地测试 → 发布（CI 会校验 dynamics.json 的 schema 与隐私规则，link/actionUrl 非空直接红）
-- CI：push 后 GitHub Actions 自动执行语法检查 + 298 项回归测试，通过后自动部署 Pages
+- CI：push 后 GitHub Actions 自动执行语法检查 + 303 项回归测试，通过后自动部署 Pages
 
 ## 跨设备同步（手机 ↔ 电脑）
 
@@ -115,11 +115,11 @@ create policy "own update" on qiuzhao_state for update using (auth.uid() = user_
 4. 「Project Settings → Data API」确认 REST API 已启用（默认开启）
 5. 把 Project URL 和 anon public key 填进 `BUILTIN_CLOUD` 后发布
 
-### 二维码手动同步（备用，无需网络服务）
+### 二维码手动同步（备用，无需登录账号）
 
-1. 电脑端点击右上角 **📱** 按钮 → 「导出状态」，显示二维码
-2. 手机打开本页面 → 点 **📱** → 「扫描/粘贴导入」→ 扫电脑二维码
-3. 反向同步同理：手机端导出，电脑端扫/粘贴
+1. 一台设备点右上角 **☁️** → 展开「无账号同步（备用）」→「📤 导出同步码」，显示二维码
+2. 另一台设备打开本页面 → **☁️** →「无账号同步（备用）」→「📥 扫描/粘贴导入」→ 扫码或粘贴
+3. 反向同步同理
 
 > 没有摄像头也可用：复制/粘贴文本同步码。
 
