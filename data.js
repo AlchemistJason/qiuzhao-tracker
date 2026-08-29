@@ -215,13 +215,13 @@ window.COMPANIES = [
     note: "技术提前批"
   },
   {
-    id: "hesai", name: "禾赛科技", type: "提前批",
+    id: "hesai", name: "禾赛科技", type: "秋招",
     category: ["汽车/智能驾驶"],
     nature: "民企",
-    jobs: ["技术岗"],
-    location: "上海", refCode: null,
-    link: "https://kwh0jtf778.jobs.feishu.cn/229043/m/position/list?external_referral_code=C1VBCEA",
-    note: "点击链接即内推"
+    jobs: ["系统","芯片","器件","光学","机械","电子","软件","算法","测试","质量","制造","商务"],
+    location: "上海", refCode: "2CV2P7K",
+    link: "https://kwh0jtf778.jobs.feishu.cn/s/QJtYJfXWfpQ",
+    note: "激光雷达龙头，链接+填码双内推"
   },
   {
     id: "lemon", name: "柠檬微趣", type: "秋招",
@@ -239,7 +239,7 @@ window.COMPANIES = [
     jobs: ["教师(不限专业)"],
     location: "全国多地", refCode: "A3UWK2E",
     link: "https://z2u.tv/wWDUk8",
-    note: "内推直通复试，HR 5个工作日内沟通"
+    note: "校园大使专属，直通HR，初筛后直通复试，HR 5个工作日内沟通"
   },
   {
     id: "pxx-edu", name: "平行线教育", type: "提前批",
@@ -1014,5 +1014,59 @@ window.COMPANIES = [
     location: "杭州/广州", refCode: null,
     link: "https://campus.163.com/bolehtml/home?boleId=7c2210becc4ff020&boleType=2&type=99&projectId=103&signature=0574ba37090a9edf77d89de86b441125&isShare=1",
     note: "与网易互娱/雷火独立，点击链接即内推"
+  },
+  {
+    id: "juyi", name: "巨一科技", type: "秋招",
+    category: ["工业/制造/能源","汽车/智能驾驶"],
+    nature: "民企",
+    jobs: ["技术研发","职能"],
+    location: "全国多地", refCode: "DShnxzYV",
+    link: "https://app.mokahr.com/m/campus_apply/ahjy/168235?recommendCode=DShnxzYV#/jobs",
+    note: "智能装备与电驱动"
+  },
+  {
+    id: "sunrise", name: "曦望", type: "秋招",
+    category: ["AI/机器人"],
+    nature: "民企",
+    jobs: ["研发","算法"],
+    location: "全国多地", refCode: "HYFPTED",
+    link: "https://jobs.sunrise-ai.com/s/KqwwDl_0y7o",
+    note: "AI Infra"
+  },
+  {
+    id: "jingwei", name: "经纬恒润", type: "秋招",
+    category: ["汽车/智能驾驶"],
+    nature: "民企",
+    jobs: ["研发","硬件","测试"],
+    location: "全国多地", refCode: "DSDGnwW9",
+    link: "https://app.mokahr.com/m/campus-recruitment/jingweihengrun/168294?recommendCode=DSDGnwW9#/jobs",
+    note: "汽车电子龙头"
+  },
+  {
+    id: "fabu", name: "飞步科技", type: "秋招",
+    category: ["汽车/智能驾驶","AI/机器人"],
+    nature: "民企",
+    jobs: ["算法研发","软件开发"],
+    location: "全国多地", refCode: "DSmPActV",
+    link: "https://app.mokahr.com/m/campus-recruitment/fabu/56114?recommendCode=DSmPActV#/jobs",
+    note: "自动驾驶/智慧交通"
+  },
+  {
+    id: "sensetime", name: "商汤科技", type: "秋招",
+    category: ["AI/机器人"],
+    nature: "民企",
+    jobs: ["研发","算法","产品"],
+    location: "全国多地", refCode: "J7274RB",
+    link: "https://sensetime.jobs.feishu.cn/s/stXkzWnf4BA",
+    note: "选择\"大使推荐\""
+  },
+  {
+    id: "huabao", name: "华宝新能", type: "秋招",
+    category: ["智能硬件"],
+    nature: "民企",
+    jobs: ["研发管培","营销管培","供应链管培"],
+    location: "全国多地", refCode: "ESKPTV",
+    link: "https://career.hello-tech.com/campus/jobs?shareId=c585b43e-fd63-46cf-8951-e3fc00dd75cb&shareSource=2",
+    note: "便携储能(Jackery电小二)，旧码已过期此为新码"
   }
 ];

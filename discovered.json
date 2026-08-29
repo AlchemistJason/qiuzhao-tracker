@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "updatedAt": "2026-08-28",
+  "updatedAt": "2026-08-29",
   "focus": [
     "互联网大厂",
     "头部券商/公募基金",
@@ -110,7 +110,8 @@
       "nature": "民企",
       "source": "manual-seed",
       "foundAt": "2026-08-27",
-      "note": "官方招聘官网"
+      "note": "官方招聘官网",
+      "graduated": true
     },
     {
       "id": "megvii",
