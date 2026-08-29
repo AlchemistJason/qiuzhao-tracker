@@ -1,6 +1,42 @@
 {
-  "updatedAt": "2026-08-27T12:00:00+08:00",
+  "updatedAt": "2026-08-29T11:55:00+08:00",
   "items": [
+    {
+      "id": "mail-baidu-interview-eval-20260828",
+      "type": "interview",
+      "company": "百度",
+      "companyId": "baidu",
+      "jobName": "Agent算法实习生",
+      "title": "百度在线网络技术（北京）有限公司诚邀您对本次面试进行评价",
+      "summary": "8月28日 14:00 视频面试已进行（二面），待面试结果",
+      "time": "2026-08-28T12:01:30Z",
+      "link": "",
+      "suggestStatus": "面试中"
+    },
+    {
+      "id": "mail-pdd-written-20260828",
+      "type": "written",
+      "company": "拼多多",
+      "companyId": "pdd",
+      "jobName": "2027届算法工程师",
+      "title": "【拼多多集团-PDD】2027届校园招聘-在线笔试邀请",
+      "summary": "8月30日 19:00-21:00 牛客在线笔试（120分钟），已通过简历筛选，考试地址见邮件（勿转发）",
+      "time": "2026-08-28T05:35:33Z",
+      "link": "",
+      "suggestStatus": "笔试中"
+    },
+    {
+      "id": "mail-shein-interview-invite-20260827",
+      "type": "interview",
+      "company": "SHEIN",
+      "companyId": null,
+      "jobName": "产研实习生-风控算法",
+      "title": "【SHEIN】校园招聘—线上面试邀请",
+      "summary": "8月27日 20:00 视频面试已进行（通过上一轮考核后的进一步沟通），待面试结果",
+      "time": "2026-08-27T04:36:14Z",
+      "link": "",
+      "suggestStatus": "面试中"
+    },
     {
       "id": "mail-ebscn-campus-20260827",
       "type": "other",
@@ -81,9 +117,13 @@
     ],
     "interview": [
       { "id": "mail-baidu-interview-eval-20260826", "company": "百度", "jobName": "Agent算法实习生", "receivedAt": "2026-08-26T12:01:20Z" },
-      { "id": "mail-shein-interview-eval-20260825", "company": "SHEIN", "jobName": "产研实习生", "receivedAt": "2026-08-25T10:16:10Z" }
+      { "id": "mail-shein-interview-eval-20260825", "company": "SHEIN", "jobName": "产研实习生", "receivedAt": "2026-08-25T10:16:10Z" },
+      { "id": "mail-shein-interview-invite-20260827", "company": "SHEIN", "jobName": "产研实习生-风控算法", "receivedAt": "2026-08-27T04:36:14Z" },
+      { "id": "mail-baidu-interview-eval-20260828", "company": "百度", "jobName": "Agent算法实习生", "receivedAt": "2026-08-28T12:01:30Z" }
     ],
-    "written": [],
+    "written": [
+      { "id": "mail-pdd-written-20260828", "company": "拼多多", "jobName": "2027届算法工程师", "receivedAt": "2026-08-28T05:35:33Z" }
+    ],
     "reject": [],
     "deadline": [],
     "evaluation": [],
