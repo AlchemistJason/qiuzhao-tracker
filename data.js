@@ -387,7 +387,7 @@ window.COMPANIES = [
   },
   {
     id: "tencent", name: "腾讯", type: "秋招",
-    category: ["互联网"],
+    category: ["互联网", "金融科技"],
     nature: "民企",
     jobs: ["产品", "技术", "运营", "设计", "市场"],
     location: "深圳/北京/上海/广州/成都/杭州", refCode: "Y60XZLXDKH",
@@ -621,7 +621,7 @@ window.COMPANIES = [
   },
   {
     id: "meituan", name: "美团", type: "秋招",
-    category: ["互联网"],
+    category: ["互联网", "金融科技"],
     nature: "民企",
     jobs: ["技术", "产品", "运营", "市场"],
     location: "北京/上海", refCode: "FWPZMZ9",

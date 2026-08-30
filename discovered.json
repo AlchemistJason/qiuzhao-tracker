@@ -41,12 +41,13 @@
    "officialLink": "https://campus.jd.com",
    "location": "北京",
    "category": [
-    "互联网"
+    "互联网",
+    "金融科技"
    ],
    "nature": "民企",
    "source": "manual-seed",
    "foundAt": "2026-08-27",
-   "note": "校招唯一官网"
+   "note": "校招唯一官网（含京东科技/京东金融线）"
   },
   {
    "id": "huawei",
@@ -2895,6 +2896,98 @@
    "source": "manual-seed",
    "foundAt": "2026-08-30",
    "note": "百亿量化私募"
+  },
+  {
+   "id": "jd-tech",
+   "name": "京东科技",
+   "officialLink": "",
+   "location": "北京",
+   "category": [
+    "金融科技"
+   ],
+   "nature": "民企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-30",
+   "note": "京东集团金融科技主体，独立校招",
+   "parent": "jd"
+  },
+  {
+   "id": "mybank",
+   "name": "网商银行",
+   "officialLink": "",
+   "location": "杭州",
+   "category": [
+    "银行"
+   ],
+   "nature": "民企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-30",
+   "note": "蚂蚁发起设立的互联网银行"
+  },
+  {
+   "id": "lufax",
+   "name": "陆金所控股",
+   "officialLink": "",
+   "location": "上海",
+   "category": [
+    "金融科技"
+   ],
+   "nature": "民企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-30",
+   "note": "平安系，纽交所+港交所上市"
+  },
+  {
+   "id": "oneconnect",
+   "name": "金融壹账通",
+   "officialLink": "",
+   "location": "深圳",
+   "category": [
+    "金融科技"
+   ],
+   "nature": "民企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-30",
+   "note": "平安系金融科技，港股上市"
+  },
+  {
+   "id": "qfin",
+   "name": "奇富科技",
+   "officialLink": "",
+   "location": "上海",
+   "category": [
+    "金融科技"
+   ],
+   "nature": "民企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-30",
+   "note": "原360数科，互金上市"
+  },
+  {
+   "id": "finv",
+   "name": "信也科技",
+   "officialLink": "",
+   "location": "上海",
+   "category": [
+    "金融科技"
+   ],
+   "nature": "民企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-30",
+   "note": "原拍拍贷，纽交所上市"
+  },
+  {
+   "id": "mscfc",
+   "name": "马上消费金融",
+   "officialLink": "",
+   "location": "重庆",
+   "category": [
+    "银行"
+   ],
+   "nature": "民企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-30",
+   "note": "持牌消费金融"
   }
  ]
 }
