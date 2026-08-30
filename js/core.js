@@ -150,10 +150,10 @@ function extractJobKeywords(companies, min = 2) {
 function matchFilters(c, f, getSt) {
   const s = getSt(c.id);
   if (f.starred && !s.starred) return false;
-  // v9.9: 已屏蔽公司默认隐藏；进度优先（已投递/进行中的不被屏蔽隐藏），勾选「显示已屏蔽」时可见
-  // v9.9.2: onlyDismissed=仪表盘「已屏蔽」卡片下钻语义，只看屏蔽项（优先于隐藏规则）
+  // v9.9.3: 已屏蔽公司只出现在「已屏蔽」视图——不再进度优先，已投递/进行中的一样从正常列表隐藏；
+  // 仅两种可见途径：onlyDismissed 下钻（只看屏蔽项）或勾选「显示已屏蔽」
   if (f.onlyDismissed) { if (!s.dismissed) return false; }
-  else if (!f.showDismissed && s.dismissed && s.status === "未投递") return false;
+  else if (s.dismissed && !f.showDismissed) return false;
   if (f.status.size && !f.status.has(s.status)) return false;
   // v7.2: 已截止且未投递的公司默认隐藏（已投递/进行中的不受影响，避免漏跟进）
   if (f.hideExpired && s.status === "未投递" && c.deadline) {

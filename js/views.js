@@ -11,9 +11,10 @@ function renderDashboard() {
   // 同一家公司内推/校招链接不同也只算一条）；点击卡片统一下钻到「全部」tab，保证数字与结果口径一致
   filterBySource(COMPANIES, "all").forEach(c => {
     const s = getState(c.id);
+    // v9.9.3: 屏蔽项只计入「已屏蔽」卡片，不再混入企业总数/状态/收藏口径——保证卡片数字与点击结果一致
+    if (s.dismissed) { stats.dismissed++; return; }
     stats.total++;
     if (s.starred) stats.starred++;
-    if (s.dismissed) stats.dismissed++;
     if (s.status === "未投递") stats.pending++;
     if (s.status === "已投递") stats.applied++;
     if (s.status === "笔试中") stats.test++;
@@ -34,7 +35,7 @@ function renderDashboard() {
     { filter: "已拒绝", icon: "🚫", num: stats.rejected, label: "已拒绝", cls: "", fn: "viewByStatus('已拒绝')" },
     { filter: "starred", icon: "⭐", num: stats.starred, label: "已收藏", cls: "", fn: "viewStarred()" }
   ];
-  // v9.9: 有屏蔽的公司才显示卡片（点击 = 勾选「显示已屏蔽」并切到全部 tab，保持数字与结果一致）
+  // v9.9.3: 有屏蔽的公司才显示卡片（点击 = 只看屏蔽项下钻，屏蔽项不再混入其他卡片口径）
   if (stats.dismissed > 0) dashCards.push({ filter: "dismissed", icon: "⊘", num: stats.dismissed, label: "已屏蔽", cls: "", fn: "viewDismissed()" });
   document.getElementById("dashboard").innerHTML = dashCards.map(d =>
     `<div class="dash-card ${d.cls}" data-filter="${d.filter}" role="button" tabindex="0" onclick="${d.fn}" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();${d.fn}}" title="查看 ${d.label}">

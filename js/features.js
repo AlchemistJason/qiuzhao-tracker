@@ -521,7 +521,7 @@ function toggleStar(id) {
   }
 }
 
-// v9.9: 屏蔽（不感兴趣/暂无合适岗位）——布尔开关，进度优先（已投递/进行中不受屏蔽影响）
+// v9.9.3: 屏蔽（不感兴趣/暂无合适岗位）——布尔开关，屏蔽项只显示在「已屏蔽」视图（已投递/进行中的一样从正常列表隐藏）
 function toggleDismiss(id) {
   const st = getState(id);
   st.dismissed = !st.dismissed;

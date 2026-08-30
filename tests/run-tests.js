@@ -375,8 +375,10 @@ if (matchFilters) {
   const getStDis = id => ({ status: id === "disProg" ? "已投递" : "未投递", dismissed: id === "dis" || id === "disProg" });
   const disF = { status: new Set(), starred: false, locations: new Set(), industries: new Set(), jobs: new Set(), keyword: "", hideExpired: true, showDismissed: false };
   t("屏蔽: 未投递+已屏蔽默认隐藏", matchFilters(disC, disF, getStDis) === false);
-  t("屏蔽: 进度优先（已投递不被屏蔽隐藏）", matchFilters(disProg, disF, getStDis) === true);
+  // v9.9.3: 不再进度优先——屏蔽+已投递一样从正常列表隐藏（用户诉求：屏蔽项只该出现在已屏蔽视图）
+  t("屏蔽: 已投递+已屏蔽同样默认隐藏(v9.9.3)", matchFilters(disProg, disF, getStDis) === false);
   t("屏蔽: 勾选「显示已屏蔽」后可见", matchFilters(disC, { ...disF, showDismissed: true }, getStDis) === true);
+  t("屏蔽: 勾选后已投递屏蔽项也可见", matchFilters(disProg, { ...disF, showDismissed: true }, getStDis) === true);
   t("屏蔽: 未屏蔽公司不受影响", matchFilters({ id: "ok", name: "正常公司", jobs: [], location: "", category: [], note: "" }, disF, getStDis) === true);
   // v9.9.2: 仪表盘「已屏蔽」卡片下钻——只看屏蔽项，未屏蔽的一律隐藏（含已投递）
   t("下钻: onlyDismissed 时未屏蔽公司隐藏", matchFilters({ id: "ok", name: "正常公司", jobs: [], location: "", category: [], note: "" }, { ...disF, onlyDismissed: true }, getStDis) === false);
