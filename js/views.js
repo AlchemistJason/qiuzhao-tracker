@@ -76,7 +76,7 @@ function viewStarred() {
 function viewDismissed() {
   ensureListView();
   ensureAllSource();
-  filters.showDismissed = !filters.showDismissed;
+  filters.showDismissed = true;  // 下钻语义：点卡片恒为显示（取消走筛选面板复选框）
   refreshFilterUI();
   applyFilters();
 }
