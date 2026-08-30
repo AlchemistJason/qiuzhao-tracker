@@ -109,6 +109,7 @@ function clearFilters() {
   filters.status.clear();
   filters.starred = false;
   filters.showDismissed = false;
+  filters.onlyDismissed = false;  // v9.9.2: 清空筛选同时退出「只看屏蔽」下钻
   filters.locations.clear();
   filters.industries.clear();
   filters.natures.clear();
@@ -136,8 +137,9 @@ function refreshFilterUI() {
   document.querySelectorAll(".dash-card[data-filter]").forEach(c => {
     const f = c.dataset.filter;
     let active = false;
-    if (f === "all") active = filters.status.size === 0 && !filters.starred;
+    if (f === "all") active = filters.status.size === 0 && !filters.starred && !filters.onlyDismissed;  // v9.9.2: 只看屏蔽时「全部」不再高亮
     else if (f === "starred") active = filters.starred;
+    else if (f === "dismissed") active = filters.onlyDismissed;  // v9.9.2: 「已屏蔽」卡片认识 onlyDismissed 下钻态
     else active = filters.status.has(f);
     c.classList.toggle("active", active);
   });

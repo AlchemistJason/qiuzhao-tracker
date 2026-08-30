@@ -69,6 +69,7 @@ function mergeIncoming(incoming) {
     const norm = {
       status: normalizeStatus(st.status),
       starred: !!st.starred,
+      dismissed: !!st.dismissed,  // v9.9.2: 同步码/文件导入携带屏蔽标记
       note: st.note || "",
       lastUpdate: st.lastUpdate === undefined ? null : st.lastUpdate,
       jobs,
@@ -221,6 +222,7 @@ function mergeCloudState(local, remote) {
     out[id] = {
       status: deriveCompanyStatus(jobs, base.status),
       starred: !!(base.starred || other.starred),   // 收藏取并集：任一侧收藏即保留
+      dismissed: !!(base.dismissed || other.dismissed),  // v9.9.2: 屏蔽取并集（折衷：一侧取消屏蔽可能被另一侧并回，但优先防丢）
       note: base.note || other.note || "",          // 备注：较新侧为空时保留另一侧，防丢
       lastUpdate: Math.max(l.lastUpdate || 0, r.lastUpdate || 0) || null,
       jobs,
@@ -583,7 +585,7 @@ function buildSlimCompanies(companies) {
   const slim = {};
   Object.keys(companies || {}).forEach(id => {
     const s = companies[id] || {};
-    const isDefault = (!s.status || s.status === "未投递") && !s.starred && !s.note
+    const isDefault = (!s.status || s.status === "未投递") && !s.starred && !s.dismissed && !s.note  // v9.9.2: 只屏蔽了的公司不算默认态，同步码必须携带
       && (!s.jobs || Object.keys(s.jobs).length === 0)
       && (!s.history || s.history.length === 0);
     if (!isDefault) slim[id] = s;

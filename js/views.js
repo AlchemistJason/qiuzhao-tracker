@@ -58,6 +58,7 @@ function ensureAllSource() {
 function viewByStatus(status) {
   ensureListView();
   ensureAllSource();
+  filters.onlyDismissed = false;  // v9.9.2: 点状态卡片退出「只看屏蔽」
   if (filters.status.has(status)) filters.status.delete(status);
   else { filters.status.clear(); filters.status.add(status); }
   refreshFilterUI();
@@ -67,16 +68,23 @@ function viewByStatus(status) {
 function viewStarred() {
   ensureListView();
   ensureAllSource();
+  filters.onlyDismissed = false;
   filters.starred = !filters.starred;
   refreshFilterUI();
   applyFilters();
 }
 
-// v9.9: 点仪表盘「已屏蔽」卡片 → 勾选「显示已屏蔽」切到全部 tab
+// v9.9.2: 点仪表盘「已屏蔽」卡片 → 只看屏蔽项（单选切换语义，与其他卡片一致：再点取消）
 function viewDismissed() {
   ensureListView();
   ensureAllSource();
-  filters.showDismissed = true;  // 下钻语义：点卡片恒为显示（取消走筛选面板复选框）
+  if (filters.onlyDismissed) {
+    filters.onlyDismissed = false;
+  } else {
+    filters.status.clear();
+    filters.starred = false;
+    filters.onlyDismissed = true;
+  }
   refreshFilterUI();
   applyFilters();
 }
@@ -86,6 +94,7 @@ function viewAll() {
   ensureAllSource();
   filters.status.clear();
   filters.starred = false;
+  filters.onlyDismissed = false;
   refreshFilterUI();
   applyFilters();
 }

@@ -65,7 +65,8 @@ const filters = {
   jobs: new Set(),         // 岗位多选
   keyword: "",             // 搜索词（空格分词 AND）
   hideExpired: true,       // v7.2: 隐藏已截止且未投递的公司（默认开）
-  showDismissed: false     // v9.9: 显示已屏蔽（不感兴趣/暂无合适岗位）的公司（默认关）
+  showDismissed: false,    // v9.9: 显示已屏蔽（不感兴趣/暂无合适岗位）的公司（默认关）
+  onlyDismissed: false     // v9.9.2: 仪表盘「已屏蔽」卡片下钻只看屏蔽项（瞬时态，不持久化）
 };
 
 let currentSort = { field: null, asc: true };
@@ -150,7 +151,9 @@ function matchFilters(c, f, getSt) {
   const s = getSt(c.id);
   if (f.starred && !s.starred) return false;
   // v9.9: 已屏蔽公司默认隐藏；进度优先（已投递/进行中的不被屏蔽隐藏），勾选「显示已屏蔽」时可见
-  if (!f.showDismissed && s.dismissed && s.status === "未投递") return false;
+  // v9.9.2: onlyDismissed=仪表盘「已屏蔽」卡片下钻语义，只看屏蔽项（优先于隐藏规则）
+  if (f.onlyDismissed) { if (!s.dismissed) return false; }
+  else if (!f.showDismissed && s.dismissed && s.status === "未投递") return false;
   if (f.status.size && !f.status.has(s.status)) return false;
   // v7.2: 已截止且未投递的公司默认隐藏（已投递/进行中的不受影响，避免漏跟进）
   if (f.hideExpired && s.status === "未投递" && c.deadline) {
@@ -492,7 +495,7 @@ function serializeUIPrefs(f, sort, view) {
     f: {
       status: [...f.status], starred: !!f.starred,
       locations: [...f.locations], industries: [...f.industries], natures: [...(f.natures || [])], jobs: [...f.jobs],
-      keyword: f.keyword || "", hideExpired: f.hideExpired !== false
+      keyword: f.keyword || "", hideExpired: f.hideExpired !== false, showDismissed: !!f.showDismissed
     }
   });
 }
@@ -513,7 +516,8 @@ function deserializeUIPrefs(json) {
         natures: Array.isArray(p.f.natures) ? p.f.natures : [],
         jobs: Array.isArray(p.f.jobs) ? p.f.jobs : [],
         keyword: typeof p.f.keyword === "string" ? p.f.keyword : "",
-        hideExpired: p.f.hideExpired !== false
+        hideExpired: p.f.hideExpired !== false,
+        showDismissed: !!p.f.showDismissed
       }
     };
   } catch(e) { return null; }
@@ -536,6 +540,7 @@ function loadUIPrefs() {
   filters.jobs = new Set(p.f.jobs);
   filters.keyword = p.f.keyword;
   filters.hideExpired = p.f.hideExpired;
+  filters.showDismissed = !!p.f.showDismissed;  // v9.9.2: 持久化「显示已屏蔽」开关
   currentSort = p.sort;
   if (p.view) currentView = p.view;
   const input = document.getElementById("searchInput");

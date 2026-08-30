@@ -243,6 +243,18 @@ if (mergeCloudState) {
     { companies: mkJobs("a", {}, "未投递", 100, { starred: true }) },
     { companies: mkJobs("a", {}, "已投递", 200) }
   ).companies.a.starred === true);
+  // v9.9.2: 屏蔽标记必须随云合并保留（曾丢失——mergeCloudState 逐字段重建时漏带 dismissed）
+  t("屏蔽合并: 任一侧屏蔽即保留(并集)", mergeCloudState(
+    { companies: mkJobs("a", {}, "未投递", 100, { dismissed: true }) },
+    { companies: mkJobs("a", {}, "已投递", 200) }
+  ).companies.a.dismissed === true && mergeCloudState(
+    { companies: mkJobs("a", {}, "已投递", 200) },
+    { companies: mkJobs("a", {}, "未投递", 100, { dismissed: true }) }
+  ).companies.a.dismissed === true);
+  t("屏蔽合并: 双侧未屏蔽为 false", mergeCloudState(
+    { companies: mkJobs("a", {}, "未投递", 100) },
+    { companies: mkJobs("a", {}, "已投递", 200) }
+  ).companies.a.dismissed === false);
   t("备注合并: 较新侧为空时保留另一侧", mergeCloudState(
     { companies: mkJobs("a", {}, "未投递", 100, { note: "8.31 前免笔试" }) },
     { companies: mkJobs("a", {}, "已投递", 200) }
@@ -276,10 +288,12 @@ t("buildICS 已提取", typeof buildICS === "function");
 t("buildTodoItems 已提取", typeof buildTodoItems === "function");
 
 if (serializeUIPrefs && deserializeUIPrefs) {
-  const f = { status: new Set(["面试中"]), starred: true, locations: new Set(["北京"]), industries: new Set(), jobs: new Set(["算法"]), keyword: "百度", hideExpired: false };
+  const f = { status: new Set(["面试中"]), starred: true, locations: new Set(["北京"]), industries: new Set(), jobs: new Set(["算法"]), keyword: "百度", hideExpired: false, showDismissed: true };
   const back = deserializeUIPrefs(serializeUIPrefs(f, { field: "deadline", asc: false }, "todo"));
   t("偏好往返: 视图/排序", back.view === "todo" && back.sort.field === "deadline" && back.sort.asc === false);
   t("偏好往返: 筛选集合与开关", back.f.status[0] === "面试中" && back.f.starred === true && back.f.locations[0] === "北京" && back.f.jobs[0] === "算法" && back.f.keyword === "百度" && back.f.hideExpired === false);
+  t("偏好往返: 显示已屏蔽开关(v9.9.2)", back.f.showDismissed === true);
+  t("偏好往返: 缺省 showDismissed 兜底 false", deserializeUIPrefs(serializeUIPrefs({ status: new Set(), starred: false, locations: new Set(), industries: new Set(), jobs: new Set(), keyword: "", hideExpired: true }, { field: null, asc: true }, "table")).f.showDismissed === false);
   t("偏好反序列化: 非法输入返回 null", deserializeUIPrefs("not-json") === null && deserializeUIPrefs('{"v":9}') === null);
 }
 
@@ -364,6 +378,10 @@ if (matchFilters) {
   t("屏蔽: 进度优先（已投递不被屏蔽隐藏）", matchFilters(disProg, disF, getStDis) === true);
   t("屏蔽: 勾选「显示已屏蔽」后可见", matchFilters(disC, { ...disF, showDismissed: true }, getStDis) === true);
   t("屏蔽: 未屏蔽公司不受影响", matchFilters({ id: "ok", name: "正常公司", jobs: [], location: "", category: [], note: "" }, disF, getStDis) === true);
+  // v9.9.2: 仪表盘「已屏蔽」卡片下钻——只看屏蔽项，未屏蔽的一律隐藏（含已投递）
+  t("下钻: onlyDismissed 时未屏蔽公司隐藏", matchFilters({ id: "ok", name: "正常公司", jobs: [], location: "", category: [], note: "" }, { ...disF, onlyDismissed: true }, getStDis) === false);
+  t("下钻: onlyDismissed 时屏蔽+未投递可见", matchFilters(disC, { ...disF, onlyDismissed: true }, getStDis) === true);
+  t("下钻: onlyDismissed 时屏蔽+已投递也可见", matchFilters(disProg, { ...disF, onlyDismissed: true }, getStDis) === true);
 }
 
 // ---------- v6 岗位级状态 ----------
@@ -674,6 +692,8 @@ if (buildSlimCompanies) {
   const slim = buildSlimCompanies(full);
   t("瘦身: 全默认公司被剔除", !slim.a);
   t("瘦身: 有进度/收藏/备注的保留", !!(slim.b && slim.c && slim.d));
+  // v9.9.2: 只屏蔽（无进度）的公司不算默认态，同步码必须携带屏蔽标记，否则导出即丢
+  t("瘦身: 仅屏蔽的公司保留", !!buildSlimCompanies({ e: { status: "未投递", starred: false, dismissed: true, note: "", jobs: {}, history: [] } }).e);
   t("瘦身: 空输入不炸", Object.keys(buildSlimCompanies(null)).length === 0);
 }
 
@@ -849,11 +869,42 @@ if (pageWindow) {
 // v8.1: debounce 必须透传事件参数（丢参曾导致搜索框输入必抛 TypeError）
 t("debounce: 事件参数透传", /function\s+debounce[\s\S]*?fn\.apply\(this,\s*args\)/.test(appJs));
 
+// ---------- v9.7 公司扩展信息（extras.js）契约 ----------
+section("v9.7 extras.js 公司扩展信息");
+(function() {
+  global.window = global.window || {};
+  require(path.join(ROOT, "extras.js"));
+  const EXTRAS = window.COMPANY_EXTRAS;
+  t("COMPANY_EXTRAS 已加载", EXTRAS && typeof EXTRAS === "object");
+  if (!EXTRAS) return;
+  const keys = Object.keys(EXTRAS);
+  t("extras 非空", keys.length > 0, "当前 " + keys.length + " 条");
+  // 键必须命中 data.js 或 discovered.json 已存在的公司 id（悬空键 = 详情弹窗永远打不开）
+  const knownIds = new Set(COMPANIES.map(c => c.id));
+  try {
+    const disc = JSON.parse(fs.readFileSync(path.join(ROOT, "discovered.json"), "utf8"));
+    (disc.items || []).forEach(i => knownIds.add(i.id));
+  } catch(e) {}
+  t("extras: 键全部命中已知公司 id", keys.every(k => knownIds.has(k)),
+    keys.filter(k => !knownIds.has(k)).join(","));
+  // 字段白名单 + 类型约束（契约见 AGENTS.md「extras.js」节）
+  const FIELDS = new Set(["tips", "intro", "gradReq", "exam", "examImages"]);
+  t("extras: 字段在白名单内", keys.every(k => Object.keys(EXTRAS[k]).every(f => FIELDS.has(f))),
+    keys.filter(k => Object.keys(EXTRAS[k]).some(f => !FIELDS.has(f))).map(k => k + ":" + Object.keys(EXTRAS[k]).filter(f => !FIELDS.has(f)).join("|")).join(","));
+  t("extras: 文本字段均为字符串", keys.every(k => ["tips", "intro", "gradReq", "exam"].every(f => EXTRAS[k][f] === undefined || typeof EXTRAS[k][f] === "string")));
+  // 笔试日历图片必须本地路径且文件存在（禁止外链，防加载失败/劫持）
+  t("extras: examImages 本地路径且文件存在", keys.every(k => {
+    const imgs = EXTRAS[k].examImages;
+    if (imgs === undefined) return true;
+    return Array.isArray(imgs) && imgs.every(p => /^assets\/exam\/[\w.-]+$/.test(p) && fs.existsSync(path.join(ROOT, p)));
+  }), keys.filter(k => Array.isArray(EXTRAS[k].examImages) && !EXTRAS[k].examImages.every(p => /^assets\/exam\/[\w.-]+$/.test(p) && fs.existsSync(path.join(ROOT, p)))).join(","));
+})();
+
 // ---------- 6. 缓存戳一致性（防止发版忘改 ?v= 导致用户拿到旧缓存） ----------
 section("index.html 缓存戳一致性");
 (function() {
   const html = fs.readFileSync(path.join(ROOT, "index.html"), "utf8");
-  const refs = [...html.matchAll(/(?:src|href)="(style\.css|data\.js|official-sites\.js|js\/[\w-]+\.js)\?v=([\w.]+)"/g)];
+  const refs = [...html.matchAll(/(?:src|href)="(style\.css|data\.js|extras\.js|official-sites\.js|js\/[\w-]+\.js)\?v=([\w.]+)"/g)];
   t("本地资源均带缓存戳", refs.length >= 8, "实际 " + refs.length + " 处");
   const versions = new Set(refs.map(m => m[2]));
   t("缓存戳版本号统一", versions.size === 1, versions.size > 1 ? "不一致: " + [...versions].join(", ") : "");
