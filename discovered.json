@@ -1,2224 +1,2900 @@
 {
-  "schemaVersion": 2,
-  "updatedAt": "2026-08-29",
-  "focus": [
-    "互联网大厂",
-    "头部券商/公募基金",
-    "央企广东分公司"
-  ],
-  "_readme": "爬虫发现公司候选池（schemaVersion 2）。行业词表 category（数组，1~2 个值）合法值仅限 17 个：银行 / 券商/基金/期货 / 金融科技 / 互联网 / 游戏 / 安全 / AI/机器人 / 智能硬件 / 半导体/电子 / 汽车/智能驾驶 / 工业/制造/能源 / 交通/物流 / 通信/运营商 / 消费/零售 / 教育 / 咨询/专业服务 / 综合集团。企业性质 nature（字符串，单值）合法值仅限 5 个：央企 / 国企 / 民企 / 外企 / 合资。category 描述行业、nature 描述所有制，两者相互独立；主业明确的条目 category 只给 1 个值，禁止发明词表外的新值。写入本文件的上游脚本必须遵守此 taxonomy（schemaVersion 2）。重点关注方向见 focus（互联网大厂 / 头部券商与公募基金 / 央企广东分公司）。字段：id(小写slug,不可改) / name / officialLink(官网校招页,可空) / jobs(数组或分隔文本,可空) / location(可空) / deadline(YYYY-MM-DD 或 null) / category(数组,行业) / nature(企业性质,紧跟 category) / source(来源标识) / foundAt(ISO 时间) / note(可空) / graduated(布尔,可空)。graduated=true 表示该公司已毕业进 data.js 内推清单：条目保留在池中（池=关注清单,不得删除），id 必须与 data.js 条目完全一致（用户状态按 id 共享）；非 graduated 条目不得与 data.js 撞 id/撞归一化名/撞官网链接，graduated 条目豁免这三项查重但必须 id 命中。隐私：只放公开校招信息，禁止写入任何个人邮箱相关内容。首批 source=manual-seed 为人工核实的种子清单。",
-  "items": [
-    {
-      "id": "bytedance",
-      "name": "字节跳动",
-      "officialLink": "https://jobs.bytedance.com/campus",
-      "location": "北京/上海/深圳/杭州",
-      "category": [
-        "互联网"
-      ],
-      "nature": "民企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "官方校招官网",
-      "graduated": true
-    },
-    {
-      "id": "alibaba",
-      "name": "阿里巴巴",
-      "officialLink": "https://talent.alibaba.com/campus/home",
-      "location": "杭州/北京/上海",
-      "category": [
-        "互联网"
-      ],
-      "nature": "民企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "集团总入口；阿里系按集团分开校招：每个集团 1 次投递机会、最多 2 个意向，各集团独立入口见下方子条目"
-    },
-    {
-      "id": "jd",
-      "name": "京东",
-      "officialLink": "https://campus.jd.com",
-      "location": "北京",
-      "category": [
-        "互联网"
-      ],
-      "nature": "民企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "校招唯一官网"
-    },
-    {
-      "id": "huawei",
-      "name": "华为",
-      "officialLink": "https://career.huawei.com/reccampportal/portal5/campus-recruitment.html",
-      "location": "深圳/东莞/北京/上海",
-      "category": [
-        "互联网"
-      ],
-      "nature": "民企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "招聘官网校招频道"
-    },
-    {
-      "id": "netease",
-      "name": "网易",
-      "officialLink": "https://campus.163.com",
-      "location": "杭州/广州/北京",
-      "category": [
-        "互联网"
-      ],
-      "nature": "民企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "网易互联网总入口（云音乐/严选等）；游戏走互娱/雷火，已在主清单（含内推码），三个池互不冲突可分别投递"
-    },
-    {
-      "id": "ke",
-      "name": "贝壳找房",
-      "officialLink": "https://campus.ke.com",
-      "location": "北京",
-      "category": [
-        "互联网"
-      ],
-      "nature": "民企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "ADC 校招官网"
-    },
-    {
-      "id": "360",
-      "name": "360集团",
-      "officialLink": "https://360campus.zhiye.com/campus/jobs",
-      "location": "北京/西安/成都",
-      "category": [
-        "安全"
-      ],
-      "nature": "民企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "官方北森校招店铺"
-    },
-    {
-      "id": "sensetime",
-      "name": "商汤科技",
-      "officialLink": "https://hr.sensetime.com",
-      "location": "上海/北京/深圳",
-      "category": [
-        "AI/机器人"
-      ],
-      "nature": "民企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "官方招聘官网",
-      "graduated": true
-    },
-    {
-      "id": "megvii",
-      "name": "旷视科技",
-      "officialLink": "https://zhaopin.megvii.com/Campus",
-      "location": "北京",
-      "category": [
-        "AI/机器人"
-      ],
-      "nature": "民企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "官方校招官网"
-    },
-    {
-      "id": "sina",
-      "name": "新浪微博",
-      "officialLink": "https://app.mokahr.com/campus-recruitment/sina/43536",
-      "location": "北京/杭州",
-      "category": [
-        "互联网"
-      ],
-      "nature": "民企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "官方 Moka 校招店铺（新浪&微博联合）"
-    },
-    {
-      "id": "iqiyi",
-      "name": "爱奇艺",
-      "officialLink": "https://campus.iqiyi.com",
-      "location": "北京",
-      "category": [
-        "互联网"
-      ],
-      "nature": "民企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "校招官网"
-    },
-    {
-      "id": "wps",
-      "name": "金山办公",
-      "officialLink": "https://join.wps.cn",
-      "location": "珠海/北京/武汉",
-      "category": [
-        "互联网"
-      ],
-      "nature": "民企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "官方网申入口"
-    },
-    {
-      "id": "yonyou",
-      "name": "用友",
-      "officialLink": "https://career.yonyou.com",
-      "location": "北京",
-      "category": [
-        "互联网"
-      ],
-      "nature": "民企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "招聘官网"
-    },
-    {
-      "id": "citic-sec",
-      "name": "中信证券",
-      "officialLink": "https://careers.citics.com/campus/headquarters",
-      "location": "北京/深圳",
-      "category": [
-        "券商/基金/期货"
-      ],
-      "nature": "央企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "官网校招（总部）板块"
-    },
-    {
-      "id": "huatai-sec",
-      "name": "华泰证券",
-      "officialLink": "https://wecruit.hotjob.cn/SU6419745cbef57c635fe10142/pb/school.html",
-      "location": "南京/上海/深圳/北京",
-      "category": [
-        "券商/基金/期货"
-      ],
-      "nature": "国企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "官方北森 ATS 校招页"
-    },
-    {
-      "id": "cicc",
-      "name": "中金公司",
-      "officialLink": "https://cicc.zhiye.com",
-      "location": "北京/上海/深圳",
-      "category": [
-        "券商/基金/期货"
-      ],
-      "nature": "央企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "官方 ATS 招聘站，进「校园招聘」"
-    },
-    {
-      "id": "csc-sec",
-      "name": "中信建投",
-      "officialLink": "https://www.csc108.com/joinus",
-      "location": "北京",
-      "category": [
-        "券商/基金/期货"
-      ],
-      "nature": "国企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "官网诚聘英才页"
-    },
-    {
-      "id": "gtja-sec",
-      "name": "国泰海通",
-      "officialLink": "https://hr.gtht.com",
-      "location": "上海",
-      "category": [
-        "券商/基金/期货"
-      ],
-      "nature": "国企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "国泰君安+海通合并为国泰海通，统一招聘官网"
-    },
-    {
-      "id": "cms-sec",
-      "name": "招商证券",
-      "officialLink": "https://cms.hotjob.cn",
-      "location": "深圳",
-      "category": [
-        "券商/基金/期货"
-      ],
-      "nature": "央企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "官方唯一网申渠道"
-    },
-    {
-      "id": "gf-sec",
-      "name": "广发证券",
-      "officialLink": "https://gf.hotjob.cn",
-      "location": "广州",
-      "category": [
-        "券商/基金/期货"
-      ],
-      "nature": "国企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "官方北森 ATS 招聘站"
-    },
-    {
-      "id": "swhy-sec",
-      "name": "申万宏源",
-      "officialLink": "https://www.swhysc.com",
-      "location": "上海",
-      "category": [
-        "券商/基金/期货"
-      ],
-      "nature": "央企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "官网诚聘英才→校园招聘"
-    },
-    {
-      "id": "chinastock-sec",
-      "name": "中国银河",
-      "officialLink": "https://chinastock.zhiye.com/custom/campus",
-      "location": "北京",
-      "category": [
-        "券商/基金/期货"
-      ],
-      "nature": "央企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "官方 ATS 校招专属页"
-    },
-    {
-      "id": "efunds",
-      "name": "易方达基金",
-      "officialLink": "https://job.efunds.com.cn",
-      "location": "广州",
-      "category": [
-        "券商/基金/期货"
-      ],
-      "nature": "国企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "自有招聘域名，进「校园招聘」"
-    },
-    {
-      "id": "chinaamc",
-      "name": "华夏基金",
-      "officialLink": "https://chinaamc.zhiye.com",
-      "location": "北京",
-      "category": [
-        "券商/基金/期货"
-      ],
-      "nature": "央企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "官方 ATS 招聘站"
-    },
-    {
-      "id": "jsfund",
-      "name": "嘉实基金",
-      "officialLink": "https://www.jsfund.cn/jobs/",
-      "location": "北京",
-      "category": [
-        "券商/基金/期货"
-      ],
-      "nature": "央企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "官网加入我们页"
-    },
-    {
-      "id": "southernfund",
-      "name": "南方基金",
-      "officialLink": "https://recruit.southernfund.com/nfjjRecruitSystem/index.action",
-      "location": "深圳",
-      "category": [
-        "券商/基金/期货"
-      ],
-      "nature": "国企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "自有招聘系统校招入口"
-    },
-    {
-      "id": "gffunds",
-      "name": "广发基金",
-      "officialLink": "https://www.gffunds.com.cn/recruitment",
-      "location": "广州/珠海",
-      "category": [
-        "券商/基金/期货"
-      ],
-      "nature": "国企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "官网招聘频道"
-    },
-    {
-      "id": "htffund",
-      "name": "汇添富基金",
-      "officialLink": "https://htffund.zhiye.com/campus",
-      "location": "上海",
-      "category": [
-        "券商/基金/期货"
-      ],
-      "nature": "国企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "官方 ATS 校招页"
-    },
-    {
-      "id": "fullgoal",
-      "name": "富国基金",
-      "officialLink": "https://app.mokahr.com/campus-recruitment/fullgoal/72198",
-      "location": "上海",
-      "category": [
-        "券商/基金/期货"
-      ],
-      "nature": "国企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "官方 Moka 校招店铺（批次 ID 会换，前缀不变）"
-    },
-    {
-      "id": "bosera",
-      "name": "博时基金",
-      "officialLink": "https://bosera.hotjob.cn",
-      "location": "深圳",
-      "category": [
-        "券商/基金/期货"
-      ],
-      "nature": "央企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "官方北森招聘站"
-    },
-    {
-      "id": "cmfchina",
-      "name": "招商基金",
-      "officialLink": "https://cmfchina.zhiye.com/campus",
-      "location": "深圳",
-      "category": [
-        "券商/基金/期货"
-      ],
-      "nature": "央企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "官方 ATS 校招栏目"
-    },
-    {
-      "id": "icbcubs",
-      "name": "工银瑞信",
-      "officialLink": "https://icbcubs.hotjob.cn",
-      "location": "北京/上海/深圳",
-      "category": [
-        "券商/基金/期货"
-      ],
-      "nature": "央企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "官方北森人才招聘官网"
-    },
-    {
-      "id": "csg",
-      "name": "南方电网",
-      "officialLink": "https://zhaopin.csg.cn",
-      "location": "广州",
-      "category": [
-        "工业/制造/能源"
-      ],
-      "nature": "央企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "南网统一平台（唯一官方渠道，含广东电网/南网储能/南网科研院/南网数字）。规则：每人最多申报 3 家二级单位，各单位限额见公告（如南网科研院限 1 志愿）"
-    },
-    {
-      "id": "cmcc-gd",
-      "name": "中国移动广东公司",
-      "officialLink": "https://job.10086.cn/personal/campus/",
-      "location": "广东",
-      "category": [
-        "通信/运营商"
-      ],
-      "nature": "央企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "集团统一平台，进校招板块选广东公司"
-    },
-    {
-      "id": "chinatelecom-gd",
-      "name": "中国电信广东公司",
-      "officialLink": "https://job.chinatelecom.com.cn/",
-      "location": "广东",
-      "category": [
-        "通信/运营商"
-      ],
-      "nature": "央企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "电信统一平台（含各省分公司/研究院/天翼安全等）。规则：每人最多 2 个志愿，填报后不能修改"
-    },
-    {
-      "id": "chinaunicom-gd",
-      "name": "中国联通广东公司",
-      "officialLink": "https://zglt.iguopin.com/",
-      "location": "广东",
-      "category": [
-        "通信/运营商"
-      ],
-      "nature": "央企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "集团国聘合作招聘站"
-    },
-    {
-      "id": "csair",
-      "name": "南方航空",
-      "officialLink": "https://job.csair.com/",
-      "location": "广州",
-      "category": [
-        "交通/物流"
-      ],
-      "nature": "央企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "官方招聘官网校招专区"
-    },
-    {
-      "id": "cgn",
-      "name": "中广核",
-      "officialLink": "https://cgn.hotjob.cn",
-      "location": "深圳",
-      "category": [
-        "工业/制造/能源"
-      ],
-      "nature": "央企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "官方校招网站"
-    },
-    {
-      "id": "cmhk",
-      "name": "招商局集团",
-      "officialLink": "https://cmhk.zhiye.com/custom/xy",
-      "location": "深圳/香港",
-      "category": [
-        "综合集团"
-      ],
-      "nature": "央企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "集团统一 ATS 校招专区（招商港口/招商轮船等在此点选）。各成员单位限额自定：招商轮船限 2 岗、中国外运独立系统限 5 岗"
-    },
-    {
-      "id": "oct",
-      "name": "华侨城集团",
-      "officialLink": "https://oct.zhaopin.com",
-      "location": "深圳",
-      "category": [
-        "工业/制造/能源"
-      ],
-      "nature": "央企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "官方校招官网（智联合作站）"
-    },
-    {
-      "id": "sinopec-gd",
-      "name": "中国石化广东石油",
-      "officialLink": "https://job.sinopec.com",
-      "location": "广东",
-      "category": [
-        "工业/制造/能源"
-      ],
-      "nature": "央企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "集团统一平台（毕业生招聘唯一官方渠道）"
-    },
-    {
-      "id": "gzrailway",
-      "name": "广州局集团",
-      "officialLink": "https://gtgrs.gzrailway.com.cn",
-      "location": "广州",
-      "category": [
-        "交通/物流"
-      ],
-      "nature": "央企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "广州局自有招聘网（公告指定报名网址）"
-    },
-    {
-      "id": "cscec8b",
-      "name": "中建八局南方",
-      "officialLink": "https://job.cscec8b.com.cn",
-      "location": "深圳",
-      "category": [
-        "工业/制造/能源"
-      ],
-      "nature": "央企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "中建八局官方招聘网，校招需先过集团统一测评"
-    },
-    {
-      "id": "cec",
-      "name": "中国电子",
-      "officialLink": "https://cec.hotjob.cn",
-      "location": "深圳",
-      "category": [
-        "半导体/电子"
-      ],
-      "nature": "央企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "集团统一校招官网（总部深圳）"
-    },
-    {
-      "id": "lixiang",
-      "name": "理想汽车",
-      "officialLink": "https://www.lixiang.com/employ/campus/list.html",
-      "location": "北京/上海/常州",
-      "category": [
-        "汽车/智能驾驶"
-      ],
-      "nature": "民企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "官网校招职位列表页"
-    },
-    {
-      "id": "geely",
-      "name": "吉利汽车",
-      "officialLink": "https://campus.geely.com",
-      "location": "杭州/宁波",
-      "category": [
-        "汽车/智能驾驶"
-      ],
-      "nature": "民企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "独立校招官网",
-      "graduated": true
-    },
-    {
-      "id": "byd",
-      "name": "比亚迪",
-      "officialLink": "https://job.byd.com",
-      "location": "深圳",
-      "category": [
-        "汽车/智能驾驶"
-      ],
-      "nature": "民企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "官方招聘平台（含校园招聘）"
-    },
-    {
-      "id": "gac",
-      "name": "广汽集团",
-      "officialLink": "https://www.gacgroup.com/cn/talent",
-      "location": "广州",
-      "category": [
-        "汽车/智能驾驶"
-      ],
-      "nature": "国企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "集团人才招聘页（广州国企）"
-    },
-    {
-      "id": "midea",
-      "name": "美的集团",
-      "officialLink": "https://careers.midea.com/schoolOut/home",
-      "location": "佛山/深圳/上海",
-      "category": [
-        "智能硬件"
-      ],
-      "nature": "民企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "独立校招官网"
-    },
-    {
-      "id": "gree",
-      "name": "格力电器",
-      "officialLink": "https://www.gree.com",
-      "location": "珠海",
-      "category": [
-        "智能硬件"
-      ],
-      "nature": "民企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "无独立校招域名，走官网诚聘英才栏目（置信度低）"
-    },
-    {
-      "id": "tcl",
-      "name": "TCL",
-      "officialLink": "https://campus.tcl.com",
-      "location": "深圳/惠州",
-      "category": [
-        "智能硬件"
-      ],
-      "nature": "民企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "独立校招官网"
-    },
-    {
-      "id": "cmb",
-      "name": "招商银行",
-      "officialLink": "https://career.cmbchina.com/home",
-      "location": "深圳/全国",
-      "category": [
-        "银行"
-      ],
-      "nature": "央企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "官方招聘官网"
-    },
-    {
-      "id": "icbc",
-      "name": "工商银行",
-      "officialLink": "https://job.icbc.com.cn",
-      "location": "北京/全国",
-      "category": [
-        "银行"
-      ],
-      "nature": "央企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "官方招聘平台"
-    },
-    {
-      "id": "abchina",
-      "name": "农业银行",
-      "officialLink": "https://career.abchina.com.cn",
-      "location": "北京/全国",
-      "category": [
-        "银行"
-      ],
-      "nature": "央企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "官方招聘平台"
-    },
-    {
-      "id": "boc",
-      "name": "中国银行",
-      "officialLink": "https://campus.chinahr.com/pages/2026-boc",
-      "location": "北京/全国",
-      "category": [
-        "银行"
-      ],
-      "nature": "央企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "校招页面按年份更换"
-    },
-    {
-      "id": "ccb",
-      "name": "建设银行",
-      "officialLink": "https://job.ccb.com",
-      "location": "北京/全国",
-      "category": [
-        "银行"
-      ],
-      "nature": "央企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "官方招聘平台"
-    },
-    {
-      "id": "bankcomm",
-      "name": "交通银行",
-      "officialLink": "https://job.bankcomm.com",
-      "location": "上海/全国",
-      "category": [
-        "银行"
-      ],
-      "nature": "央企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "官方招聘平台"
-    },
-    {
-      "id": "psbc",
-      "name": "邮储银行",
-      "officialLink": "https://psbc2026.zhaopin.com",
-      "location": "北京/全国",
-      "category": [
-        "银行"
-      ],
-      "nature": "央企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "校招域名按年份变化（智联承办）"
-    },
-    {
-      "id": "pingan",
-      "name": "平安集团",
-      "officialLink": "https://campus.pingan.com",
-      "location": "深圳/全国",
-      "category": [
-        "银行"
-      ],
-      "nature": "民企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "独立校招官网（保险/银行/科技）"
-    },
-    {
-      "id": "webank",
-      "name": "微众银行",
-      "officialLink": "https://campus.webank.com",
-      "location": "深圳/武汉",
-      "category": [
-        "银行"
-      ],
-      "nature": "民企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "独立校招官网"
-    },
-    {
-      "id": "tonghuashun",
-      "name": "同花顺",
-      "officialLink": "https://campus.10jqka.com.cn",
-      "location": "杭州",
-      "category": [
-        "金融科技"
-      ],
-      "nature": "民企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "独立校招官网"
-    },
-    {
-      "id": "eastmoney",
-      "name": "东方财富",
-      "officialLink": "https://app.mokahr.com/campus-recruitment/eastmoney/92400",
-      "location": "上海/成都/南京",
-      "category": [
-        "金融科技"
-      ],
-      "nature": "民企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "Moka 承办校招页"
-    },
-    {
-      "id": "shein",
-      "name": "希音SHEIN",
-      "officialLink": "https://talent.sheincorp.cn/CampusRecruiting.html",
-      "location": "广州/深圳/南京/上海",
-      "category": [
-        "消费/零售"
-      ],
-      "nature": "民企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "官方校招页"
-    },
-    {
-      "id": "vip",
-      "name": "唯品会",
-      "officialLink": "https://campus.vip.com/",
-      "location": "广州/上海",
-      "category": [
-        "互联网"
-      ],
-      "nature": "民企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "独立校招官网"
-    },
-    {
-      "id": "crc",
-      "name": "华润集团",
-      "officialLink": "https://crc.wintalent.cn/wt/CRC/web/index/CompCRCRecruitSchool",
-      "location": "深圳/香港",
-      "category": [
-        "综合集团"
-      ],
-      "nature": "央企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "集团校招页（wintalent 承办，华润置地/电力/万家/医药等在此）。规则：按业务单元每人 2~3 个志愿，第一志愿优先，淘汰后流转"
-    },
-    {
-      "id": "zte",
-      "name": "中兴通讯",
-      "officialLink": "https://job.zte.com.cn",
-      "location": "深圳/南京/西安",
-      "category": [
-        "通信/运营商"
-      ],
-      "nature": "国企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "官方招聘平台",
-      "graduated": true
-    },
-    {
-      "id": "transsion",
-      "name": "传音控股",
-      "officialLink": "https://transsion.zhiye.com/campus",
-      "location": "深圳/上海/重庆",
-      "category": [
-        "智能硬件"
-      ],
-      "nature": "民企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "校招页（zhiye 承办）",
-      "graduated": true
-    },
-    {
-      "id": "sf-express",
-      "name": "顺丰集团",
-      "officialLink": "https://campus.sf-express.com/",
-      "location": "深圳",
-      "category": [
-        "交通/物流"
-      ],
-      "nature": "民企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "独立校招官网"
-    },
-    {
-      "id": "huya",
-      "name": "虎牙",
-      "officialLink": "https://hr.huya.com",
-      "location": "广州/深圳",
-      "category": [
-        "游戏"
-      ],
-      "nature": "民企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "官方招聘官网"
-    },
-    {
-      "id": "ctyun",
-      "name": "天翼云",
-      "officialLink": "https://ctyun.hotjob.cn",
-      "location": "北京/广州/深圳/成都/厦门",
-      "category": [
-        "通信/运营商"
-      ],
-      "nature": "央企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "中国电信旗下云计算，独立网申入口"
-    },
-    {
-      "id": "donghaifund",
-      "name": "东海基金",
-      "officialLink": "https://www.donghaifunds.com/aboutus/job/xyzp/index.html",
-      "location": "上海",
-      "category": [
-        "券商/基金/期货"
-      ],
-      "nature": "国企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "官网诚聘英才-校招栏目"
-    },
-    {
-      "id": "shokz",
-      "name": "韶音Shokz",
-      "officialLink": "https://hr.shokz.com.cn",
-      "location": "深圳",
-      "category": [
-        "智能硬件"
-      ],
-      "nature": "民企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "独立官方网申域名",
-      "graduated": true
-    },
-    {
-      "id": "ebscn",
-      "name": "光大证券",
-      "officialLink": "https://ebscn.zhiye.com/campus",
-      "location": "上海/全国",
-      "category": [
-        "券商/基金/期货"
-      ],
-      "nature": "央企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "网申由 zhiye 承办，多年沿用"
-    },
-    {
-      "id": "zhuoshi",
-      "name": "卓识基金",
-      "officialLink": "https://www.nowcoder.com/enterprise/13379",
-      "location": "北京/上海",
-      "category": [
-        "券商/基金/期货"
-      ],
-      "nature": "民企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "百亿量化私募，无独立校招官网，投递以公众号为主（置信度低）"
-    },
-    {
-      "id": "phfund",
-      "name": "鹏华基金",
-      "officialLink": "https://job.phfund.com.cn/",
-      "location": "深圳",
-      "category": [
-        "券商/基金/期货"
-      ],
-      "nature": "国企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "官方独立招聘系统（含校招）"
-    },
-    {
-      "id": "duxiaoman",
-      "name": "度小满",
-      "officialLink": "https://campus.duxiaoman.com",
-      "location": "北京",
-      "category": [
-        "金融科技"
-      ],
-      "nature": "民企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "独立校招官网（飞书承办，百度系金融）"
-    },
-    {
-      "id": "asus",
-      "name": "华硕ASUS",
-      "officialLink": "https://asus.zhiye.com/Campus",
-      "location": "上海/苏州/北京/深圳",
-      "category": [
-        "智能硬件"
-      ],
-      "nature": "外企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "官方校招站（智业承办）"
-    },
-    {
-      "id": "deloitte",
-      "name": "德勤",
-      "officialLink": "https://www.deloitte.com/cn/zh/cn-careers.html",
-      "location": "全国",
-      "category": [
-        "咨询/专业服务"
-      ],
-      "nature": "外企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "四大，官网职业发展栏目内嵌校招网申"
-    },
-    {
-      "id": "citicsf",
-      "name": "中信期货",
-      "officialLink": "https://campus.yingjiesheng.com/citicsf/",
-      "location": "深圳/北京/上海",
-      "category": [
-        "券商/基金/期货"
-      ],
-      "nature": "央企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "未来星校招（应届生网承办，按届换页）"
-    },
-    {
-      "id": "anker",
-      "name": "安克创新",
-      "officialLink": "https://career.anker.com.cn/universities/recruitment/new/",
-      "location": "长沙/深圳/广州/上海/北京",
-      "category": [
-        "智能硬件"
-      ],
-      "nature": "民企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "自有官方校招站（旧域 anker-in.com 已弃用）",
-      "graduated": true
-    },
-    {
-      "id": "szvc",
-      "name": "深创投",
-      "officialLink": "https://www.szvc.com.cn/recruit",
-      "location": "深圳",
-      "category": [
-        "券商/基金/期货"
-      ],
-      "nature": "国企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "深圳市属国资 VC，官网加入我们栏目"
-    },
-    {
-      "id": "tplink",
-      "name": "TP-Link普联",
-      "officialLink": "https://hr.tp-link.com.cn",
-      "location": "深圳/杭州/北京/南京",
-      "category": [
-        "智能硬件"
-      ],
-      "nature": "民企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "官方投递通道（勿与联洲国际 tplinkglobal 混淆）",
-      "graduated": true
-    },
-    {
-      "id": "ubiquant",
-      "name": "九坤投资",
-      "officialLink": "https://app.mokahr.com/campus_apply/ubiquantrecruit/37031",
-      "location": "北京/深圳",
-      "category": [
-        "券商/基金/期货"
-      ],
-      "nature": "民企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "头部量化私募，Moka 承办校招"
-    },
-    {
-      "id": "deepseek",
-      "name": "DeepSeek深度求索",
-      "officialLink": "https://talent.deepseek.com",
-      "location": "杭州/北京",
-      "category": [
-        "AI/机器人"
-      ],
-      "nature": "民企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "官方招聘站，岗位常年滚动开放（无校招季专题）"
-    },
-    {
-      "id": "high-flyer",
-      "name": "幻方量化",
-      "officialLink": "https://app.mokahr.com/campus_apply/high-flyer/4605",
-      "location": "杭州",
-      "category": [
-        "券商/基金/期货"
-      ],
-      "nature": "民企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "DeepSeek 同系主体，Moka 承办校招"
-    },
-    {
-      "id": "zhipu",
-      "name": "智谱AI",
-      "officialLink": "https://zhipu-ai.jobs.feishu.cn/zhipucampus/",
-      "location": "北京",
-      "category": [
-        "AI/机器人"
-      ],
-      "nature": "民企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "飞书承办校招专题（官网 zhipuai.cn/zh/joinus 同步）"
-    },
-    {
-      "id": "moonshot",
-      "name": "月之暗面Kimi",
-      "officialLink": "https://careers.kimi.com/campus",
-      "location": "北京",
-      "category": [
-        "AI/机器人"
-      ],
-      "nature": "民企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "官方校招页（Moka 承办）"
-    },
-    {
-      "id": "xyzq",
-      "name": "兴业证券",
-      "officialLink": "https://www.xyzq.com.cn",
-      "location": "福州/上海",
-      "category": [
-        "券商/基金/期货"
-      ],
-      "nature": "国企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "官网诚聘英才栏目"
-    },
-    {
-      "id": "guosen",
-      "name": "国信证券",
-      "officialLink": "https://www.guosen.com.cn",
-      "location": "深圳",
-      "category": [
-        "券商/基金/期货"
-      ],
-      "nature": "国企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "官网人才招聘栏目"
-    },
-    {
-      "id": "zts",
-      "name": "中泰证券",
-      "officialLink": "https://www.zts.com.cn",
-      "location": "济南/上海",
-      "category": [
-        "券商/基金/期货"
-      ],
-      "nature": "国企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "官网人才招聘栏目"
-    },
-    {
-      "id": "xqfunds",
-      "name": "兴证全球基金",
-      "officialLink": "https://www.xqfunds.com",
-      "location": "上海",
-      "category": [
-        "券商/基金/期货"
-      ],
-      "nature": "国企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "官网招聘栏目（原兴全基金）"
-    },
-    {
-      "id": "igwfmc",
-      "name": "景顺长城基金",
-      "officialLink": "https://www.igwfmc.com",
-      "location": "深圳",
-      "category": [
-        "券商/基金/期货"
-      ],
-      "nature": "合资",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "官网招聘栏目（中美合资头部）"
-    },
-    {
-      "id": "zofund",
-      "name": "中欧基金",
-      "officialLink": "https://www.zofund.com",
-      "location": "上海",
-      "category": [
-        "券商/基金/期货"
-      ],
-      "nature": "民企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "官网招聘栏目"
-    },
-    {
-      "id": "thfund",
-      "name": "天弘基金",
-      "officialLink": "https://www.thfund.com.cn",
-      "location": "杭州/北京",
-      "category": [
-        "券商/基金/期货"
-      ],
-      "nature": "民企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "余额宝管理人，蚂蚁系"
-    },
-    {
-      "id": "mhfunds",
-      "name": "明汯投资",
-      "officialLink": "https://www.mhfunds.com",
-      "location": "上海",
-      "category": [
-        "券商/基金/期货"
-      ],
-      "nature": "民企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "500亿+量化私募头部"
-    },
-    {
-      "id": "yanfu",
-      "name": "衍复投资",
-      "officialLink": "https://yanfuinvestments1.zhiye.com/",
-      "location": "上海",
-      "category": [
-        "券商/基金/期货"
-      ],
-      "nature": "民企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "量化私募，校招门户 51job 承办"
-    },
-    {
-      "id": "pwc",
-      "name": "普华永道",
-      "officialLink": "https://www.pwc.com/cn/zh/careers.html",
-      "location": "全国",
-      "category": [
-        "咨询/专业服务"
-      ],
-      "nature": "外企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "四大，官网校园招聘入口"
-    },
-    {
-      "id": "ey",
-      "name": "安永",
-      "officialLink": "https://www.ey.com/cn/zh/careers",
-      "location": "全国",
-      "category": [
-        "咨询/专业服务"
-      ],
-      "nature": "外企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "四大，官网校园招聘入口"
-    },
-    {
-      "id": "kpmg",
-      "name": "毕马威",
-      "officialLink": "https://www.kpmg.com/cn/zh/home/careers.html",
-      "location": "全国",
-      "category": [
-        "咨询/专业服务"
-      ],
-      "nature": "外企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "四大，官网校园招聘入口"
-    },
-    {
-      "id": "boe",
-      "name": "京东方",
-      "officialLink": "https://career.boe.com",
-      "location": "北京/合肥/成都",
-      "category": [
-        "半导体/电子"
-      ],
-      "nature": "国企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "官方招聘平台（半导体显示）"
-    },
-    {
-      "id": "smic",
-      "name": "中芯国际",
-      "officialLink": "https://www.smics.com",
-      "location": "上海",
-      "category": [
-        "半导体/电子"
-      ],
-      "nature": "国企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "官网人才招聘栏目（半导体制造）"
-    },
-    {
-      "id": "unisoc",
-      "name": "紫光展锐",
-      "officialLink": "https://www.unisoc.com",
-      "location": "上海",
-      "category": [
-        "半导体/电子"
-      ],
-      "nature": "民企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "官网加入我们栏目（芯片设计）"
-    },
-    {
-      "id": "dahua",
-      "name": "大华股份",
-      "officialLink": "https://www.dahuatech.com",
-      "location": "杭州",
-      "category": [
-        "智能硬件"
-      ],
-      "nature": "民企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "官网人才招聘栏目（安防，对标海康）"
-    },
-    {
-      "id": "ubt",
-      "name": "优必选",
-      "officialLink": "https://www.ubtrobot.com",
-      "location": "深圳",
-      "category": [
-        "AI/机器人"
-      ],
-      "nature": "民企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "官网加入我们栏目（人形机器人）"
-    },
-    {
-      "id": "minimax",
-      "name": "MiniMax",
-      "officialLink": "https://www.minimaxi.com",
-      "location": "上海",
-      "category": [
-        "AI/机器人"
-      ],
-      "nature": "民企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "官网招聘页（海螺AI/星野，飞书承办）"
-    },
-    {
-      "id": "stepfun",
-      "name": "阶跃星辰",
-      "officialLink": "https://www.stepfun.com",
-      "location": "上海",
-      "category": [
-        "AI/机器人"
-      ],
-      "nature": "民企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "官网招聘页（Step 系列模型）"
-    },
-    {
-      "id": "baichuan",
-      "name": "百川智能",
-      "officialLink": "https://www.baichuan-ai.com",
-      "location": "北京",
-      "category": [
-        "AI/机器人"
-      ],
-      "nature": "民企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "官网招聘页（医疗大模型方向）"
-    },
-    {
-      "id": "csg-digital",
-      "name": "南网数字集团",
-      "officialLink": "https://zhaopin.csg.cn",
-      "location": "广州/深圳",
-      "category": [
-        "工业/制造/能源"
-      ],
-      "nature": "央企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "南方电网数字化子公司，走南网统一招聘平台（与南方电网同入口）"
-    },
-    {
-      "id": "sgcc",
-      "name": "国家电网",
-      "officialLink": "https://zhaopin.sgcc.com.cn",
-      "location": "北京/全国",
-      "category": [
-        "工业/制造/能源"
-      ],
-      "nature": "央企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "国网统一平台（唯一官方渠道）。规则：每批次最多 3 个二级单位志愿 × 每个下 2 个三四级单位（三志愿六意向），第一志愿优先"
-    },
-    {
-      "id": "sgitg",
-      "name": "国网信通产业集团",
-      "officialLink": "https://sgitg.zhaopin.com",
-      "location": "北京",
-      "category": [
-        "工业/制造/能源"
-      ],
-      "nature": "央企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "智联承办校招专题，正式报名需回国网统一平台"
-    },
-    {
-      "id": "cetc",
-      "name": "中国电科",
-      "officialLink": "https://cetc.iguopin.com/job-campus",
-      "location": "北京/全国",
-      "category": [
-        "半导体/电子"
-      ],
-      "nature": "央企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "国聘承办集团聚合页；各研究所各自为政（自有公众号/邮箱/网申），无统一限额，可同时投多个研究所"
-    },
-    {
-      "id": "cudt",
-      "name": "联通数科",
-      "officialLink": "https://cudt.iguopin.com",
-      "location": "北京/杭州",
-      "category": [
-        "通信/运营商"
-      ],
-      "nature": "央企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "国聘承办的独立招聘官网（中国联通数字科技）"
-    },
-    {
-      "id": "cmss",
-      "name": "中移云能力中心",
-      "officialLink": "https://campus.51job.com/cmss",
-      "location": "苏州",
-      "category": [
-        "通信/运营商"
-      ],
-      "nature": "央企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "51job 承办独立校招页（中移苏州软件）"
-    },
-    {
-      "id": "cscn",
-      "name": "中国星网",
-      "officialLink": "https://cscnrczp.zhiye.com/campus/jobs",
-      "location": "雄安/北京/上海/西安",
-      "category": [
-        "通信/运营商"
-      ],
-      "nature": "央企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "北森承办统一网申，承办方按年换过需每年复核"
-    },
-    {
-      "id": "cestc",
-      "name": "中国系统",
-      "officialLink": "https://campus.cestc.cn",
-      "location": "北京",
-      "category": [
-        "半导体/电子"
-      ],
-      "nature": "央企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "自有独立校招域名（中国电子子公司，与 CEC 区分）"
-    },
-    {
-      "id": "cetctj",
-      "name": "中电太极",
-      "officialLink": "https://cetctj.zhiye.com/Campus",
-      "location": "北京",
-      "category": [
-        "半导体/电子"
-      ],
-      "nature": "央企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "北森承办（中电太极集团/15所，含太极股份岗位）"
-    },
-    {
-      "id": "kunlun",
-      "name": "昆仑数智",
-      "officialLink": "https://zhaopin.cnpc.com.cn",
-      "location": "北京",
-      "category": [
-        "工业/制造/能源"
-      ],
-      "nature": "央企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "中石油数字化子公司，走中石油高校毕业生统一平台"
-    },
-    {
-      "id": "crc-digital",
-      "name": "华润数科",
-      "officialLink": "https://runjob.crc.com.cn",
-      "location": "深圳",
-      "category": [
-        "综合集团"
-      ],
-      "nature": "央企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "华润集团统一招聘平台（含各业务板块）"
-    },
-    {
-      "id": "sinochem-it",
-      "name": "中化信息",
-      "officialLink": "https://job.sinochem.com",
-      "location": "北京",
-      "category": [
-        "工业/制造/能源"
-      ],
-      "nature": "央企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "中国中化数字化子公司，走集团统一招聘网"
-    },
-    {
-      "id": "casic",
-      "name": "航天科工",
-      "officialLink": "https://casicjob.iguopin.com/job",
-      "location": "北京/全国",
-      "category": [
-        "工业/制造/能源"
-      ],
-      "nature": "央企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "国聘承办集团统一入口"
-    },
-    {
-      "id": "spacechina",
-      "name": "航天科技",
-      "officialLink": "https://spacechina.iguopin.com/job-campus",
-      "location": "北京/上海/西安",
-      "category": [
-        "工业/制造/能源"
-      ],
-      "nature": "央企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "国聘承办，已挂 2027 届岗位"
-    },
-    {
-      "id": "nhrdc",
-      "name": "中国兵器工业",
-      "officialLink": "https://zhaopin.nhrdc.cn",
-      "location": "北京/全国",
-      "category": [
-        "工业/制造/能源"
-      ],
-      "nature": "央企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "中国兵器人才招聘平台，官方唯一网申"
-    },
-    {
-      "id": "cssc",
-      "name": "中国船舶",
-      "officialLink": "https://cssc.zhiye.com",
-      "location": "上海/北京/全国",
-      "category": [
-        "工业/制造/能源"
-      ],
-      "nature": "央企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "北森承办统一网申"
-    },
-    {
-      "id": "travelsky",
-      "name": "中国航信",
-      "officialLink": "https://travelsky.hotjob.cn",
-      "location": "北京",
-      "category": [
-        "交通/物流"
-      ],
-      "nature": "央企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "民航信息央企，官方校招应聘网址"
-    },
-    {
-      "id": "dianxinshuzhi",
-      "name": "中电信数智",
-      "officialLink": "https://campus.51job.com/dianxinshuzhi",
-      "location": "北京",
-      "category": [
-        "通信/运营商"
-      ],
-      "nature": "央企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "中国电信数字化子公司，51job 承办独立校招页"
-    },
-    {
-      "id": "cscec",
-      "name": "中国建筑",
-      "officialLink": "https://recruit.cscec.com",
-      "location": "全国",
-      "category": [
-        "工业/制造/能源"
-      ],
-      "nature": "央企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "自有校招官网，各工程局统一网申门户"
-    },
-    {
-      "id": "crrc",
-      "name": "中国中车",
-      "officialLink": "https://crrc.hotjob.cn",
-      "location": "株洲/青岛/长春",
-      "category": [
-        "工业/制造/能源"
-      ],
-      "nature": "央企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "官方校招官网（高端装备）"
-    },
-    {
-      "id": "citic-bank",
-      "name": "中信银行",
-      "officialLink": "https://job.citicbank.com/",
-      "location": "北京/全国",
-      "category": [
-        "银行"
-      ],
-      "nature": "央企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "官方独立招聘域名，校招唯一网申渠道"
-    },
-    {
-      "id": "citic-card",
-      "name": "中信银行信用卡中心",
-      "officialLink": "https://creditcard.ecitic.com/zhaopin/",
-      "location": "深圳",
-      "category": [
-        "银行"
-      ],
-      "nature": "央企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "独立招聘页，与总行分开投递"
-    },
-    {
-      "id": "citictrust",
-      "name": "中信信托",
-      "officialLink": "https://citictrust.zhaopin.com",
-      "location": "北京",
-      "category": [
-        "券商/基金/期货"
-      ],
-      "nature": "央企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "智联承办（2026 届唯一网申渠道），承办方可能按年换"
-    },
-    {
-      "id": "citicprulife",
-      "name": "中信保诚人寿",
-      "officialLink": "https://citicprulife.zhiye.com",
-      "location": "北京/全国",
-      "category": [
-        "银行"
-      ],
-      "nature": "合资",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "北森承办独立网申（保险）"
-    },
-    {
-      "id": "citicprufunds",
-      "name": "中信保诚基金",
-      "officialLink": "https://www.citicprufunds.com.cn/pc/recruit",
-      "location": "上海/深圳",
-      "category": [
-        "券商/基金/期货"
-      ],
-      "nature": "合资",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "官网招聘栏目，含校招岗位标记"
-    },
-    {
-      "id": "aibank",
-      "name": "中信百信银行",
-      "officialLink": "https://www.aibank.com/jrwm/xyzp/index.shtml",
-      "location": "北京",
-      "category": [
-        "银行"
-      ],
-      "nature": "央企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "官网校园招聘栏目（中信×百度直销银行）"
-    },
-    {
-      "id": "citics-hn",
-      "name": "中信证券华南",
-      "officialLink": "https://careers.citics.com/campus/branch",
-      "location": "广州",
-      "category": [
-        "券商/基金/期货"
-      ],
-      "nature": "央企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "走中信证券统一网申（华南分支机构，原广州证券）"
-    },
-    {
-      "id": "citic-jk",
-      "name": "中信金控",
-      "officialLink": "https://job.citic.com/",
-      "location": "北京",
-      "category": [
-        "券商/基金/期货"
-      ],
-      "nature": "央企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "走中信集团人才招聘系统（集团唯一官方渠道），按批次放岗"
-    },
-    {
-      "id": "dicastal",
-      "name": "中信戴卡",
-      "officialLink": "https://dicastal.zhiye.com/Campus",
-      "location": "秦皇岛/长春/宁波/广州",
-      "category": [
-        "工业/制造/能源"
-      ],
-      "nature": "央企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "北森承办独立网申（部分批次改用 Moka）"
-    },
-    {
-      "id": "citicconstruction",
-      "name": "中信建设",
-      "officialLink": "https://www.construction.citic/recruit/campus",
-      "location": "北京/海外",
-      "category": [
-        "工业/制造/能源"
-      ],
-      "nature": "央企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "官网校招栏目（网申智联承办 citicconstruction.zhaopin.com）"
-    },
-    {
-      "id": "zxtftg",
-      "name": "中信泰富特钢",
-      "officialLink": "https://zxtftg.zhaopin.com/",
-      "location": "江阴/黄石/青岛/天津",
-      "category": [
-        "工业/制造/能源"
-      ],
-      "nature": "央企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "智联承办校招官网，按届更新"
-    },
-    {
-      "id": "ciccwm",
-      "name": "中金财富",
-      "officialLink": "https://ciccwm.zhiye.com",
-      "location": "深圳/全国",
-      "category": [
-        "券商/基金/期货"
-      ],
-      "nature": "央企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "北森承办（早年 hotjob 入口已失效）"
-    },
-    {
-      "id": "huatai-pb",
-      "name": "华泰柏瑞基金",
-      "officialLink": "https://www.huatai-pb.com/aboutUs/joinUs/index.html",
-      "location": "上海",
-      "category": [
-        "券商/基金/期货"
-      ],
-      "nature": "国企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "官网加入我们栏目，另随华泰证券统一校招放岗"
-    },
-    {
-      "id": "famc",
-      "name": "中信金融资产",
-      "officialLink": "https://www.famc.citic/rczp/",
-      "location": "北京/全国",
-      "category": [
-        "券商/基金/期货"
-      ],
-      "nature": "央企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "央企 AMC（原中国华融），51job 承办页按年换"
-    },
-    {
-      "id": "alibaba-taotian",
-      "name": "阿里巴巴·淘天集团",
-      "officialLink": "https://talent.taotian.com/campus/home",
-      "location": "杭州/北京",
-      "category": [
-        "互联网"
-      ],
-      "nature": "民企",
-      "parent": "alibaba",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "阿里系规则：本集团 1 次投递机会、最多 2 个意向（淘宝天猫）",
-      "quota": 2,
-      "graduated": true
-    },
-    {
-      "id": "alibaba-aliyun",
-      "name": "阿里巴巴·阿里云",
-      "officialLink": "https://careers.aliyun.com/campus/home",
-      "location": "杭州/北京",
-      "category": [
-        "互联网"
-      ],
-      "nature": "民企",
-      "parent": "alibaba",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "阿里系规则：本集团 1 次投递机会、最多 2 个意向（含管培生/A Star）",
-      "quota": 2
-    },
-    {
-      "id": "alibaba-tongyi",
-      "name": "阿里巴巴·通义实验室",
-      "officialLink": "https://careers-tongyi.alibaba.com/campus/position-list",
-      "location": "杭州/北京",
-      "category": [
-        "AI/机器人"
-      ],
-      "nature": "民企",
-      "parent": "alibaba",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "阿里系规则：本集团 1 次投递机会、最多 2 个意向（千问大模型核心团队）",
-      "quota": 2
-    },
-    {
-      "id": "alibaba-dingtalk",
-      "name": "阿里巴巴·钉钉",
-      "officialLink": "https://talent.dingtalk.com",
-      "location": "杭州",
-      "category": [
-        "互联网"
-      ],
-      "nature": "民企",
-      "parent": "alibaba",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "阿里系规则：本集团 1 次投递机会、最多 2 个意向（应往届 2024.6-2026.10 可投）",
-      "quota": 2
-    },
-    {
-      "id": "alibaba-amap",
-      "name": "阿里巴巴·高德",
-      "officialLink": "https://talent.amap.com/campus/home",
-      "location": "北京/杭州",
-      "category": [
-        "互联网"
-      ],
-      "nature": "民企",
-      "parent": "alibaba",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "阿里系规则：本集团 1 次投递机会、最多 2 个意向",
-      "quota": 2
-    },
-    {
-      "id": "alibaba-cainiao",
-      "name": "阿里巴巴·菜鸟",
-      "officialLink": "https://talent.cainiao.com/campus",
-      "location": "杭州",
-      "category": [
-        "互联网"
-      ],
-      "nature": "民企",
-      "parent": "alibaba",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "阿里系规则：本集团 1 次投递机会、最多 2 个意向",
-      "quota": 2
-    },
-    {
-      "id": "alibaba-hema",
-      "name": "阿里巴巴·盒马",
-      "officialLink": "https://app.mokahr.com/campus_apply/freshhema/4122",
-      "location": "杭州/上海",
-      "category": [
-        "消费/零售"
-      ],
-      "nature": "民企",
-      "parent": "alibaba",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "Moka 承办（小盒苗管培），批次链接可能更换",
-      "quota": 2
-    },
-    {
-      "id": "alibaba-aidc",
-      "name": "阿里巴巴·阿里国际AIDC",
-      "officialLink": "https://aidc-jobs.alibaba.com/campus/home",
-      "location": "杭州/深圳",
-      "category": [
-        "互联网"
-      ],
-      "nature": "民企",
-      "parent": "alibaba",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "阿里系规则：本集团 1 次投递机会、最多 2 个意向（国际数字商业）",
-      "quota": 2
-    },
-    {
-      "id": "alibaba-hujing",
-      "name": "阿里巴巴·虎鲸文娱",
-      "officialLink": "https://jobs.hujing-dme.com/campus/",
-      "location": "北京/杭州",
-      "category": [
-        "互联网"
-      ],
-      "nature": "民企",
-      "parent": "alibaba",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "阿里系规则：本集团 1 次投递机会、最多 2 个意向（优酷+大麦）",
-      "quota": 2
-    },
-    {
-      "id": "alibaba-holding",
-      "name": "阿里巴巴·控股集团",
-      "officialLink": "https://talent-holding.alibaba.com",
-      "location": "杭州",
-      "category": [
-        "互联网"
-      ],
-      "nature": "民企",
-      "parent": "alibaba",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "阿里系规则：本集团 1 次投递机会、最多 2 个意向（含阿里星）",
-      "quota": 2
-    },
-    {
-      "id": "netease-youdao",
-      "name": "网易有道",
-      "officialLink": "https://hr.youdao.com",
-      "location": "北京",
-      "category": [
-        "教育"
-      ],
-      "nature": "民企",
-      "parent": "netease",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "有道自有校招站（独立招聘池）"
-    },
-    {
-      "id": "cmiot",
-      "name": "中移物联网",
-      "officialLink": "https://iot.zhaopin.com",
-      "location": "重庆",
-      "category": [
-        "通信/运营商"
-      ],
-      "nature": "央企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "独立入口（智联承办）。规则：每人只能投递 1 个岗位",
-      "quota": 1
-    },
-    {
-      "id": "cmnet-gd",
-      "name": "中移互联网",
-      "officialLink": "https://zyhlw.hotjob.cn",
-      "location": "广州",
-      "category": [
-        "通信/运营商"
-      ],
-      "nature": "央企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "中国移动专业公司，独立入口（hotjob 承办）；移动各公司相互独立、不限投递公司数"
-    },
-    {
-      "id": "cmsk",
-      "name": "招商蛇口",
-      "officialLink": "https://cmsk1979.zhiye.com/campus/jobs",
-      "location": "深圳",
-      "category": [
-        "工业/制造/能源"
-      ],
-      "nature": "央企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "招商局旗下地产板块，独立入口（北森承办）",
-      "parent": "cmhk"
-    },
-    {
-      "id": "sinotrans",
-      "name": "中国外运",
-      "officialLink": "https://sinotrans.zhiye.com",
-      "location": "北京/深圳",
-      "category": [
-        "交通/物流"
-      ],
-      "nature": "央企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "招商局旗下物流板块，独立入口。规则：每人可选 5 个职位，申请后无法更改",
-      "parent": "cmhk",
-      "quota": 5
-    },
-    {
-      "id": "pcitc",
-      "name": "石化盈科",
-      "officialLink": "https://www.pcitc.com",
-      "location": "北京",
-      "category": [
-        "工业/制造/能源"
-      ],
-      "nature": "央企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "中石化×电讯盈科合资科技公司，官网招贤纳士-校园招聘；中石化集团其他单位走 job.sinopec.com（限 2 岗）"
-    },
-    {
-      "id": "poly",
-      "name": "保利发展",
-      "officialLink": "https://polycareer.zhiye.com/campus",
-      "location": "广州/全国",
-      "category": [
-        "工业/制造/能源"
-      ],
-      "nature": "央企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "独立入口（北森承办，保利和伙人计划）"
-    },
-    {
-      "id": "jinmao",
-      "name": "中国金茂",
-      "officialLink": "https://jinmao.hotjob.cn",
-      "location": "北京/全国",
-      "category": [
-        "工业/制造/能源"
-      ],
-      "nature": "央企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "中化旗下地产，独立入口（与中化信息不同体系）"
-    },
-    {
-      "id": "yuexiu",
-      "name": "越秀集团",
-      "officialLink": "https://recruit.yuexiu.com",
-      "location": "广州",
-      "category": [
-        "综合集团"
-      ],
-      "nature": "国企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "广州市属国企集团统一入口；越秀资本独立网申限 2 志愿，越秀地产用年度智联子域"
-    },
-    {
-      "id": "ctrip",
-      "name": "携程",
-      "officialLink": "https://campus.ctrip.com",
-      "location": "上海/北京",
-      "category": [
-        "互联网"
-      ],
-      "nature": "民企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "校招官网",
-      "graduated": true
-    },
-    {
-      "id": "hisense",
-      "name": "海信",
-      "officialLink": "https://jobs.hisense.com",
-      "location": "青岛",
-      "category": [
-        "智能硬件"
-      ],
-      "nature": "国企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "官方招聘平台（含校招）",
-      "graduated": true
-    },
-    {
-      "id": "xiaohongshu",
-      "name": "小红书",
-      "officialLink": "https://campus.xiaohongshu.com",
-      "location": "北京/上海",
-      "category": [
-        "互联网"
-      ],
-      "nature": "民企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "独立校招官网",
-      "graduated": true
-    },
-    {
-      "id": "honor",
-      "name": "荣耀",
-      "officialLink": "https://www.honor.com/cn/career/",
-      "location": "深圳/北京",
-      "category": [
-        "智能硬件"
-      ],
-      "nature": "国企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "官网招聘页（含校招）",
-      "graduated": true
-    },
-    {
-      "id": "37games",
-      "name": "三七互娱",
-      "officialLink": "https://zhaopin.37.com/",
-      "location": "广州",
-      "category": [
-        "游戏"
-      ],
-      "nature": "民企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "官方招聘官网（游戏）",
-      "graduated": true
-    },
-    {
-      "id": "kurogame",
-      "name": "库洛游戏",
-      "officialLink": "https://kurogame.jobs.feishu.cn/campus/",
-      "location": "广州/上海",
-      "category": [
-        "游戏"
-      ],
-      "nature": "民企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "飞书招聘承办校招页",
-      "graduated": true
-    },
-    {
-      "id": "catl",
-      "name": "宁德时代",
-      "officialLink": "https://talent.catl.com",
-      "location": "宁德/溧阳",
-      "category": [
-        "工业/制造/能源"
-      ],
-      "nature": "民企",
-      "source": "manual-seed",
-      "foundAt": "2026-08-27",
-      "note": "官方唯一网申地址（新能源电池龙头）",
-      "graduated": true
-    }
-  ]
+ "schemaVersion": 2,
+ "updatedAt": "2026-08-29",
+ "focus": [
+  "互联网大厂",
+  "头部券商/公募基金",
+  "央企广东分公司"
+ ],
+ "_readme": "爬虫发现公司候选池（schemaVersion 2）。行业词表 category（数组，1~2 个值）合法值仅限 17 个：银行 / 券商/基金/期货 / 金融科技 / 互联网 / 游戏 / 安全 / AI/机器人 / 智能硬件 / 半导体/电子 / 汽车/智能驾驶 / 工业/制造/能源 / 交通/物流 / 通信/运营商 / 消费/零售 / 教育 / 咨询/专业服务 / 综合集团。企业性质 nature（字符串，单值）合法值仅限 5 个：央企 / 国企 / 民企 / 外企 / 合资。category 描述行业、nature 描述所有制，两者相互独立；主业明确的条目 category 只给 1 个值，禁止发明词表外的新值。写入本文件的上游脚本必须遵守此 taxonomy（schemaVersion 2）。重点关注方向见 focus（互联网大厂 / 头部券商与公募基金 / 央企广东分公司）。字段：id(小写slug,不可改) / name / officialLink(官网校招页,可空) / jobs(数组或分隔文本,可空) / location(可空) / deadline(YYYY-MM-DD 或 null) / category(数组,行业) / nature(企业性质,紧跟 category) / source(来源标识) / foundAt(ISO 时间) / note(可空) / graduated(布尔,可空)。graduated=true 表示该公司已毕业进 data.js 内推清单：条目保留在池中（池=关注清单,不得删除），id 必须与 data.js 条目完全一致（用户状态按 id 共享）；非 graduated 条目不得与 data.js 撞 id/撞归一化名/撞官网链接，graduated 条目豁免这三项查重但必须 id 命中。隐私：只放公开校招信息，禁止写入任何个人邮箱相关内容。首批 source=manual-seed 为人工核实的种子清单。",
+ "items": [
+  {
+   "id": "bytedance",
+   "name": "字节跳动",
+   "officialLink": "https://jobs.bytedance.com/campus",
+   "location": "北京/上海/深圳/杭州",
+   "category": [
+    "互联网"
+   ],
+   "nature": "民企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "官方校招官网",
+   "graduated": true
+  },
+  {
+   "id": "alibaba",
+   "name": "阿里巴巴",
+   "officialLink": "https://talent.alibaba.com/campus/home",
+   "location": "杭州/北京/上海",
+   "category": [
+    "互联网"
+   ],
+   "nature": "民企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "集团总入口；阿里系按集团分开校招：每个集团 1 次投递机会、最多 2 个意向，各集团独立入口见下方子条目"
+  },
+  {
+   "id": "jd",
+   "name": "京东",
+   "officialLink": "https://campus.jd.com",
+   "location": "北京",
+   "category": [
+    "互联网"
+   ],
+   "nature": "民企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "校招唯一官网"
+  },
+  {
+   "id": "huawei",
+   "name": "华为",
+   "officialLink": "https://career.huawei.com/reccampportal/portal5/campus-recruitment.html",
+   "location": "深圳/东莞/北京/上海",
+   "category": [
+    "互联网"
+   ],
+   "nature": "民企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "招聘官网校招频道"
+  },
+  {
+   "id": "netease",
+   "name": "网易",
+   "officialLink": "https://campus.163.com",
+   "location": "杭州/广州/北京",
+   "category": [
+    "互联网"
+   ],
+   "nature": "民企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "网易互联网总入口（云音乐/严选等）；游戏走互娱/雷火，已在主清单（含内推码），三个池互不冲突可分别投递"
+  },
+  {
+   "id": "ke",
+   "name": "贝壳找房",
+   "officialLink": "https://campus.ke.com",
+   "location": "北京",
+   "category": [
+    "互联网"
+   ],
+   "nature": "民企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "ADC 校招官网"
+  },
+  {
+   "id": "360",
+   "name": "360集团",
+   "officialLink": "https://360campus.zhiye.com/campus/jobs",
+   "location": "北京/西安/成都",
+   "category": [
+    "安全"
+   ],
+   "nature": "民企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "官方北森校招店铺"
+  },
+  {
+   "id": "sensetime",
+   "name": "商汤科技",
+   "officialLink": "https://hr.sensetime.com",
+   "location": "上海/北京/深圳",
+   "category": [
+    "AI/机器人"
+   ],
+   "nature": "民企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "官方招聘官网",
+   "graduated": true
+  },
+  {
+   "id": "megvii",
+   "name": "旷视科技",
+   "officialLink": "https://zhaopin.megvii.com/Campus",
+   "location": "北京",
+   "category": [
+    "AI/机器人"
+   ],
+   "nature": "民企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "官方校招官网"
+  },
+  {
+   "id": "sina",
+   "name": "新浪微博",
+   "officialLink": "https://app.mokahr.com/campus-recruitment/sina/43536",
+   "location": "北京/杭州",
+   "category": [
+    "互联网"
+   ],
+   "nature": "民企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "官方 Moka 校招店铺（新浪&微博联合）"
+  },
+  {
+   "id": "iqiyi",
+   "name": "爱奇艺",
+   "officialLink": "https://campus.iqiyi.com",
+   "location": "北京",
+   "category": [
+    "互联网"
+   ],
+   "nature": "民企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "校招官网"
+  },
+  {
+   "id": "wps",
+   "name": "金山办公",
+   "officialLink": "https://join.wps.cn",
+   "location": "珠海/北京/武汉",
+   "category": [
+    "互联网"
+   ],
+   "nature": "民企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "官方网申入口"
+  },
+  {
+   "id": "yonyou",
+   "name": "用友",
+   "officialLink": "https://career.yonyou.com",
+   "location": "北京",
+   "category": [
+    "互联网"
+   ],
+   "nature": "民企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "招聘官网"
+  },
+  {
+   "id": "citic-sec",
+   "name": "中信证券",
+   "officialLink": "https://careers.citics.com/campus/headquarters",
+   "location": "北京/深圳",
+   "category": [
+    "券商/基金/期货"
+   ],
+   "nature": "央企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "官网校招（总部）板块"
+  },
+  {
+   "id": "huatai-sec",
+   "name": "华泰证券",
+   "officialLink": "https://wecruit.hotjob.cn/SU6419745cbef57c635fe10142/pb/school.html",
+   "location": "南京/上海/深圳/北京",
+   "category": [
+    "券商/基金/期货"
+   ],
+   "nature": "国企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "官方北森 ATS 校招页"
+  },
+  {
+   "id": "cicc",
+   "name": "中金公司",
+   "officialLink": "https://cicc.zhiye.com",
+   "location": "北京/上海/深圳",
+   "category": [
+    "券商/基金/期货"
+   ],
+   "nature": "央企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "官方 ATS 招聘站，进「校园招聘」"
+  },
+  {
+   "id": "csc-sec",
+   "name": "中信建投",
+   "officialLink": "https://www.csc108.com/joinus",
+   "location": "北京",
+   "category": [
+    "券商/基金/期货"
+   ],
+   "nature": "国企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "官网诚聘英才页"
+  },
+  {
+   "id": "gtja-sec",
+   "name": "国泰海通",
+   "officialLink": "https://hr.gtht.com",
+   "location": "上海",
+   "category": [
+    "券商/基金/期货"
+   ],
+   "nature": "国企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "国泰君安+海通合并为国泰海通，统一招聘官网"
+  },
+  {
+   "id": "cms-sec",
+   "name": "招商证券",
+   "officialLink": "https://cms.hotjob.cn",
+   "location": "深圳",
+   "category": [
+    "券商/基金/期货"
+   ],
+   "nature": "央企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "官方唯一网申渠道"
+  },
+  {
+   "id": "gf-sec",
+   "name": "广发证券",
+   "officialLink": "https://gf.hotjob.cn",
+   "location": "广州",
+   "category": [
+    "券商/基金/期货"
+   ],
+   "nature": "国企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "官方北森 ATS 招聘站"
+  },
+  {
+   "id": "swhy-sec",
+   "name": "申万宏源",
+   "officialLink": "https://www.swhysc.com",
+   "location": "上海",
+   "category": [
+    "券商/基金/期货"
+   ],
+   "nature": "央企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "官网诚聘英才→校园招聘"
+  },
+  {
+   "id": "chinastock-sec",
+   "name": "中国银河",
+   "officialLink": "https://chinastock.zhiye.com/custom/campus",
+   "location": "北京",
+   "category": [
+    "券商/基金/期货"
+   ],
+   "nature": "央企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "官方 ATS 校招专属页"
+  },
+  {
+   "id": "efunds",
+   "name": "易方达基金",
+   "officialLink": "https://job.efunds.com.cn",
+   "location": "广州",
+   "category": [
+    "券商/基金/期货"
+   ],
+   "nature": "国企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "自有招聘域名，进「校园招聘」"
+  },
+  {
+   "id": "chinaamc",
+   "name": "华夏基金",
+   "officialLink": "https://chinaamc.zhiye.com",
+   "location": "北京",
+   "category": [
+    "券商/基金/期货"
+   ],
+   "nature": "央企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "官方 ATS 招聘站"
+  },
+  {
+   "id": "jsfund",
+   "name": "嘉实基金",
+   "officialLink": "https://www.jsfund.cn/jobs/",
+   "location": "北京",
+   "category": [
+    "券商/基金/期货"
+   ],
+   "nature": "央企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "官网加入我们页"
+  },
+  {
+   "id": "southernfund",
+   "name": "南方基金",
+   "officialLink": "https://recruit.southernfund.com/nfjjRecruitSystem/index.action",
+   "location": "深圳",
+   "category": [
+    "券商/基金/期货"
+   ],
+   "nature": "国企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "自有招聘系统校招入口"
+  },
+  {
+   "id": "gffunds",
+   "name": "广发基金",
+   "officialLink": "https://www.gffunds.com.cn/recruitment",
+   "location": "广州/珠海",
+   "category": [
+    "券商/基金/期货"
+   ],
+   "nature": "国企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "官网招聘频道"
+  },
+  {
+   "id": "htffund",
+   "name": "汇添富基金",
+   "officialLink": "https://htffund.zhiye.com/campus",
+   "location": "上海",
+   "category": [
+    "券商/基金/期货"
+   ],
+   "nature": "国企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "官方 ATS 校招页"
+  },
+  {
+   "id": "fullgoal",
+   "name": "富国基金",
+   "officialLink": "https://app.mokahr.com/campus-recruitment/fullgoal/72198",
+   "location": "上海",
+   "category": [
+    "券商/基金/期货"
+   ],
+   "nature": "国企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "官方 Moka 校招店铺（批次 ID 会换，前缀不变）"
+  },
+  {
+   "id": "bosera",
+   "name": "博时基金",
+   "officialLink": "https://bosera.hotjob.cn",
+   "location": "深圳",
+   "category": [
+    "券商/基金/期货"
+   ],
+   "nature": "央企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "官方北森招聘站"
+  },
+  {
+   "id": "cmfchina",
+   "name": "招商基金",
+   "officialLink": "https://cmfchina.zhiye.com/campus",
+   "location": "深圳",
+   "category": [
+    "券商/基金/期货"
+   ],
+   "nature": "央企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "官方 ATS 校招栏目"
+  },
+  {
+   "id": "icbcubs",
+   "name": "工银瑞信",
+   "officialLink": "https://icbcubs.hotjob.cn",
+   "location": "北京/上海/深圳",
+   "category": [
+    "券商/基金/期货"
+   ],
+   "nature": "央企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "官方北森人才招聘官网"
+  },
+  {
+   "id": "csg",
+   "name": "南方电网",
+   "officialLink": "https://zhaopin.csg.cn",
+   "location": "广州",
+   "category": [
+    "工业/制造/能源"
+   ],
+   "nature": "央企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "南网统一平台（唯一官方渠道，含广东电网/南网储能/南网科研院/南网数字）。规则：每人最多申报 3 家二级单位，各单位限额见公告（如南网科研院限 1 志愿）"
+  },
+  {
+   "id": "cmcc-gd",
+   "name": "中国移动广东公司",
+   "officialLink": "https://job.10086.cn/personal/campus/",
+   "location": "广东",
+   "category": [
+    "通信/运营商"
+   ],
+   "nature": "央企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "集团统一平台，进校招板块选广东公司"
+  },
+  {
+   "id": "chinatelecom-gd",
+   "name": "中国电信广东公司",
+   "officialLink": "https://job.chinatelecom.com.cn/",
+   "location": "广东",
+   "category": [
+    "通信/运营商"
+   ],
+   "nature": "央企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "电信统一平台（含各省分公司/研究院/天翼安全等）。规则：每人最多 2 个志愿，填报后不能修改"
+  },
+  {
+   "id": "chinaunicom-gd",
+   "name": "中国联通广东公司",
+   "officialLink": "https://zglt.iguopin.com/",
+   "location": "广东",
+   "category": [
+    "通信/运营商"
+   ],
+   "nature": "央企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "集团国聘合作招聘站"
+  },
+  {
+   "id": "csair",
+   "name": "南方航空",
+   "officialLink": "https://job.csair.com/",
+   "location": "广州",
+   "category": [
+    "交通/物流"
+   ],
+   "nature": "央企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "官方招聘官网校招专区"
+  },
+  {
+   "id": "cgn",
+   "name": "中广核",
+   "officialLink": "https://cgn.hotjob.cn",
+   "location": "深圳",
+   "category": [
+    "工业/制造/能源"
+   ],
+   "nature": "央企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "官方校招网站"
+  },
+  {
+   "id": "cmhk",
+   "name": "招商局集团",
+   "officialLink": "https://cmhk.zhiye.com/custom/xy",
+   "location": "深圳/香港",
+   "category": [
+    "综合集团"
+   ],
+   "nature": "央企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "集团统一 ATS 校招专区（招商港口/招商轮船等在此点选）。各成员单位限额自定：招商轮船限 2 岗、中国外运独立系统限 5 岗"
+  },
+  {
+   "id": "oct",
+   "name": "华侨城集团",
+   "officialLink": "https://oct.zhaopin.com",
+   "location": "深圳",
+   "category": [
+    "工业/制造/能源"
+   ],
+   "nature": "央企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "官方校招官网（智联合作站）"
+  },
+  {
+   "id": "sinopec-gd",
+   "name": "中国石化广东石油",
+   "officialLink": "https://job.sinopec.com",
+   "location": "广东",
+   "category": [
+    "工业/制造/能源"
+   ],
+   "nature": "央企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "集团统一平台（毕业生招聘唯一官方渠道）"
+  },
+  {
+   "id": "gzrailway",
+   "name": "广州局集团",
+   "officialLink": "https://gtgrs.gzrailway.com.cn",
+   "location": "广州",
+   "category": [
+    "交通/物流"
+   ],
+   "nature": "央企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "广州局自有招聘网（公告指定报名网址）"
+  },
+  {
+   "id": "cscec8b",
+   "name": "中建八局南方",
+   "officialLink": "https://job.cscec8b.com.cn",
+   "location": "深圳",
+   "category": [
+    "工业/制造/能源"
+   ],
+   "nature": "央企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "中建八局官方招聘网，校招需先过集团统一测评"
+  },
+  {
+   "id": "cec",
+   "name": "中国电子",
+   "officialLink": "https://cec.hotjob.cn",
+   "location": "深圳",
+   "category": [
+    "半导体/电子"
+   ],
+   "nature": "央企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "集团统一校招官网（总部深圳）"
+  },
+  {
+   "id": "lixiang",
+   "name": "理想汽车",
+   "officialLink": "https://www.lixiang.com/employ/campus/list.html",
+   "location": "北京/上海/常州",
+   "category": [
+    "汽车/智能驾驶"
+   ],
+   "nature": "民企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "官网校招职位列表页"
+  },
+  {
+   "id": "geely",
+   "name": "吉利汽车",
+   "officialLink": "https://campus.geely.com",
+   "location": "杭州/宁波",
+   "category": [
+    "汽车/智能驾驶"
+   ],
+   "nature": "民企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "独立校招官网",
+   "graduated": true
+  },
+  {
+   "id": "byd",
+   "name": "比亚迪",
+   "officialLink": "https://job.byd.com",
+   "location": "深圳",
+   "category": [
+    "汽车/智能驾驶"
+   ],
+   "nature": "民企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "官方招聘平台（含校园招聘）"
+  },
+  {
+   "id": "gac",
+   "name": "广汽集团",
+   "officialLink": "https://www.gacgroup.com/cn/talent",
+   "location": "广州",
+   "category": [
+    "汽车/智能驾驶"
+   ],
+   "nature": "国企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "集团人才招聘页（广州国企）"
+  },
+  {
+   "id": "midea",
+   "name": "美的集团",
+   "officialLink": "https://careers.midea.com/schoolOut/home",
+   "location": "佛山/深圳/上海",
+   "category": [
+    "智能硬件"
+   ],
+   "nature": "民企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "独立校招官网"
+  },
+  {
+   "id": "gree",
+   "name": "格力电器",
+   "officialLink": "https://www.gree.com",
+   "location": "珠海",
+   "category": [
+    "智能硬件"
+   ],
+   "nature": "民企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "无独立校招域名，走官网诚聘英才栏目（置信度低）"
+  },
+  {
+   "id": "tcl",
+   "name": "TCL",
+   "officialLink": "https://campus.tcl.com",
+   "location": "深圳/惠州",
+   "category": [
+    "智能硬件"
+   ],
+   "nature": "民企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "独立校招官网"
+  },
+  {
+   "id": "cmb",
+   "name": "招商银行",
+   "officialLink": "https://career.cmbchina.com/home",
+   "location": "深圳/全国",
+   "category": [
+    "银行"
+   ],
+   "nature": "央企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "官方招聘官网"
+  },
+  {
+   "id": "icbc",
+   "name": "工商银行",
+   "officialLink": "https://job.icbc.com.cn",
+   "location": "北京/全国",
+   "category": [
+    "银行"
+   ],
+   "nature": "央企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "官方招聘平台"
+  },
+  {
+   "id": "abchina",
+   "name": "农业银行",
+   "officialLink": "https://career.abchina.com.cn",
+   "location": "北京/全国",
+   "category": [
+    "银行"
+   ],
+   "nature": "央企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "官方招聘平台"
+  },
+  {
+   "id": "boc",
+   "name": "中国银行",
+   "officialLink": "https://campus.chinahr.com/pages/2026-boc",
+   "location": "北京/全国",
+   "category": [
+    "银行"
+   ],
+   "nature": "央企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "校招页面按年份更换"
+  },
+  {
+   "id": "ccb",
+   "name": "建设银行",
+   "officialLink": "https://job.ccb.com",
+   "location": "北京/全国",
+   "category": [
+    "银行"
+   ],
+   "nature": "央企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "官方招聘平台"
+  },
+  {
+   "id": "bankcomm",
+   "name": "交通银行",
+   "officialLink": "https://job.bankcomm.com",
+   "location": "上海/全国",
+   "category": [
+    "银行"
+   ],
+   "nature": "央企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "官方招聘平台"
+  },
+  {
+   "id": "psbc",
+   "name": "邮储银行",
+   "officialLink": "https://psbc2026.zhaopin.com",
+   "location": "北京/全国",
+   "category": [
+    "银行"
+   ],
+   "nature": "央企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "校招域名按年份变化（智联承办）"
+  },
+  {
+   "id": "pingan",
+   "name": "平安集团",
+   "officialLink": "https://campus.pingan.com",
+   "location": "深圳/全国",
+   "category": [
+    "银行"
+   ],
+   "nature": "民企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "独立校招官网（保险/银行/科技）"
+  },
+  {
+   "id": "webank",
+   "name": "微众银行",
+   "officialLink": "https://campus.webank.com",
+   "location": "深圳/武汉",
+   "category": [
+    "银行"
+   ],
+   "nature": "民企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "独立校招官网"
+  },
+  {
+   "id": "tonghuashun",
+   "name": "同花顺",
+   "officialLink": "https://campus.10jqka.com.cn",
+   "location": "杭州",
+   "category": [
+    "金融科技"
+   ],
+   "nature": "民企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "独立校招官网"
+  },
+  {
+   "id": "eastmoney",
+   "name": "东方财富",
+   "officialLink": "https://app.mokahr.com/campus-recruitment/eastmoney/92400",
+   "location": "上海/成都/南京",
+   "category": [
+    "金融科技"
+   ],
+   "nature": "民企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "Moka 承办校招页"
+  },
+  {
+   "id": "shein",
+   "name": "希音SHEIN",
+   "officialLink": "https://talent.sheincorp.cn/CampusRecruiting.html",
+   "location": "广州/深圳/南京/上海",
+   "category": [
+    "消费/零售"
+   ],
+   "nature": "民企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "官方校招页"
+  },
+  {
+   "id": "vip",
+   "name": "唯品会",
+   "officialLink": "https://campus.vip.com/",
+   "location": "广州/上海",
+   "category": [
+    "互联网"
+   ],
+   "nature": "民企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "独立校招官网"
+  },
+  {
+   "id": "crc",
+   "name": "华润集团",
+   "officialLink": "https://crc.wintalent.cn/wt/CRC/web/index/CompCRCRecruitSchool",
+   "location": "深圳/香港",
+   "category": [
+    "综合集团"
+   ],
+   "nature": "央企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "集团校招页（wintalent 承办，华润置地/电力/万家/医药等在此）。规则：按业务单元每人 2~3 个志愿，第一志愿优先，淘汰后流转"
+  },
+  {
+   "id": "zte",
+   "name": "中兴通讯",
+   "officialLink": "https://job.zte.com.cn",
+   "location": "深圳/南京/西安",
+   "category": [
+    "通信/运营商"
+   ],
+   "nature": "国企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "官方招聘平台",
+   "graduated": true
+  },
+  {
+   "id": "transsion",
+   "name": "传音控股",
+   "officialLink": "https://transsion.zhiye.com/campus",
+   "location": "深圳/上海/重庆",
+   "category": [
+    "智能硬件"
+   ],
+   "nature": "民企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "校招页（zhiye 承办）",
+   "graduated": true
+  },
+  {
+   "id": "sf-express",
+   "name": "顺丰集团",
+   "officialLink": "https://campus.sf-express.com/",
+   "location": "深圳",
+   "category": [
+    "交通/物流"
+   ],
+   "nature": "民企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "独立校招官网"
+  },
+  {
+   "id": "huya",
+   "name": "虎牙",
+   "officialLink": "https://hr.huya.com",
+   "location": "广州/深圳",
+   "category": [
+    "游戏"
+   ],
+   "nature": "民企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "官方招聘官网"
+  },
+  {
+   "id": "ctyun",
+   "name": "天翼云",
+   "officialLink": "https://ctyun.hotjob.cn",
+   "location": "北京/广州/深圳/成都/厦门",
+   "category": [
+    "通信/运营商"
+   ],
+   "nature": "央企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "中国电信旗下云计算，独立网申入口"
+  },
+  {
+   "id": "donghaifund",
+   "name": "东海基金",
+   "officialLink": "https://www.donghaifunds.com/aboutus/job/xyzp/index.html",
+   "location": "上海",
+   "category": [
+    "券商/基金/期货"
+   ],
+   "nature": "国企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "官网诚聘英才-校招栏目"
+  },
+  {
+   "id": "shokz",
+   "name": "韶音Shokz",
+   "officialLink": "https://hr.shokz.com.cn",
+   "location": "深圳",
+   "category": [
+    "智能硬件"
+   ],
+   "nature": "民企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "独立官方网申域名",
+   "graduated": true
+  },
+  {
+   "id": "ebscn",
+   "name": "光大证券",
+   "officialLink": "https://ebscn.zhiye.com/campus",
+   "location": "上海/全国",
+   "category": [
+    "券商/基金/期货"
+   ],
+   "nature": "央企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "网申由 zhiye 承办，多年沿用"
+  },
+  {
+   "id": "zhuoshi",
+   "name": "卓识基金",
+   "officialLink": "https://www.nowcoder.com/enterprise/13379",
+   "location": "北京/上海",
+   "category": [
+    "券商/基金/期货"
+   ],
+   "nature": "民企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "百亿量化私募，无独立校招官网，投递以公众号为主（置信度低）"
+  },
+  {
+   "id": "phfund",
+   "name": "鹏华基金",
+   "officialLink": "https://job.phfund.com.cn/",
+   "location": "深圳",
+   "category": [
+    "券商/基金/期货"
+   ],
+   "nature": "国企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "官方独立招聘系统（含校招）"
+  },
+  {
+   "id": "duxiaoman",
+   "name": "度小满",
+   "officialLink": "https://campus.duxiaoman.com",
+   "location": "北京",
+   "category": [
+    "金融科技"
+   ],
+   "nature": "民企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "独立校招官网（飞书承办，百度系金融）"
+  },
+  {
+   "id": "asus",
+   "name": "华硕ASUS",
+   "officialLink": "https://asus.zhiye.com/Campus",
+   "location": "上海/苏州/北京/深圳",
+   "category": [
+    "智能硬件"
+   ],
+   "nature": "外企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "官方校招站（智业承办）"
+  },
+  {
+   "id": "deloitte",
+   "name": "德勤",
+   "officialLink": "https://www.deloitte.com/cn/zh/cn-careers.html",
+   "location": "全国",
+   "category": [
+    "咨询/专业服务"
+   ],
+   "nature": "外企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "四大，官网职业发展栏目内嵌校招网申"
+  },
+  {
+   "id": "citicsf",
+   "name": "中信期货",
+   "officialLink": "https://campus.yingjiesheng.com/citicsf/",
+   "location": "深圳/北京/上海",
+   "category": [
+    "券商/基金/期货"
+   ],
+   "nature": "央企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "未来星校招（应届生网承办，按届换页）"
+  },
+  {
+   "id": "anker",
+   "name": "安克创新",
+   "officialLink": "https://career.anker.com.cn/universities/recruitment/new/",
+   "location": "长沙/深圳/广州/上海/北京",
+   "category": [
+    "智能硬件"
+   ],
+   "nature": "民企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "自有官方校招站（旧域 anker-in.com 已弃用）",
+   "graduated": true
+  },
+  {
+   "id": "szvc",
+   "name": "深创投",
+   "officialLink": "https://www.szvc.com.cn/recruit",
+   "location": "深圳",
+   "category": [
+    "券商/基金/期货"
+   ],
+   "nature": "国企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "深圳市属国资 VC，官网加入我们栏目"
+  },
+  {
+   "id": "tplink",
+   "name": "TP-Link普联",
+   "officialLink": "https://hr.tp-link.com.cn",
+   "location": "深圳/杭州/北京/南京",
+   "category": [
+    "智能硬件"
+   ],
+   "nature": "民企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "官方投递通道（勿与联洲国际 tplinkglobal 混淆）",
+   "graduated": true
+  },
+  {
+   "id": "ubiquant",
+   "name": "九坤投资",
+   "officialLink": "https://app.mokahr.com/campus_apply/ubiquantrecruit/37031",
+   "location": "北京/深圳",
+   "category": [
+    "券商/基金/期货"
+   ],
+   "nature": "民企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "头部量化私募，Moka 承办校招"
+  },
+  {
+   "id": "deepseek",
+   "name": "DeepSeek深度求索",
+   "officialLink": "https://talent.deepseek.com",
+   "location": "杭州/北京",
+   "category": [
+    "AI/机器人"
+   ],
+   "nature": "民企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "官方招聘站，岗位常年滚动开放（无校招季专题）"
+  },
+  {
+   "id": "high-flyer",
+   "name": "幻方量化",
+   "officialLink": "https://app.mokahr.com/campus_apply/high-flyer/4605",
+   "location": "杭州",
+   "category": [
+    "券商/基金/期货"
+   ],
+   "nature": "民企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "DeepSeek 同系主体，Moka 承办校招"
+  },
+  {
+   "id": "zhipu",
+   "name": "智谱AI",
+   "officialLink": "https://zhipu-ai.jobs.feishu.cn/zhipucampus/",
+   "location": "北京",
+   "category": [
+    "AI/机器人"
+   ],
+   "nature": "民企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "飞书承办校招专题（官网 zhipuai.cn/zh/joinus 同步）"
+  },
+  {
+   "id": "moonshot",
+   "name": "月之暗面Kimi",
+   "officialLink": "https://careers.kimi.com/campus",
+   "location": "北京",
+   "category": [
+    "AI/机器人"
+   ],
+   "nature": "民企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "官方校招页（Moka 承办）"
+  },
+  {
+   "id": "xyzq",
+   "name": "兴业证券",
+   "officialLink": "https://www.xyzq.com.cn",
+   "location": "福州/上海",
+   "category": [
+    "券商/基金/期货"
+   ],
+   "nature": "国企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "官网诚聘英才栏目"
+  },
+  {
+   "id": "guosen",
+   "name": "国信证券",
+   "officialLink": "https://www.guosen.com.cn",
+   "location": "深圳",
+   "category": [
+    "券商/基金/期货"
+   ],
+   "nature": "国企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "官网人才招聘栏目"
+  },
+  {
+   "id": "zts",
+   "name": "中泰证券",
+   "officialLink": "https://www.zts.com.cn",
+   "location": "济南/上海",
+   "category": [
+    "券商/基金/期货"
+   ],
+   "nature": "国企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "官网人才招聘栏目"
+  },
+  {
+   "id": "xqfunds",
+   "name": "兴证全球基金",
+   "officialLink": "https://www.xqfunds.com",
+   "location": "上海",
+   "category": [
+    "券商/基金/期货"
+   ],
+   "nature": "国企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "官网招聘栏目（原兴全基金）"
+  },
+  {
+   "id": "igwfmc",
+   "name": "景顺长城基金",
+   "officialLink": "https://www.igwfmc.com",
+   "location": "深圳",
+   "category": [
+    "券商/基金/期货"
+   ],
+   "nature": "合资",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "官网招聘栏目（中美合资头部）"
+  },
+  {
+   "id": "zofund",
+   "name": "中欧基金",
+   "officialLink": "https://www.zofund.com",
+   "location": "上海",
+   "category": [
+    "券商/基金/期货"
+   ],
+   "nature": "民企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "官网招聘栏目"
+  },
+  {
+   "id": "thfund",
+   "name": "天弘基金",
+   "officialLink": "https://www.thfund.com.cn",
+   "location": "杭州/北京",
+   "category": [
+    "券商/基金/期货"
+   ],
+   "nature": "民企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "余额宝管理人，蚂蚁系"
+  },
+  {
+   "id": "mhfunds",
+   "name": "明汯投资",
+   "officialLink": "https://www.mhfunds.com",
+   "location": "上海",
+   "category": [
+    "券商/基金/期货"
+   ],
+   "nature": "民企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "500亿+量化私募头部"
+  },
+  {
+   "id": "yanfu",
+   "name": "衍复投资",
+   "officialLink": "https://yanfuinvestments1.zhiye.com/",
+   "location": "上海",
+   "category": [
+    "券商/基金/期货"
+   ],
+   "nature": "民企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "量化私募，校招门户 51job 承办"
+  },
+  {
+   "id": "pwc",
+   "name": "普华永道",
+   "officialLink": "https://www.pwc.com/cn/zh/careers.html",
+   "location": "全国",
+   "category": [
+    "咨询/专业服务"
+   ],
+   "nature": "外企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "四大，官网校园招聘入口"
+  },
+  {
+   "id": "ey",
+   "name": "安永",
+   "officialLink": "https://www.ey.com/cn/zh/careers",
+   "location": "全国",
+   "category": [
+    "咨询/专业服务"
+   ],
+   "nature": "外企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "四大，官网校园招聘入口"
+  },
+  {
+   "id": "kpmg",
+   "name": "毕马威",
+   "officialLink": "https://www.kpmg.com/cn/zh/home/careers.html",
+   "location": "全国",
+   "category": [
+    "咨询/专业服务"
+   ],
+   "nature": "外企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "四大，官网校园招聘入口"
+  },
+  {
+   "id": "boe",
+   "name": "京东方",
+   "officialLink": "https://career.boe.com",
+   "location": "北京/合肥/成都",
+   "category": [
+    "半导体/电子"
+   ],
+   "nature": "国企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "官方招聘平台（半导体显示）"
+  },
+  {
+   "id": "smic",
+   "name": "中芯国际",
+   "officialLink": "https://www.smics.com",
+   "location": "上海",
+   "category": [
+    "半导体/电子"
+   ],
+   "nature": "国企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "官网人才招聘栏目（半导体制造）"
+  },
+  {
+   "id": "unisoc",
+   "name": "紫光展锐",
+   "officialLink": "https://www.unisoc.com",
+   "location": "上海",
+   "category": [
+    "半导体/电子"
+   ],
+   "nature": "民企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "官网加入我们栏目（芯片设计）"
+  },
+  {
+   "id": "dahua",
+   "name": "大华股份",
+   "officialLink": "https://www.dahuatech.com",
+   "location": "杭州",
+   "category": [
+    "智能硬件"
+   ],
+   "nature": "民企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "官网人才招聘栏目（安防，对标海康）"
+  },
+  {
+   "id": "ubt",
+   "name": "优必选",
+   "officialLink": "https://www.ubtrobot.com",
+   "location": "深圳",
+   "category": [
+    "AI/机器人"
+   ],
+   "nature": "民企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "官网加入我们栏目（人形机器人）"
+  },
+  {
+   "id": "minimax",
+   "name": "MiniMax",
+   "officialLink": "https://www.minimaxi.com",
+   "location": "上海",
+   "category": [
+    "AI/机器人"
+   ],
+   "nature": "民企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "官网招聘页（海螺AI/星野，飞书承办）"
+  },
+  {
+   "id": "stepfun",
+   "name": "阶跃星辰",
+   "officialLink": "https://www.stepfun.com",
+   "location": "上海",
+   "category": [
+    "AI/机器人"
+   ],
+   "nature": "民企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "官网招聘页（Step 系列模型）"
+  },
+  {
+   "id": "baichuan",
+   "name": "百川智能",
+   "officialLink": "https://www.baichuan-ai.com",
+   "location": "北京",
+   "category": [
+    "AI/机器人"
+   ],
+   "nature": "民企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "官网招聘页（医疗大模型方向）"
+  },
+  {
+   "id": "csg-digital",
+   "name": "南网数字集团",
+   "officialLink": "https://zhaopin.csg.cn",
+   "location": "广州/深圳",
+   "category": [
+    "工业/制造/能源"
+   ],
+   "nature": "央企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "南方电网数字化子公司，走南网统一招聘平台（与南方电网同入口）"
+  },
+  {
+   "id": "sgcc",
+   "name": "国家电网",
+   "officialLink": "https://zhaopin.sgcc.com.cn",
+   "location": "北京/全国",
+   "category": [
+    "工业/制造/能源"
+   ],
+   "nature": "央企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "国网统一平台（唯一官方渠道）。规则：每批次最多 3 个二级单位志愿 × 每个下 2 个三四级单位（三志愿六意向），第一志愿优先"
+  },
+  {
+   "id": "sgitg",
+   "name": "国网信通产业集团",
+   "officialLink": "https://sgitg.zhaopin.com",
+   "location": "北京",
+   "category": [
+    "工业/制造/能源"
+   ],
+   "nature": "央企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "智联承办校招专题，正式报名需回国网统一平台"
+  },
+  {
+   "id": "cetc",
+   "name": "中国电科",
+   "officialLink": "https://cetc.iguopin.com/job-campus",
+   "location": "北京/全国",
+   "category": [
+    "半导体/电子"
+   ],
+   "nature": "央企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "国聘承办集团聚合页；各研究所各自为政（自有公众号/邮箱/网申），无统一限额，可同时投多个研究所"
+  },
+  {
+   "id": "cudt",
+   "name": "联通数科",
+   "officialLink": "https://cudt.iguopin.com",
+   "location": "北京/杭州",
+   "category": [
+    "通信/运营商"
+   ],
+   "nature": "央企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "国聘承办的独立招聘官网（中国联通数字科技）"
+  },
+  {
+   "id": "cmss",
+   "name": "中移云能力中心",
+   "officialLink": "https://campus.51job.com/cmss",
+   "location": "苏州",
+   "category": [
+    "通信/运营商"
+   ],
+   "nature": "央企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "51job 承办独立校招页（中移苏州软件）"
+  },
+  {
+   "id": "cscn",
+   "name": "中国星网",
+   "officialLink": "https://cscnrczp.zhiye.com/campus/jobs",
+   "location": "雄安/北京/上海/西安",
+   "category": [
+    "通信/运营商"
+   ],
+   "nature": "央企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "北森承办统一网申，承办方按年换过需每年复核"
+  },
+  {
+   "id": "cestc",
+   "name": "中国系统",
+   "officialLink": "https://campus.cestc.cn",
+   "location": "北京",
+   "category": [
+    "半导体/电子"
+   ],
+   "nature": "央企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "自有独立校招域名（中国电子子公司，与 CEC 区分）"
+  },
+  {
+   "id": "cetctj",
+   "name": "中电太极",
+   "officialLink": "https://cetctj.zhiye.com/Campus",
+   "location": "北京",
+   "category": [
+    "半导体/电子"
+   ],
+   "nature": "央企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "北森承办（中电太极集团/15所，含太极股份岗位）"
+  },
+  {
+   "id": "kunlun",
+   "name": "昆仑数智",
+   "officialLink": "https://zhaopin.cnpc.com.cn",
+   "location": "北京",
+   "category": [
+    "工业/制造/能源"
+   ],
+   "nature": "央企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "中石油数字化子公司，走中石油高校毕业生统一平台"
+  },
+  {
+   "id": "crc-digital",
+   "name": "华润数科",
+   "officialLink": "https://runjob.crc.com.cn",
+   "location": "深圳",
+   "category": [
+    "综合集团"
+   ],
+   "nature": "央企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "华润集团统一招聘平台（含各业务板块）"
+  },
+  {
+   "id": "sinochem-it",
+   "name": "中化信息",
+   "officialLink": "https://job.sinochem.com",
+   "location": "北京",
+   "category": [
+    "工业/制造/能源"
+   ],
+   "nature": "央企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "中国中化数字化子公司，走集团统一招聘网"
+  },
+  {
+   "id": "casic",
+   "name": "航天科工",
+   "officialLink": "https://casicjob.iguopin.com/job",
+   "location": "北京/全国",
+   "category": [
+    "工业/制造/能源"
+   ],
+   "nature": "央企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "国聘承办集团统一入口"
+  },
+  {
+   "id": "spacechina",
+   "name": "航天科技",
+   "officialLink": "https://spacechina.iguopin.com/job-campus",
+   "location": "北京/上海/西安",
+   "category": [
+    "工业/制造/能源"
+   ],
+   "nature": "央企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "国聘承办，已挂 2027 届岗位"
+  },
+  {
+   "id": "nhrdc",
+   "name": "中国兵器工业",
+   "officialLink": "https://zhaopin.nhrdc.cn",
+   "location": "北京/全国",
+   "category": [
+    "工业/制造/能源"
+   ],
+   "nature": "央企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "中国兵器人才招聘平台，官方唯一网申"
+  },
+  {
+   "id": "cssc",
+   "name": "中国船舶",
+   "officialLink": "https://cssc.zhiye.com",
+   "location": "上海/北京/全国",
+   "category": [
+    "工业/制造/能源"
+   ],
+   "nature": "央企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "北森承办统一网申"
+  },
+  {
+   "id": "travelsky",
+   "name": "中国航信",
+   "officialLink": "https://travelsky.hotjob.cn",
+   "location": "北京",
+   "category": [
+    "交通/物流"
+   ],
+   "nature": "央企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "民航信息央企，官方校招应聘网址"
+  },
+  {
+   "id": "dianxinshuzhi",
+   "name": "中电信数智",
+   "officialLink": "https://campus.51job.com/dianxinshuzhi",
+   "location": "北京",
+   "category": [
+    "通信/运营商"
+   ],
+   "nature": "央企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "中国电信数字化子公司，51job 承办独立校招页"
+  },
+  {
+   "id": "cscec",
+   "name": "中国建筑",
+   "officialLink": "https://recruit.cscec.com",
+   "location": "全国",
+   "category": [
+    "工业/制造/能源"
+   ],
+   "nature": "央企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "自有校招官网，各工程局统一网申门户"
+  },
+  {
+   "id": "crrc",
+   "name": "中国中车",
+   "officialLink": "https://crrc.hotjob.cn",
+   "location": "株洲/青岛/长春",
+   "category": [
+    "工业/制造/能源"
+   ],
+   "nature": "央企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "官方校招官网（高端装备）"
+  },
+  {
+   "id": "citic-bank",
+   "name": "中信银行",
+   "officialLink": "https://job.citicbank.com/",
+   "location": "北京/全国",
+   "category": [
+    "银行"
+   ],
+   "nature": "央企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "官方独立招聘域名，校招唯一网申渠道"
+  },
+  {
+   "id": "citic-card",
+   "name": "中信银行信用卡中心",
+   "officialLink": "https://creditcard.ecitic.com/zhaopin/",
+   "location": "深圳",
+   "category": [
+    "银行"
+   ],
+   "nature": "央企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "独立招聘页，与总行分开投递"
+  },
+  {
+   "id": "citictrust",
+   "name": "中信信托",
+   "officialLink": "https://citictrust.zhaopin.com",
+   "location": "北京",
+   "category": [
+    "券商/基金/期货"
+   ],
+   "nature": "央企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "智联承办（2026 届唯一网申渠道），承办方可能按年换"
+  },
+  {
+   "id": "citicprulife",
+   "name": "中信保诚人寿",
+   "officialLink": "https://citicprulife.zhiye.com",
+   "location": "北京/全国",
+   "category": [
+    "银行"
+   ],
+   "nature": "合资",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "北森承办独立网申（保险）"
+  },
+  {
+   "id": "citicprufunds",
+   "name": "中信保诚基金",
+   "officialLink": "https://www.citicprufunds.com.cn/pc/recruit",
+   "location": "上海/深圳",
+   "category": [
+    "券商/基金/期货"
+   ],
+   "nature": "合资",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "官网招聘栏目，含校招岗位标记"
+  },
+  {
+   "id": "aibank",
+   "name": "中信百信银行",
+   "officialLink": "https://www.aibank.com/jrwm/xyzp/index.shtml",
+   "location": "北京",
+   "category": [
+    "银行"
+   ],
+   "nature": "央企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "官网校园招聘栏目（中信×百度直销银行）"
+  },
+  {
+   "id": "citics-hn",
+   "name": "中信证券华南",
+   "officialLink": "https://careers.citics.com/campus/branch",
+   "location": "广州",
+   "category": [
+    "券商/基金/期货"
+   ],
+   "nature": "央企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "走中信证券统一网申（华南分支机构，原广州证券）"
+  },
+  {
+   "id": "citic-jk",
+   "name": "中信金控",
+   "officialLink": "https://job.citic.com/",
+   "location": "北京",
+   "category": [
+    "券商/基金/期货"
+   ],
+   "nature": "央企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "走中信集团人才招聘系统（集团唯一官方渠道），按批次放岗"
+  },
+  {
+   "id": "dicastal",
+   "name": "中信戴卡",
+   "officialLink": "https://dicastal.zhiye.com/Campus",
+   "location": "秦皇岛/长春/宁波/广州",
+   "category": [
+    "工业/制造/能源"
+   ],
+   "nature": "央企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "北森承办独立网申（部分批次改用 Moka）"
+  },
+  {
+   "id": "citicconstruction",
+   "name": "中信建设",
+   "officialLink": "https://www.construction.citic/recruit/campus",
+   "location": "北京/海外",
+   "category": [
+    "工业/制造/能源"
+   ],
+   "nature": "央企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "官网校招栏目（网申智联承办 citicconstruction.zhaopin.com）"
+  },
+  {
+   "id": "zxtftg",
+   "name": "中信泰富特钢",
+   "officialLink": "https://zxtftg.zhaopin.com/",
+   "location": "江阴/黄石/青岛/天津",
+   "category": [
+    "工业/制造/能源"
+   ],
+   "nature": "央企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "智联承办校招官网，按届更新"
+  },
+  {
+   "id": "ciccwm",
+   "name": "中金财富",
+   "officialLink": "https://ciccwm.zhiye.com",
+   "location": "深圳/全国",
+   "category": [
+    "券商/基金/期货"
+   ],
+   "nature": "央企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "北森承办（早年 hotjob 入口已失效）"
+  },
+  {
+   "id": "huatai-pb",
+   "name": "华泰柏瑞基金",
+   "officialLink": "https://www.huatai-pb.com/aboutUs/joinUs/index.html",
+   "location": "上海",
+   "category": [
+    "券商/基金/期货"
+   ],
+   "nature": "国企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "官网加入我们栏目，另随华泰证券统一校招放岗"
+  },
+  {
+   "id": "famc",
+   "name": "中信金融资产",
+   "officialLink": "https://www.famc.citic/rczp/",
+   "location": "北京/全国",
+   "category": [
+    "券商/基金/期货"
+   ],
+   "nature": "央企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "央企 AMC（原中国华融），51job 承办页按年换"
+  },
+  {
+   "id": "alibaba-taotian",
+   "name": "阿里巴巴·淘天集团",
+   "officialLink": "https://talent.taotian.com/campus/home",
+   "location": "杭州/北京",
+   "category": [
+    "互联网"
+   ],
+   "nature": "民企",
+   "parent": "alibaba",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "阿里系规则：本集团 1 次投递机会、最多 2 个意向（淘宝天猫）",
+   "quota": 2,
+   "graduated": true
+  },
+  {
+   "id": "alibaba-aliyun",
+   "name": "阿里巴巴·阿里云",
+   "officialLink": "https://careers.aliyun.com/campus/home",
+   "location": "杭州/北京",
+   "category": [
+    "互联网"
+   ],
+   "nature": "民企",
+   "parent": "alibaba",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "阿里系规则：本集团 1 次投递机会、最多 2 个意向（含管培生/A Star）",
+   "quota": 2
+  },
+  {
+   "id": "alibaba-tongyi",
+   "name": "阿里巴巴·通义实验室",
+   "officialLink": "https://careers-tongyi.alibaba.com/campus/position-list",
+   "location": "杭州/北京",
+   "category": [
+    "AI/机器人"
+   ],
+   "nature": "民企",
+   "parent": "alibaba",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "阿里系规则：本集团 1 次投递机会、最多 2 个意向（千问大模型核心团队）",
+   "quota": 2
+  },
+  {
+   "id": "alibaba-dingtalk",
+   "name": "阿里巴巴·钉钉",
+   "officialLink": "https://talent.dingtalk.com",
+   "location": "杭州",
+   "category": [
+    "互联网"
+   ],
+   "nature": "民企",
+   "parent": "alibaba",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "阿里系规则：本集团 1 次投递机会、最多 2 个意向（应往届 2024.6-2026.10 可投）",
+   "quota": 2
+  },
+  {
+   "id": "alibaba-amap",
+   "name": "阿里巴巴·高德",
+   "officialLink": "https://talent.amap.com/campus/home",
+   "location": "北京/杭州",
+   "category": [
+    "互联网"
+   ],
+   "nature": "民企",
+   "parent": "alibaba",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "阿里系规则：本集团 1 次投递机会、最多 2 个意向",
+   "quota": 2
+  },
+  {
+   "id": "alibaba-cainiao",
+   "name": "阿里巴巴·菜鸟",
+   "officialLink": "https://talent.cainiao.com/campus",
+   "location": "杭州",
+   "category": [
+    "互联网"
+   ],
+   "nature": "民企",
+   "parent": "alibaba",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "阿里系规则：本集团 1 次投递机会、最多 2 个意向",
+   "quota": 2
+  },
+  {
+   "id": "alibaba-hema",
+   "name": "阿里巴巴·盒马",
+   "officialLink": "https://app.mokahr.com/campus_apply/freshhema/4122",
+   "location": "杭州/上海",
+   "category": [
+    "消费/零售"
+   ],
+   "nature": "民企",
+   "parent": "alibaba",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "Moka 承办（小盒苗管培），批次链接可能更换",
+   "quota": 2
+  },
+  {
+   "id": "alibaba-aidc",
+   "name": "阿里巴巴·阿里国际AIDC",
+   "officialLink": "https://aidc-jobs.alibaba.com/campus/home",
+   "location": "杭州/深圳",
+   "category": [
+    "互联网"
+   ],
+   "nature": "民企",
+   "parent": "alibaba",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "阿里系规则：本集团 1 次投递机会、最多 2 个意向（国际数字商业）",
+   "quota": 2
+  },
+  {
+   "id": "alibaba-hujing",
+   "name": "阿里巴巴·虎鲸文娱",
+   "officialLink": "https://jobs.hujing-dme.com/campus/",
+   "location": "北京/杭州",
+   "category": [
+    "互联网"
+   ],
+   "nature": "民企",
+   "parent": "alibaba",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "阿里系规则：本集团 1 次投递机会、最多 2 个意向（优酷+大麦）",
+   "quota": 2
+  },
+  {
+   "id": "alibaba-holding",
+   "name": "阿里巴巴·控股集团",
+   "officialLink": "https://talent-holding.alibaba.com",
+   "location": "杭州",
+   "category": [
+    "互联网"
+   ],
+   "nature": "民企",
+   "parent": "alibaba",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "阿里系规则：本集团 1 次投递机会、最多 2 个意向（含阿里星）",
+   "quota": 2
+  },
+  {
+   "id": "netease-youdao",
+   "name": "网易有道",
+   "officialLink": "https://hr.youdao.com",
+   "location": "北京",
+   "category": [
+    "教育"
+   ],
+   "nature": "民企",
+   "parent": "netease",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "有道自有校招站（独立招聘池）"
+  },
+  {
+   "id": "cmiot",
+   "name": "中移物联网",
+   "officialLink": "https://iot.zhaopin.com",
+   "location": "重庆",
+   "category": [
+    "通信/运营商"
+   ],
+   "nature": "央企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "独立入口（智联承办）。规则：每人只能投递 1 个岗位",
+   "quota": 1
+  },
+  {
+   "id": "cmnet-gd",
+   "name": "中移互联网",
+   "officialLink": "https://zyhlw.hotjob.cn",
+   "location": "广州",
+   "category": [
+    "通信/运营商"
+   ],
+   "nature": "央企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "中国移动专业公司，独立入口（hotjob 承办）；移动各公司相互独立、不限投递公司数"
+  },
+  {
+   "id": "cmsk",
+   "name": "招商蛇口",
+   "officialLink": "https://cmsk1979.zhiye.com/campus/jobs",
+   "location": "深圳",
+   "category": [
+    "工业/制造/能源"
+   ],
+   "nature": "央企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "招商局旗下地产板块，独立入口（北森承办）",
+   "parent": "cmhk"
+  },
+  {
+   "id": "sinotrans",
+   "name": "中国外运",
+   "officialLink": "https://sinotrans.zhiye.com",
+   "location": "北京/深圳",
+   "category": [
+    "交通/物流"
+   ],
+   "nature": "央企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "招商局旗下物流板块，独立入口。规则：每人可选 5 个职位，申请后无法更改",
+   "parent": "cmhk",
+   "quota": 5
+  },
+  {
+   "id": "pcitc",
+   "name": "石化盈科",
+   "officialLink": "https://www.pcitc.com",
+   "location": "北京",
+   "category": [
+    "工业/制造/能源"
+   ],
+   "nature": "央企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "中石化×电讯盈科合资科技公司，官网招贤纳士-校园招聘；中石化集团其他单位走 job.sinopec.com（限 2 岗）"
+  },
+  {
+   "id": "poly",
+   "name": "保利发展",
+   "officialLink": "https://polycareer.zhiye.com/campus",
+   "location": "广州/全国",
+   "category": [
+    "工业/制造/能源"
+   ],
+   "nature": "央企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "独立入口（北森承办，保利和伙人计划）"
+  },
+  {
+   "id": "jinmao",
+   "name": "中国金茂",
+   "officialLink": "https://jinmao.hotjob.cn",
+   "location": "北京/全国",
+   "category": [
+    "工业/制造/能源"
+   ],
+   "nature": "央企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "中化旗下地产，独立入口（与中化信息不同体系）"
+  },
+  {
+   "id": "yuexiu",
+   "name": "越秀集团",
+   "officialLink": "https://recruit.yuexiu.com",
+   "location": "广州",
+   "category": [
+    "综合集团"
+   ],
+   "nature": "国企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "广州市属国企集团统一入口；越秀资本独立网申限 2 志愿，越秀地产用年度智联子域"
+  },
+  {
+   "id": "ctrip",
+   "name": "携程",
+   "officialLink": "https://campus.ctrip.com",
+   "location": "上海/北京",
+   "category": [
+    "互联网"
+   ],
+   "nature": "民企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "校招官网",
+   "graduated": true
+  },
+  {
+   "id": "hisense",
+   "name": "海信",
+   "officialLink": "https://jobs.hisense.com",
+   "location": "青岛",
+   "category": [
+    "智能硬件"
+   ],
+   "nature": "国企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "官方招聘平台（含校招）",
+   "graduated": true
+  },
+  {
+   "id": "xiaohongshu",
+   "name": "小红书",
+   "officialLink": "https://campus.xiaohongshu.com",
+   "location": "北京/上海",
+   "category": [
+    "互联网"
+   ],
+   "nature": "民企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "独立校招官网",
+   "graduated": true
+  },
+  {
+   "id": "honor",
+   "name": "荣耀",
+   "officialLink": "https://www.honor.com/cn/career/",
+   "location": "深圳/北京",
+   "category": [
+    "智能硬件"
+   ],
+   "nature": "国企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "官网招聘页（含校招）",
+   "graduated": true
+  },
+  {
+   "id": "37games",
+   "name": "三七互娱",
+   "officialLink": "https://zhaopin.37.com/",
+   "location": "广州",
+   "category": [
+    "游戏"
+   ],
+   "nature": "民企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "官方招聘官网（游戏）",
+   "graduated": true
+  },
+  {
+   "id": "kurogame",
+   "name": "库洛游戏",
+   "officialLink": "https://kurogame.jobs.feishu.cn/campus/",
+   "location": "广州/上海",
+   "category": [
+    "游戏"
+   ],
+   "nature": "民企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "飞书招聘承办校招页",
+   "graduated": true
+  },
+  {
+   "id": "catl",
+   "name": "宁德时代",
+   "officialLink": "https://talent.catl.com",
+   "location": "宁德/溧阳",
+   "category": [
+    "工业/制造/能源"
+   ],
+   "nature": "民企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-27",
+   "note": "官方唯一网申地址（新能源电池龙头）",
+   "graduated": true
+  },
+  {
+   "id": "pingan-bank",
+   "name": "平安银行",
+   "officialLink": "",
+   "location": "深圳/全国",
+   "category": [
+    "银行"
+   ],
+   "nature": "民企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-30",
+   "note": "股份制银行，平安系校招独立主体"
+  },
+  {
+   "id": "cmb-wealth",
+   "name": "招银理财",
+   "officialLink": "",
+   "location": "深圳",
+   "category": [
+    "银行"
+   ],
+   "nature": "央企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-30",
+   "note": "招行理财子"
+  },
+  {
+   "id": "ccb-wealth",
+   "name": "建信理财",
+   "officialLink": "",
+   "location": "深圳",
+   "category": [
+    "银行"
+   ],
+   "nature": "央企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-30",
+   "note": "建行理财子"
+  },
+  {
+   "id": "pa-wealth",
+   "name": "平安理财",
+   "officialLink": "",
+   "location": "深圳",
+   "category": [
+    "银行"
+   ],
+   "nature": "民企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-30",
+   "note": "平安银行理财子"
+  },
+  {
+   "id": "zhaolian",
+   "name": "招联消费金融",
+   "officialLink": "",
+   "location": "深圳",
+   "category": [
+    "银行"
+   ],
+   "nature": "合资",
+   "source": "manual-seed",
+   "foundAt": "2026-08-30",
+   "note": "招行×联通合资持牌消金"
+  },
+  {
+   "id": "guotou-sec",
+   "name": "国投证券",
+   "officialLink": "",
+   "location": "深圳",
+   "category": [
+    "券商/基金/期货"
+   ],
+   "nature": "央企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-30",
+   "note": "原安信证券"
+  },
+  {
+   "id": "cgws",
+   "name": "长城证券",
+   "officialLink": "",
+   "location": "深圳",
+   "category": [
+    "券商/基金/期货"
+   ],
+   "nature": "央企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-30",
+   "note": "华能系"
+  },
+  {
+   "id": "firstcapital",
+   "name": "第一创业证券",
+   "officialLink": "",
+   "location": "深圳",
+   "category": [
+    "券商/基金/期货"
+   ],
+   "nature": "国企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-30",
+   "note": "第一大股东北京国管"
+  },
+  {
+   "id": "pa-sec",
+   "name": "平安证券",
+   "officialLink": "",
+   "location": "深圳",
+   "category": [
+    "券商/基金/期货"
+   ],
+   "nature": "民企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-30",
+   "note": "平安系"
+  },
+  {
+   "id": "cr-trust",
+   "name": "华润信托",
+   "officialLink": "",
+   "location": "深圳",
+   "category": [
+    "券商/基金/期货"
+   ],
+   "nature": "央企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-30",
+   "note": "华润系信托"
+  },
+  {
+   "id": "hsbc-qianhai",
+   "name": "汇丰前海证券",
+   "officialLink": "",
+   "location": "深圳",
+   "category": [
+    "券商/基金/期货"
+   ],
+   "nature": "合资",
+   "source": "manual-seed",
+   "foundAt": "2026-08-30",
+   "note": "汇丰控股合资券商"
+  },
+  {
+   "id": "ea-qianhai",
+   "name": "东亚前海证券",
+   "officialLink": "",
+   "location": "深圳",
+   "category": [
+    "券商/基金/期货"
+   ],
+   "nature": "合资",
+   "source": "manual-seed",
+   "foundAt": "2026-08-30",
+   "note": "东亚银行合资券商"
+  },
+  {
+   "id": "szse",
+   "name": "深圳证券交易所",
+   "officialLink": "",
+   "location": "深圳",
+   "category": [
+    "券商/基金/期货"
+   ],
+   "nature": "国企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-30",
+   "note": "交易所校招"
+  },
+  {
+   "id": "dacheng",
+   "name": "大成基金",
+   "officialLink": "",
+   "location": "深圳",
+   "category": [
+    "券商/基金/期货"
+   ],
+   "nature": "国企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-30",
+   "note": "头部公募"
+  },
+  {
+   "id": "qhky",
+   "name": "前海开源基金",
+   "officialLink": "",
+   "location": "深圳",
+   "category": [
+    "券商/基金/期货"
+   ],
+   "nature": "民企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-30",
+   "note": "混合所有制，管理层合伙制"
+  },
+  {
+   "id": "baoying",
+   "name": "宝盈基金",
+   "officialLink": "",
+   "location": "深圳",
+   "category": [
+    "券商/基金/期货"
+   ],
+   "nature": "国企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-30",
+   "note": "中铁信托系"
+  },
+  {
+   "id": "cjhx",
+   "name": "创金合信基金",
+   "officialLink": "",
+   "location": "深圳",
+   "category": [
+    "券商/基金/期货"
+   ],
+   "nature": "国企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-30",
+   "note": "第一创业控股"
+  },
+  {
+   "id": "ms-fund",
+   "name": "摩根士丹利基金",
+   "officialLink": "",
+   "location": "深圳",
+   "category": [
+    "券商/基金/期货"
+   ],
+   "nature": "外企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-30",
+   "note": "外资全资公募"
+  },
+  {
+   "id": "yhfund-sz",
+   "name": "银华基金",
+   "officialLink": "",
+   "location": "深圳",
+   "category": [
+    "券商/基金/期货"
+   ],
+   "nature": "国企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-30",
+   "note": "西南证券系，注册深圳"
+  },
+  {
+   "id": "chengqi",
+   "name": "诚奇资产",
+   "officialLink": "",
+   "location": "深圳",
+   "category": [
+    "券商/基金/期货"
+   ],
+   "nature": "民企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-30",
+   "note": "百亿量化私募"
+  },
+  {
+   "id": "yansheng",
+   "name": "衍盛资产",
+   "officialLink": "",
+   "location": "深圳",
+   "category": [
+    "券商/基金/期货"
+   ],
+   "nature": "民企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-30",
+   "note": "量化私募"
+  },
+  {
+   "id": "futu",
+   "name": "富途控股",
+   "officialLink": "",
+   "location": "深圳",
+   "category": [
+    "金融科技"
+   ],
+   "nature": "民企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-30",
+   "note": "互联网券商，纳斯达克上市"
+  },
+  {
+   "id": "lexin",
+   "name": "乐信",
+   "officialLink": "",
+   "location": "深圳",
+   "category": [
+    "金融科技"
+   ],
+   "nature": "民企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-30",
+   "note": "纳斯达克上市互金"
+  },
+  {
+   "id": "pa-tech",
+   "name": "平安科技",
+   "officialLink": "",
+   "location": "深圳",
+   "category": [
+    "金融科技"
+   ],
+   "nature": "民企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-30",
+   "note": "平安集团科技子公司"
+  },
+  {
+   "id": "cgb",
+   "name": "广发银行",
+   "officialLink": "",
+   "location": "广州/全国",
+   "category": [
+    "银行"
+   ],
+   "nature": "央企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-30",
+   "note": "中国人寿集团控股"
+  },
+  {
+   "id": "wlzq",
+   "name": "万联证券",
+   "officialLink": "",
+   "location": "广州",
+   "category": [
+    "券商/基金/期货"
+   ],
+   "nature": "国企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-30",
+   "note": "广州国资"
+  },
+  {
+   "id": "ykzq",
+   "name": "粤开证券",
+   "officialLink": "",
+   "location": "广州",
+   "category": [
+    "券商/基金/期货"
+   ],
+   "nature": "国企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-30",
+   "note": "广州开发区国资"
+  },
+  {
+   "id": "eagle-fund",
+   "name": "金鹰基金",
+   "officialLink": "",
+   "location": "广州",
+   "category": [
+    "券商/基金/期货"
+   ],
+   "nature": "国企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-30",
+   "note": "越秀系"
+  },
+  {
+   "id": "gfex",
+   "name": "广州期货交易所",
+   "officialLink": "",
+   "location": "广州",
+   "category": [
+    "券商/基金/期货"
+   ],
+   "nature": "国企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-30",
+   "note": "交易所校招"
+  },
+  {
+   "id": "gzcb",
+   "name": "广州银行",
+   "officialLink": "",
+   "location": "广州",
+   "category": [
+    "银行"
+   ],
+   "nature": "国企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-30",
+   "note": "市属城商行"
+  },
+  {
+   "id": "gzrcb",
+   "name": "广州农商银行",
+   "officialLink": "",
+   "location": "广州",
+   "category": [
+    "银行"
+   ],
+   "nature": "国企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-30",
+   "note": "市属农商行"
+  },
+  {
+   "id": "yuecai",
+   "name": "粤财控股",
+   "officialLink": "",
+   "location": "广州",
+   "category": [
+    "券商/基金/期货"
+   ],
+   "nature": "国企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-30",
+   "note": "广东省属金控"
+  },
+  {
+   "id": "cdb",
+   "name": "国家开发银行",
+   "officialLink": "",
+   "location": "北京/全国",
+   "category": [
+    "银行"
+   ],
+   "nature": "央企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-30",
+   "note": "政策性银行"
+  },
+  {
+   "id": "eximbank",
+   "name": "中国进出口银行",
+   "officialLink": "",
+   "location": "北京/全国",
+   "category": [
+    "银行"
+   ],
+   "nature": "央企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-30",
+   "note": "政策性银行"
+  },
+  {
+   "id": "adbc",
+   "name": "中国农业发展银行",
+   "officialLink": "",
+   "location": "北京/全国",
+   "category": [
+    "银行"
+   ],
+   "nature": "央企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-30",
+   "note": "政策性银行"
+  },
+  {
+   "id": "spdb",
+   "name": "浦发银行",
+   "officialLink": "",
+   "location": "上海/全国",
+   "category": [
+    "银行"
+   ],
+   "nature": "国企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-30",
+   "note": "股份制银行"
+  },
+  {
+   "id": "cmbc",
+   "name": "民生银行",
+   "officialLink": "",
+   "location": "北京/全国",
+   "category": [
+    "银行"
+   ],
+   "nature": "民企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-30",
+   "note": "股份制银行"
+  },
+  {
+   "id": "cib",
+   "name": "兴业银行",
+   "officialLink": "",
+   "location": "福州/全国",
+   "category": [
+    "银行"
+   ],
+   "nature": "国企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-30",
+   "note": "股份制银行"
+  },
+  {
+   "id": "ceb",
+   "name": "光大银行",
+   "officialLink": "",
+   "location": "北京/全国",
+   "category": [
+    "银行"
+   ],
+   "nature": "央企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-30",
+   "note": "光大集团"
+  },
+  {
+   "id": "hxb",
+   "name": "华夏银行",
+   "officialLink": "",
+   "location": "北京/全国",
+   "category": [
+    "银行"
+   ],
+   "nature": "国企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-30",
+   "note": "股份制银行"
+  },
+  {
+   "id": "czb",
+   "name": "浙商银行",
+   "officialLink": "",
+   "location": "杭州/全国",
+   "category": [
+    "银行"
+   ],
+   "nature": "国企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-30",
+   "note": "股份制银行"
+  },
+  {
+   "id": "huaan",
+   "name": "华安基金",
+   "officialLink": "",
+   "location": "上海",
+   "category": [
+    "券商/基金/期货"
+   ],
+   "nature": "国企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-30",
+   "note": "国泰海通系"
+  },
+  {
+   "id": "gtfund",
+   "name": "国泰基金",
+   "officialLink": "",
+   "location": "上海",
+   "category": [
+    "券商/基金/期货"
+   ],
+   "nature": "国企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-30",
+   "note": "老十家"
+  },
+  {
+   "id": "ccbfund",
+   "name": "建信基金",
+   "officialLink": "",
+   "location": "北京",
+   "category": [
+    "券商/基金/期货"
+   ],
+   "nature": "央企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-30",
+   "note": "建行系"
+  },
+  {
+   "id": "bocom-schroders",
+   "name": "交银施罗德基金",
+   "officialLink": "",
+   "location": "上海",
+   "category": [
+    "券商/基金/期货"
+   ],
+   "nature": "合资",
+   "source": "manual-seed",
+   "foundAt": "2026-08-30",
+   "note": "交行×施罗德"
+  },
+  {
+   "id": "lingjun",
+   "name": "灵均投资",
+   "officialLink": "",
+   "location": "北京",
+   "category": [
+    "券商/基金/期货"
+   ],
+   "nature": "民企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-30",
+   "note": "百亿量化私募"
+  },
+  {
+   "id": "kuande",
+   "name": "宽德投资",
+   "officialLink": "",
+   "location": "深圳",
+   "category": [
+    "券商/基金/期货"
+   ],
+   "nature": "民企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-30",
+   "note": "百亿量化私募"
+  },
+  {
+   "id": "sixie",
+   "name": "思勰投资",
+   "officialLink": "",
+   "location": "上海",
+   "category": [
+    "券商/基金/期货"
+   ],
+   "nature": "民企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-30",
+   "note": "百亿量化私募"
+  },
+  {
+   "id": "heiyi",
+   "name": "黑翼资产",
+   "officialLink": "",
+   "location": "上海",
+   "category": [
+    "券商/基金/期货"
+   ],
+   "nature": "民企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-30",
+   "note": "百亿量化私募"
+  },
+  {
+   "id": "tianyan",
+   "name": "天演资本",
+   "officialLink": "",
+   "location": "上海",
+   "category": [
+    "券商/基金/期货"
+   ],
+   "nature": "民企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-30",
+   "note": "百亿量化私募"
+  },
+  {
+   "id": "wenbo",
+   "name": "稳博投资",
+   "officialLink": "",
+   "location": "上海",
+   "category": [
+    "券商/基金/期货"
+   ],
+   "nature": "民企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-30",
+   "note": "百亿量化私募"
+  },
+  {
+   "id": "yinnuo",
+   "name": "因诺资产",
+   "officialLink": "",
+   "location": "上海",
+   "category": [
+    "券商/基金/期货"
+   ],
+   "nature": "民企",
+   "source": "manual-seed",
+   "foundAt": "2026-08-30",
+   "note": "百亿量化私募"
+  }
+ ]
 }
